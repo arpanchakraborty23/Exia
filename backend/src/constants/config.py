@@ -3,6 +3,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+    # JWT
+    jwt_secret: str = ""
+    jwt_algorithm: str = ""
     
     # livekit 
     livekit_api_key: str = ""
@@ -12,6 +16,7 @@ class Settings(BaseSettings):
     # Mongodb
     mongodb_uri: str = ""
     mongodb_database: str = ""
+    mongodb_user_collection: str = ""
     mongodb_session_collection: str = ""
     mongodb_sesison_summary: str = ""  # (Typo note: consider renaming to session_summary)
     mongodb_mcp_collections: str = ""
