@@ -1,0 +1,26 @@
+# LiveKit Voice Agent Core & API SDK
+livekit-agents>=0.9.0
+livekit-api>=0.8.0
+
+# Voice Processing & AI Plugins
+livekit-plugins-silero>=0.7.0
+livekit-plugins-openai>=0.9.0
+
+# Model Context Protocol (MCP) Client
+mcp>=1.0.0
+
+# Database: MongoDB Atlas (Async Motor Driver & PyMongo)
+motor>=3.6.0
+pymongo>=4.9.0
+
+# Universal Memory Layer (Mem0) & Vector Storage
+mem0ai>=0.1.30
+qdrant-client>=1.11.0
+
+# Token Generation Server & Utilities
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-dotenv>=1.0.0
+pydantic>=2.8.0
+aiosqlite>=0.20.0
+

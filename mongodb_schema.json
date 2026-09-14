@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HomeAssistant MongoDB Atlas Database Schema",
+  "description": "Complete database schema specifications and validation rules for HomeAssistant collections in MongoDB Atlas.",
+  "database_name": "home_assistant",
+  "version": "1.0.0",
+  "collections": {
+    "mcp_servers": {
+      "collection_name": "mcp_servers",
+      "description": "Stores registered MCP servers, transport protocols, connection states, and discovered tool schemas. Tools are stored here directly so LiveKit tokens do not need to be bloated with large tool schemas.",
+      "indexes": [
+        {
+          "name": "idx_name_unique",
+          "keys": { "name": 1 },
+          "unique": true
+        },
+        {
+          "name": "idx_server_id_unique",
+          "keys": { "server_id": 1 },
+          "unique": true
+        },
+        {
+          "name": "idx_is_connected",
+          "keys": { "is_connected": 1 }
+        },
+        {
+          "name": "idx_session_id",
+          "keys": { "session_id": 1 }
+        }
+      ],
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["server_id", "name", "transport", "is_connected", "tools", "updated_at"],
+          "properties": {
+            "server_id": {
+              "bsonType": "string",
+              "description": "Unique identifier for the MCP server, e.g. 'mcp_filesystem'"
+            },
+            "name": {
+              "bsonType": "string",
+              "description": "Human-readable name of the server, e.g. 'Local Filesystem MCP'"
+            },
+            "transport": {
+              "enum": ["stdio", "sse", "websocket"],
+              "description": "Communication protocol: stdio (CLI) or sse (HTTP Server-Sent Events)"
+            },
+            "command": {
+              "bsonType": ["string", "null"],
+              "description": "CLI command executed for stdio transport, e.g. 'npx -y @modelcontextprotocol/server-filesystem'"
+            },
+            "args": {
+              "bsonType": ["array", "null"],
+              "items": { "bsonType": "string" },
+              "description": "Command-line arguments passed to the stdio process"
+            },
+            "url": {
+              "bsonType": ["string", "null"],
+              "description": "HTTP/HTTPS endpoint URL for sse transport, e.g. 'http://localhost:8088/events'"
+            },
+            "is_connected": {
+              "bsonType": "bool",
+              "description": "Current connection status verified via connectivity check"
+            },
+            "status": {
+              "enum": ["connected", "unreachable", "offline", "error"],
+              "description": "Detailed health state of the MCP server"
+            },
+            "tools": {
+              "bsonType": "array",
+              "description": "Array of tool schemas exposed by this server and available to the AI Assistant",
+              "items": {
+                "bsonType": "object",
+                "required": ["name", "description", "isEnabled"],
+                "properties": {
+                  "name": {
+                    "bsonType": "string",
+                    "description": "Unique tool name invoked by LLM, e.g. 'read_file'"
+                  },
+                  "description": {
+                    "bsonType": "string",
+                    "description": "Functional description of what this tool does"
+                  },
+                  "parametersSummary": {
+                    "bsonType": ["string", "null"],
+                    "description": "Short parameter summary for UI, e.g. 'path: string'"
+                  },
+                  "inputSchema": {
+                    "bsonType": ["object", "null"],
+                    "description": "JSON Schema definition of expected arguments"
+                  },
+                  "isEnabled": {
+                    "bsonType": "bool",
+                    "description": "Whether the voice assistant is allowed to trigger this tool"
+                  }
+                }
+              }
+            },
+            "session_id": {
+              "bsonType": ["string", "null"],
+              "description": "Optional session ID that registered or last updated this server"
+            },
+            "last_checked_at": {
+              "bsonType": ["string", "null"],
+              "description": "ISO timestamp of the most recent connection check"
+            },
+            "updated_at": {
+              "bsonType": "string",
+              "description": "ISO timestamp of the last document update"
+            }
+          }
+        }
+      },
+      "sample_document": {
+        "server_id": "mcp_filesystem",
+        "name": "Local Filesystem MCP",
+        "transport": "stdio",
+        "command": "npx -y @modelcontextprotocol/server-filesystem D:\\Documents",
+        "args": ["D:\\Documents"],
+        "url": null,
+        "is_connected": true,
+        "status": "connected",
+        "tools": [
+          {
+            "name": "read_file",
+            "description": "Read content from local files in allowed workspace folders",
+            "parametersSummary": "path: string",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string" }
+              },
+              "required": ["path"]
+            },
+            "isEnabled": true
+          },
+          {
+            "name": "search_files",
+            "description": "Search files matching glob patterns or keywords",
+            "parametersSummary": "pattern: string, path: string",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "pattern": { "type": "string" },
+                "path": { "type": "string" }
+              },
+              "required": ["pattern"]
+            },
+            "isEnabled": true
+          }
+        ],
+        "session_id": "sess_1726301234_desktop-user",
+        "last_checked_at": "2026-09-14T11:15:00.000Z",
+        "updated_at": "2026-09-14T11:15:00.000Z"
+      }
+    },
+    "sessions": {
+      "collection_name": "sessions",
+      "description": "Tracks LiveKit room sessions, user identities, model settings, and execution history. Fetched directly by the UI to display session history.",
+      "indexes": [
+        {
+          "name": "idx_session_id_unique",
+          "keys": { "session_id": 1 },
+          "unique": true
+        },
+        {
+          "name": "idx_room_identity",
+          "keys": { "room_name": 1, "identity": 1 }
+        },
+        {
+          "name": "idx_created_at_desc",
+          "keys": { "created_at": -1 }
+        }
+      ],
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["session_id", "room_name", "identity", "status", "created_at"],
+          "properties": {
+            "session_id": {
+              "bsonType": "string",
+              "description": "Unique session identifier, e.g. 'sess_1726301234_desktop-user'"
+            },
+            "room_name": {
+              "bsonType": "string",
+              "description": "Name of the LiveKit WebRTC room, e.g. 'home-assistant-room'"
+            },
+            "identity": {
+              "bsonType": "string",
+              "description": "Participant identity in LiveKit, e.g. 'desktop-user'"
+            },
+            "participant_name": {
+              "bsonType": "string",
+              "description": "Display name of the user, e.g. 'Home Assistant User'"
+            },
+            "status": {
+              "enum": ["active", "idle", "completed", "terminated"],
+              "description": "Current lifecycle status of the session"
+            },
+            "model_config": {
+              "bsonType": "object",
+              "description": "LLM model settings: provider, model, temperature, base_url"
+            },
+            "memory_config": {
+              "bsonType": "object",
+              "description": "Mem0 configuration: engine, user_id, vector_store, db_path"
+            },
+            "voice_config": {
+              "bsonType": "object",
+              "description": "TTS voice configuration: tts_provider, voice, speed"
+            },
+            "created_at": {
+              "bsonType": "string",
+              "description": "ISO timestamp when the session was initiated"
+            },
+            "updated_at": {
+              "bsonType": "string",
+              "description": "ISO timestamp of the most recent session activity"
+            }
+          }
+        }
+      },
+      "sample_document": {
+        "session_id": "sess_1726301234_desktop-user",
+        "room_name": "home-assistant-room",
+        "identity": "desktop-user",
+        "participant_name": "Home Assistant Master",
+        "status": "active",
+        "model_config": {
+          "provider": "ollama",
+          "model": "llama3.2:latest",
+          "temperature": 0.7,
+          "base_url": "http://localhost:11434/v1"
+        },
+        "memory_config": {
+          "engine": "mem0",
+          "user_id": "desktop-user",
+          "vector_store": "sqlite",
+          "local_storage_path": "./memory.db"
+        },
+        "voice_config": {
+          "tts_provider": "openai",
+          "voice": "alloy",
+          "speed": 1.0
+        },
+        "created_at": "2026-09-14T10:00:00.000Z",
+        "updated_at": "2026-09-14T10:15:00.000Z"
+      }
+    },
+    "token_metadata": {
+      "collection_name": "token_metadata",
+      "description": "Audit log of all LiveKit JWT access tokens minted from the UI or backend, including token preview and embedded claims.",
+      "indexes": [
+        {
+          "name": "idx_token_id_unique",
+          "keys": { "token_id": 1 },
+          "unique": true
+        },
+        {
+          "name": "idx_session_id",
+          "keys": { "session_id": 1 }
+        },
+        {
+          "name": "idx_created_at_desc",
+          "keys": { "created_at": -1 }
+        }
+      ],
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["token_id", "session_id", "room_name", "identity", "token_preview", "metadata_payload", "created_at"],
+          "properties": {
+            "token_id": {
+              "bsonType": "string",
+              "description": "Unique hash or identifier for the token, e.g. 'tok_a8b9c0d1e2f3'"
+            },
+            "session_id": {
+              "bsonType": "string",
+              "description": "Session ID linked to this token"
+            },
+            "room_name": {
+              "bsonType": "string",
+              "description": "Room name authorized by this token"
+            },
+            "identity": {
+              "bsonType": "string",
+              "description": "Participant identity authorized by this token"
+            },
+            "token_preview": {
+              "bsonType": "string",
+              "description": "Truncated JWT token string preview, e.g. 'eyJhbGciOi...1234'"
+            },
+            "metadata_payload": {
+              "bsonType": "object",
+              "description": "Clean metadata payload embedded in JWT (session_id, identity, model_config)"
+            },
+            "created_at": {
+              "bsonType": "string",
+              "description": "ISO timestamp when the token was generated"
+            }
+          }
+        }
+      },
+      "sample_document": {
+        "token_id": "tok_94f8a1bc23de",
+        "session_id": "sess_1726301234_desktop-user",
+        "room_name": "home-assistant-room",
+        "identity": "desktop-user",
+        "token_preview": "eyJhbGciOiJIUzI1Ni...x89qLm4",
+        "metadata_payload": {
+          "session_id": "sess_1726301234_desktop-user",
+          "identity": "desktop-user",
+          "model_config": {
+            "provider": "ollama",
+            "model": "llama3.2:latest"
+          },
+          "memory_config": {
+            "engine": "mem0",
+            "vector_store": "sqlite"
+          }
+        },
+        "created_at": "2026-09-14T10:00:00.000Z"
+      }
+    },
+    "tasks": {
+      "collection_name": "tasks",
+      "description": "Stores user daily agenda, routines, reminders, and todos queried or updated by voice commands.",
+      "indexes": [
+        {
+          "name": "idx_task_id_unique",
+          "keys": { "task_id": 1 },
+          "unique": true
+        },
+        {
+          "name": "idx_status_priority",
+          "keys": { "status": 1, "priority": 1 }
+        },
+        {
+          "name": "idx_user_id",
+          "keys": { "user_id": 1 }
+        }
+      ],
+      "validator": {
+        "$jsonSchema": {
+          "bsonType": "object",
+          "required": ["task_id", "title", "priority", "status", "user_id", "created_at"],
+          "properties": {
+            "task_id": {
+              "bsonType": "string",
+              "description": "Unique task identifier, e.g. 'task-1726301234'"
+            },
+            "title": {
+              "bsonType": "string",
+              "description": "Title or summary of the task"
+            },
+            "description": {
+              "bsonType": ["string", "null"],
+              "description": "Detailed notes or task context"
+            },
+            "priority": {
+              "enum": ["low", "medium", "high", "urgent"],
+              "description": "Priority level of the task"
+            },
+            "status": {
+              "enum": ["todo", "in_progress", "completed"],
+              "description": "Current status of the task"
+            },
+            "due_date": {
+              "bsonType": ["string", "null"],
+              "description": "Due date string or deadline"
+            },
+            "category": {
+              "enum": ["home", "work", "personal", "health"],
+              "description": "Category folder for the task"
+            },
+            "tags": {
+              "bsonType": "array",
+              "items": { "bsonType": "string" },
+              "description": "Custom tags, e.g. ['groceries', 'voice-added']"
+            },
+            "user_id": {
+              "bsonType": "string",
+              "description": "User partition ID"
+            },
+            "created_at": {
+              "bsonType": "string",
+              "description": "ISO timestamp when the task was created"
+            },
+            "updated_at": {
+              "bsonType": "string",
+              "description": "ISO timestamp of the most recent edit"
+            }
+          }
+        }
+      },
+      "sample_document": {
+        "task_id": "task-1726301234",
+        "title": "Review weekly groceries & order milk",
+        "description": "Check milk, espresso beans, and pantry staples.",
+        "priority": "medium",
+        "status": "todo",
+        "due_date": "Today, 5:00 PM",
+        "category": "home",
+        "tags": ["groceries", "routine"],
+        "user_id": "desktop-user",
+        "created_at": "2026-09-14T08:30:00.000Z",
+        "updated_at": "2026-09-14T08:30:00.000Z"
+      }
+    }
+  }
+}
