@@ -1,5 +1,8 @@
+import logging
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure
+
+logger = logging.getLogger("mongodb")
 
 
 class MongoDBValidation:
