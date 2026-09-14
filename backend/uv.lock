@@ -392,7 +392,10 @@ dependencies = [
     { name = "fastapi" },
     { name = "fastmcp" },
     { name = "livekit" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
     { name = "pymongo" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata]
@@ -400,7 +403,10 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.141.1" },
     { name = "fastmcp", specifier = ">=4.0.3" },
     { name = "livekit", specifier = ">=1.1.18" },
+    { name = "pydantic", specifier = ">=2.13.5" },
+    { name = "pydantic-settings", specifier = ">=2.15.0" },
     { name = "pymongo", specifier = ">=4.18.1" },
+    { name = "python-dotenv", specifier = ">=1.2.3" },
 ]
 
 [[package]]
