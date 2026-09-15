@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, status, HTTPException
 
 # pyrefly: ignore [missing-import]
-from src.constants import CreateUser, CreateUserResponse, LoginUser,LoginUserResponse
+from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest,LoginUserResponse
 # pyrefly: ignore [missing-import]
 from src.services import UserServices, AuthServices, verify_password
 
@@ -18,7 +18,7 @@ auth_services = AuthServices()
 auth_route = APIRouter(prefix="/api", tags=["Auth"])
 
 @auth_route.post("/signup", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user_account(user_data: CreateUser):
+async def create_user_account(user_data: CreateUserRequest):
     # get user eamil
     user_email = user_data.email
 
@@ -41,13 +41,17 @@ async def create_user_account(user_data: CreateUser):
         )
 
     new_user = await user_services.create_user(user_data)
-    return new_user
+    return CreateUserResponse(
+        user_id=new_user.user_id,
+        name=new_user.name,
+        email=new_user.email
+    )
 
 @auth_route.post("/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
-async def login_user(user_data: LoginUser):
+async def login_user(user_data: LoginUserRequest):
     try:
-        email = user_data['email']
-        password = user_data['password']
+        email = user_data.email
+        password = user_data.hash_password
 
         # validate user
         user = await user_services.get_user_by_email(email)
@@ -60,7 +64,7 @@ async def login_user(user_data: LoginUser):
             )
 
         # check password is correct or not
-        if not verify_password(password, user['hash_password']):
+        if not verify_password(password, user.hash_password):
             logger.info("Password Not Matched!")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

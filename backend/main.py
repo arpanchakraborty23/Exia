@@ -10,6 +10,6 @@ app.include_router(auth_route)
 app.include_router(api_router)
 
 
-@app.get("/")
+@app.get("/api/health")
 def read_root():
     return {"status": "ok"}

@@ -5,7 +5,7 @@ import jwt
 from passlib.context import CryptContext
 
 
-from src.constants import CreateUser, CreateUserResponse
+from src.constants import CreateNewUserModel, CreateUserResponse
 from src.db import MongoServices
 from src.constants import get_settings
 
@@ -61,32 +61,37 @@ class UserServices:
 
         return True
 
-    async def create_user(self,user_data: CreateUser) -> CreateUserResponse:
+    async def create_user(self,user_data: CreateNewUserModel) -> CreateUserResponse:
         """
         New  User creation.
         Return: New user data
         """
         try:
             # user data to dict
-            new_user_data_dict = user_data.model_dump()
+            new_user_data= user_data.model_dump()
 
             # User id
-            new_user_data_dict["user_id"] = str(UUID.uuid4())[:7]
+            user_id = str(UUID.uuid4())[:7]
 
             # user password hash
-            new_user_data_dict['hash_password'] = genrate_password_hash(new_user_data_dict['hash_password'])
+            hash_password = genrate_password_hash(new_user_data['hash_password'])
+
+
+            # new user
+            new_user = CreateNewUserModel(
+                user_id=user_id,
+                name=new_user_data['name'], 
+                email=new_user_data['email'],
+                hash_password=hash_password
+            )
 
             # Insert Data to database
             collection = self.db.connect()
-            collection.insert_one(new_user_data_dict)
+            collection.insert_one(new_user.model_dump())
 
             logger.info("New User created")
 
-            return CreateUserResponse(
-                user_id=new_user_data_dict['user_id'],
-                name=new_user_data_dict['name'],
-                email=new_user_data_dict['email']
-            )
+            return new_user.model_dump()
 
 
         except Exception as e:

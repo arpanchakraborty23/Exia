@@ -2,17 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict
 
 
-# livekit Session token
-class AgentTokenRequest(BaseModel):
-    room_name: Optional[str] = None
-    participant_identity: Optional[str] = None
-    participant_name: Optional[str] = None
-    participant_metadata: Optional[str] = None
-    participant_attributes: Optional[Dict[str, str]] = None
-    room_config: Optional[dict] = None
-
-
-class CreateUser(BaseModel):
+class CreateUserRequest(BaseModel):
     user_id : Optional[str] = None
     name: str = None
     email: str = None
@@ -23,7 +13,7 @@ class CreateUserResponse(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None    
 
-class LoginUser(BaseModel):
+class LoginUserRequest(BaseModel):
     user_id: str = None
     password: str = None
 
@@ -32,3 +22,16 @@ class LoginUserResponse(BaseModel):
     refresh_token: str = None
     message: str = None    
     user : dict = None
+
+
+# livekit Session token
+class AgentTokenRequest(BaseModel):
+    user_id: str = None
+    name: str = None
+
+
+class AgentTokenResponse(BaseModel):
+    user_id : str = None
+    server_url: str = None
+    session_id: str = None
+    token : str = None
