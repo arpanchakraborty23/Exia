@@ -489,6 +489,10 @@ export const api = {
       }
     },
 
+    async getPrompts(): Promise<PromptItem[]> {
+      return this.list();
+    },
+
     async create(prompt: Omit<PromptItem, 'id' | 'created_at'>): Promise<PromptItem> {
       try {
         return await apiRequest<PromptItem>('/prompts', {
@@ -511,6 +515,10 @@ export const api = {
       }
     },
 
+    async createPrompt(prompt: Omit<PromptItem, 'id' | 'created_at'>): Promise<PromptItem> {
+      return this.create(prompt);
+    },
+
     async update(id: string, prompt: Partial<PromptItem>): Promise<PromptItem> {
       try {
         return await apiRequest<PromptItem>(`/prompts/${id}`, {
@@ -530,6 +538,10 @@ export const api = {
       }
     },
 
+    async updatePrompt(id: string, prompt: Partial<PromptItem>): Promise<PromptItem> {
+      return this.update(id, prompt);
+    },
+
     async delete(id: string): Promise<{ success: boolean }> {
       try {
         return await apiRequest<{ success: boolean }>(`/prompts/${id}`, {
@@ -544,6 +556,10 @@ export const api = {
         }
         return { success: true };
       }
+    },
+
+    async deletePrompt(id: string): Promise<{ success: boolean }> {
+      return this.delete(id);
     },
   },
 
@@ -577,6 +593,16 @@ export const api = {
         }
         return merged;
       }
+    },
+  },
+
+  // Model alias (singular)
+  model: {
+    async getConfig(): Promise<ModelConfig> {
+      return api.models.getConfig();
+    },
+    async updateConfig(config: Partial<ModelConfig>): Promise<ModelConfig> {
+      return api.models.updateConfig(config);
     },
   },
 };

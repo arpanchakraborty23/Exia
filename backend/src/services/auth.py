@@ -1,28 +1,19 @@
 import logging
-from uuid import UUID
+import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
-from passlib.context import CryptContext
 
 
-from src.constants import CreateNewUserModel, CreateUserResponse
-from src.db import MongoServices
-from src.constants import get_settings
+
+from src.constants import get_settings, CreateNewUserModel, CreateUserResponse
+from .db import MongoServices
+from src.utils import genrate_password_hash, verify_password
 
 
 # Configuration
 settings = get_settings()
 logger = logging.getLogger(__name__)
-password_context = CryptContext(schemes=["bcrypt"])
 
-
-
-def genrate_password_hash(password:str):
-    hash = password_context.hash(password)
-    return hash
-
-def verify_password(password: str, hash: str) -> bool:
-    return password_context.verify(password, hash)
 
 class UserServices:
     def __init__(self):
@@ -71,10 +62,10 @@ class UserServices:
             new_user_data= user_data.model_dump()
 
             # User id
-            user_id = str(UUID.uuid4())[:7]
+            user_id = str(uuid.uuid4())[:7]
 
             # user password hash
-            hash_password = genrate_password_hash(new_user_data['hash_password'])
+            hash_password = genrate_password_hash(new_user_data['password'])
 
 
             # new user
@@ -116,7 +107,7 @@ class AuthServices:
             payload = {
                 "user": user_data,
                 "exp": datetime.now() + (expairy if expairy is not None else timedelta(hours=1)),
-                "jit": str(UUID.uuid4()),
+                "jit": str(uuid.uuid4()),
                 "refresh": refresh_token
             }
             
@@ -131,7 +122,7 @@ class AuthServices:
             logger.error(e)
             raise e
     
-    async def decode_token(self,token:str) -> dict:
+    def decode_token(self,token:str) -> dict:
         """
         Decode access token.
         Return: Access Token Payload
@@ -146,3 +137,18 @@ class AuthServices:
         except jwt.PyJWTError as e:
             logger.error(e)
             raise e
+
+    def validate_token(self, token: str) -> bool:
+        """
+        Validate access token.
+        Return: bool
+        """
+        try:
+            jwt.decode(
+                token,
+                key=self.jwt_secret,
+                algorithms=[self.jwt_algorithm]
+            )
+            return True
+        except jwt.PyJWTError:
+            return False

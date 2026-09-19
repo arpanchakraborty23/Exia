@@ -21,6 +21,15 @@ class MongoDBValidation:
         Returns:
             tuple: (MongoClient, collection_name)
         """
+        if not url:
+            raise ValueError(
+                "MongoDB connection URL is empty. Please ensure 'MONGODB_URI' is set in your .env file."
+            )
+        if not db:
+            raise ValueError(
+                "MongoDB database name is empty. Please ensure 'MONGODB_DATABASE' is set in your .env file."
+            )
+
         client = None
         try:
             client = MongoClient(url, serverSelectionTimeoutMS=5000)

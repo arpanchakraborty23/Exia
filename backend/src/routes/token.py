@@ -7,7 +7,7 @@ from livekit import api
 # pyrefly: ignore [missing-import]
 from src.constants import get_settings, AgentTokenRequest, AgentTokenResponse, AgentSessionModel
 # pyrefly: ignore [missing-import]
-from src.db import MongoServices
+from src.services import MongoServices
 # pyrefly: ignore [missing-import]
 from src.services import AcessTokenBearer, AuthServices
 
@@ -39,7 +39,7 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
             )
 
         # decode jwt token payload
-        payload = auth_services.decode_token(token_details)
+        payload = token_details if isinstance(token_details, dict) else auth_services.decode_token(token_details)
 
         room_name =  f"room-{str(uuid.uuid4())[:6]}"
         participant_identity = payload['user']['user_id']
