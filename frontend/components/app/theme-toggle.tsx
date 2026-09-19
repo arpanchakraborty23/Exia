@@ -1,7 +1,8 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { MonitorIcon, MoonIcon, SunIcon } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
+import { Moon, Sun, Monitor } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
 interface ThemeToggleProps {
@@ -10,49 +11,80 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div
+        className={cn(
+          'flex items-center h-8 w-[142px] px-1 rounded-xl border border-border bg-card/60 backdrop-blur-md opacity-60',
+          className
+        )}
+      >
+        <div className="h-5 w-full rounded-lg bg-muted animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div
+      role="radiogroup"
+      aria-label="Color scheme selection"
       className={cn(
-        'text-foreground bg-background flex w-full flex-row justify-end divide-x overflow-hidden rounded-full border',
+        'flex items-center p-1 rounded-xl border border-border bg-card/80 backdrop-blur-md shadow-xs select-none',
         className
       )}
     >
-      <span className="sr-only">Color scheme toggle</span>
-      <button type="button" onClick={() => setTheme('dark')} className="cursor-pointer p-1 pl-1.5">
-        <span className="sr-only">Enable dark color scheme</span>
-        <MoonIcon
-          suppressHydrationWarning
-          size={16}
-          weight="bold"
-          className={cn(theme !== 'dark' && 'opacity-25')}
-        />
-      </button>
       <button
         type="button"
         onClick={() => setTheme('light')}
-        className="cursor-pointer px-1.5 py-1"
+        title="Switch to Light theme"
+        aria-checked={theme === 'light'}
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 cursor-pointer text-xs font-mono',
+          theme === 'light'
+            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold shadow-xs border border-emerald-500/30'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+        )}
       >
-        <span className="sr-only">Enable light color scheme</span>
-        <SunIcon
-          suppressHydrationWarning
-          size={16}
-          weight="bold"
-          className={cn(theme !== 'light' && 'opacity-25')}
-        />
+        <Sun className="size-3.5" />
+        <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Light</span>
       </button>
+
+      <button
+        type="button"
+        onClick={() => setTheme('dark')}
+        title="Switch to Dark theme"
+        aria-checked={theme === 'dark'}
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 cursor-pointer text-xs font-mono',
+          theme === 'dark'
+            ? 'bg-emerald-500/15 text-emerald-400 font-semibold shadow-xs border border-emerald-500/30'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+        )}
+      >
+        <Moon className="size-3.5" />
+        <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Dark</span>
+      </button>
+
       <button
         type="button"
         onClick={() => setTheme('system')}
-        className="cursor-pointer p-1 pr-1.5"
+        title="Follow System theme"
+        aria-checked={theme === 'system'}
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 cursor-pointer text-xs font-mono',
+          theme === 'system'
+            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold shadow-xs border border-emerald-500/30'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+        )}
       >
-        <span className="sr-only">Enable system color scheme</span>
-        <MonitorIcon
-          suppressHydrationWarning
-          size={16}
-          weight="bold"
-          className={cn(theme !== 'system' && 'opacity-25')}
-        />
+        <Monitor className="size-3.5" />
+        <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Auto</span>
       </button>
     </div>
   );

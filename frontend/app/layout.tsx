@@ -58,6 +58,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           name="description"
           content="Personal LiveKit voice-agent and MCP control hub for Home Assistant"
         />
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" type="image/jpeg" href="/images/exia-logo.jpg" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="overflow-x-hidden bg-background text-foreground">
         <ThemeProvider

@@ -210,14 +210,14 @@ export function MCPView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-white font-mono">
+            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-foreground font-mono">
               MODEL CONTEXT PROTOCOL (MCP) REGISTRY
             </h1>
             <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
               TOOL BUS
             </span>
           </div>
-          <p className="text-xs md:text-sm text-zinc-400 mt-1">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
             Connect local stdio binaries and remote SSE servers. Exia invokes these tools in real-time during voice sessions.
           </p>
         </div>
@@ -226,7 +226,7 @@ export function MCPView() {
           <button
             onClick={fetchServers}
             disabled={isLoading}
-            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/[0.08] transition-all"
+            className="p-2 rounded-xl bg-card/80 hover:bg-white/[0.08] text-zinc-300 border border-border transition-all"
             title="Refresh"
           >
             <RefreshCw className={`size-4 ${isLoading ? 'animate-spin text-emerald-400' : ''}`} />
@@ -243,35 +243,35 @@ export function MCPView() {
 
       {/* Bento Status Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
+        <div className="p-4 rounded-2xl bg-card/80 border border-border backdrop-blur-xl">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <span>Configured Servers</span>
             <Cpu className="size-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-white mt-2">
-            {servers.length} <span className="text-xs font-normal text-zinc-500">active instances</span>
+          <div className="text-2xl font-bold font-mono text-foreground mt-2">
+            {servers.length} <span className="text-xs font-normal text-muted-foreground">active instances</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
+        <div className="p-4 rounded-2xl bg-card/80 border border-border backdrop-blur-xl">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <span>Armed Tools</span>
             <Wrench className="size-4 text-teal-400" />
           </div>
           <div className="text-2xl font-bold font-mono text-emerald-400 mt-2">
-            {totalActiveTools} <span className="text-xs font-normal text-zinc-500">callable functions</span>
+            {totalActiveTools} <span className="text-xs font-normal text-muted-foreground">callable functions</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
+        <div className="p-4 rounded-2xl bg-card/80 border border-border backdrop-blur-xl">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <span>Protocol Standard</span>
             <ShieldCheck className="size-4 text-cyan-400" />
           </div>
-          <div className="text-sm font-bold font-mono text-white mt-2">
+          <div className="text-sm font-bold font-mono text-foreground mt-2">
             Anthropic MCP 2024-11
           </div>
-          <div className="text-[10px] text-zinc-500 font-mono mt-0.5">STDIO / SSE Bidirectional</div>
+          <div className="text-[10px] text-muted-foreground font-mono mt-0.5">STDIO / SSE Bidirectional</div>
         </div>
       </div>
 
@@ -286,7 +286,7 @@ export function MCPView() {
       {/* Active Servers Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold font-mono text-foreground uppercase tracking-wider flex items-center gap-2">
             <Radio className="size-3.5 text-emerald-400" />
             <span>Active Server Connections ({servers.length})</span>
           </h2>
@@ -295,14 +295,14 @@ export function MCPView() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2].map((n) => (
-              <div key={n} className="h-44 rounded-2xl bg-white/[0.02] border border-white/[0.06] animate-pulse" />
+              <div key={n} className="h-44 rounded-2xl bg-card/80 border border-border animate-pulse" />
             ))}
           </div>
         ) : servers.length === 0 ? (
-          <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.01] space-y-3">
+          <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-border bg-white/[0.01] space-y-3">
             <Cpu className="size-10 text-zinc-600 mx-auto" />
-            <h3 className="font-semibold text-white">No MCP servers registered</h3>
-            <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+            <h3 className="font-semibold text-foreground">No MCP servers registered</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               Install a 1-click preset below or register a custom stdio command to give Exia tool-use capabilities.
             </p>
           </div>
@@ -317,8 +317,8 @@ export function MCPView() {
                   key={server.id}
                   className={`p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
                     server.enabled
-                      ? 'bg-white/[0.02] hover:bg-white/[0.04] border-white/[0.08] hover:border-emerald-500/30 shadow-xs'
-                      : 'bg-black/40 border-white/[0.04] opacity-60'
+                      ? 'bg-card/80 hover:bg-card/80 border-border hover:border-emerald-500/30 shadow-xs'
+                      : 'bg-card border-white/[0.04] opacity-60'
                   }`}
                 >
                   <div className="space-y-3">
@@ -329,20 +329,20 @@ export function MCPView() {
                           className={`size-9 rounded-xl flex items-center justify-center shrink-0 border ${
                             server.enabled
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                              : 'bg-white/[0.04] text-zinc-500 border-white/[0.06]'
+                              : 'bg-card/80 text-muted-foreground border-border'
                           }`}
                         >
                           {isStdio ? <Terminal className="size-4.5" /> : <Globe className="size-4.5" />}
                         </div>
                         <div className="truncate">
-                          <h3 className="font-bold text-sm text-white truncate font-mono">
+                          <h3 className="font-bold text-sm text-foreground truncate font-mono">
                             {server.name}
                           </h3>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-white/[0.05] text-zinc-400 border border-white/[0.08]">
+                            <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border">
                               {server.server_type}
                             </span>
-                            <span className="text-[11px] text-zinc-500 font-mono">
+                            <span className="text-[11px] text-muted-foreground font-mono">
                               {server.tools?.length || 4} tools
                             </span>
                           </div>
@@ -365,7 +365,7 @@ export function MCPView() {
                     </div>
 
                     {/* Command / URL */}
-                    <div className="p-2.5 rounded-xl bg-black/60 border border-white/[0.06] font-mono text-[11px] text-zinc-400 truncate">
+                    <div className="p-2.5 rounded-xl bg-card border border-border font-mono text-[11px] text-muted-foreground truncate">
                       <span className="text-zinc-600 select-none mr-1.5">$</span>
                       {server.command_or_url}
                     </div>
@@ -378,7 +378,7 @@ export function MCPView() {
                       ).map((tool, idx) => (
                         <span
                           key={idx}
-                          className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.03] text-zinc-400 border border-white/[0.06]"
+                          className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-card/80 text-muted-foreground border border-border"
                         >
                           {tool}
                         </span>
@@ -387,11 +387,11 @@ export function MCPView() {
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-white/[0.06] text-xs">
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-border text-xs">
                     <button
                       onClick={() => handleTestPing(server.id)}
                       disabled={isTesting || !server.enabled}
-                      className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-emerald-400 font-mono text-[11px] transition-colors disabled:opacity-40"
+                      className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-emerald-400 font-mono text-[11px] transition-colors disabled:opacity-40"
                     >
                       {isTesting ? (
                         <Loader2 className="size-3 animate-spin text-emerald-400" />
@@ -404,14 +404,14 @@ export function MCPView() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleOpenEdit(server)}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         title="Edit server"
                       >
                         <Edit3 className="size-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(server.id)}
-                        className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                         title="Delete server"
                       >
                         <Trash2 className="size-3.5" />
@@ -426,14 +426,14 @@ export function MCPView() {
       </div>
 
       {/* 1-Click Preset Catalog */}
-      <div className="space-y-4 pt-4 border-t border-white/[0.08]">
+      <div className="space-y-4 pt-4 border-t border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-sm font-bold font-mono text-foreground uppercase tracking-wider flex items-center gap-2">
               <Zap className="size-3.5 text-emerald-400" />
               <span>Recommended 1-Click MCP Presets</span>
             </h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Click any verified preset below to auto-populate configuration and connect.
             </p>
           </div>
@@ -445,26 +445,26 @@ export function MCPView() {
             return (
               <div
                 key={idx}
-                className="p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-emerald-500/30 transition-all duration-200 flex flex-col justify-between group"
+                className="p-4 rounded-2xl bg-card/80 hover:bg-muted border border-border hover:border-emerald-500/30 transition-all duration-200 flex flex-col justify-between group"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 group-hover:scale-105 transition-transform">
                       <Icon className="size-4" />
                     </div>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/[0.04] text-zinc-400 border border-white/[0.06]">
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-card/80 text-muted-foreground border border-border">
                       {preset.category}
                     </span>
                   </div>
-                  <h3 className="font-bold text-xs text-white font-mono">{preset.name}</h3>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">
+                  <h3 className="font-bold text-xs text-foreground font-mono">{preset.name}</h3>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
                     {preset.description}
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleOpenAdd(preset)}
-                  className="mt-4 w-full py-1.5 px-3 rounded-xl bg-white/[0.04] hover:bg-emerald-500/20 hover:text-emerald-300 text-zinc-300 text-xs font-mono font-medium border border-white/[0.08] hover:border-emerald-500/40 transition-all flex items-center justify-center gap-1.5"
+                  className="mt-4 w-full py-1.5 px-3 rounded-xl bg-card/80 hover:bg-emerald-500/20 hover:text-emerald-300 text-zinc-300 text-xs font-mono font-medium border border-border hover:border-emerald-500/40 transition-all flex items-center justify-center gap-1.5"
                 >
                   <Plus className="size-3.5" />
                   <span>Use Preset</span>
@@ -478,24 +478,24 @@ export function MCPView() {
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-lg bg-[#0a0e17] border border-white/[0.1] rounded-2xl p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+          <div className="w-full max-w-lg bg-muted/40 border border-border rounded-2xl p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center border border-emerald-500/25">
                   <Cpu className="size-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white font-mono">
+                  <h3 className="text-sm font-bold text-foreground font-mono">
                     {editingServer ? 'Edit MCP Server' : 'Register MCP Server'}
                   </h3>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-muted-foreground">
                     LiveKit voice agent will auto-discover callable tools
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="size-5" />
               </button>
@@ -509,19 +509,19 @@ export function MCPView() {
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
               <div>
-                <label className="block text-zinc-400 mb-1">Server Name</label>
+                <label className="block text-muted-foreground mb-1">Server Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Home Assistant IoT"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-black/40 border border-white/[0.08] rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-zinc-400 mb-1">Transport Protocol</label>
+                <label className="block text-muted-foreground mb-1">Transport Protocol</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -529,7 +529,7 @@ export function MCPView() {
                     className={`py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
                       serverType === 'stdio'
                         ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 font-bold'
-                        : 'bg-white/[0.02] text-zinc-400 border-white/[0.08] hover:text-white'
+                        : 'bg-card/80 text-muted-foreground border-border hover:text-foreground'
                     }`}
                   >
                     <Terminal className="size-3.5" />
@@ -541,7 +541,7 @@ export function MCPView() {
                     className={`py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
                       serverType === 'sse'
                         ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 font-bold'
-                        : 'bg-white/[0.02] text-zinc-400 border-white/[0.08] hover:text-white'
+                        : 'bg-card/80 text-muted-foreground border-border hover:text-foreground'
                     }`}
                   >
                     <Globe className="size-3.5" />
@@ -551,7 +551,7 @@ export function MCPView() {
               </div>
 
               <div>
-                <label className="block text-zinc-400 mb-1">
+                <label className="block text-muted-foreground mb-1">
                   {serverType === 'stdio' ? 'Shell Execution Command' : 'SSE Endpoint URL'}
                 </label>
                 <input
@@ -563,13 +563,13 @@ export function MCPView() {
                   }
                   value={commandOrUrl}
                   onChange={(e) => setCommandOrUrl(e.target.value)}
-                  className="w-full bg-black/40 border border-white/[0.08] rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-zinc-400 mb-1">
+                <label className="block text-muted-foreground mb-1">
                   Bearer Token / Secret (Optional)
                 </label>
                 <input
@@ -577,7 +577,7 @@ export function MCPView() {
                   placeholder="Bearer token if endpoint requires auth"
                   value={authToken}
                   onChange={(e) => setAuthToken(e.target.value)}
-                  className="w-full bg-black/40 border border-white/[0.08] rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
                 />
               </div>
 
@@ -587,18 +587,18 @@ export function MCPView() {
                   id="enabled"
                   checked={enabled}
                   onChange={(e) => setEnabled(e.target.checked)}
-                  className="rounded border-zinc-700 text-emerald-500 focus:ring-emerald-500 bg-black/40"
+                  className="rounded border-zinc-700 text-emerald-500 focus:ring-emerald-500 bg-card"
                 />
                 <label htmlFor="enabled" className="text-zinc-300 cursor-pointer">
                   Activate server immediately upon saving
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/[0.08]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white transition-colors"
+                  className="px-4 py-2 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
