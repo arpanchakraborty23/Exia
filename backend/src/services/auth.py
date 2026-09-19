@@ -29,16 +29,11 @@ class UserServices:
         """
         email =email.lower()
         try:
-            collection = self.db.connect()
-            user_data = collection.find_one({"email": email})
-
-            return user_data 
+            return self.db.find_one({"email": email})
         
         except Exception as e:
             logger.error(e)
-        
-        finally:
-            self.db.disconnect()
+            return None
 
     async def user_exist(self,email)-> bool:
         """validate User Data"""
@@ -76,9 +71,8 @@ class UserServices:
                 hash_password=hash_password
             )
 
-            # Insert Data to database
-            collection = self.db.connect()
-            collection.insert_one(new_user.model_dump())
+            # Insert Data to database (connect/disconnect handled inside)
+            self.db.insert_one(new_user.model_dump())
 
             logger.info("New User created")
 
@@ -89,25 +83,53 @@ class UserServices:
             logger.error(e)
             raise e
 
-        finally:
-            self.db.disconnect()
+    async def update_user_password(self,user_id,email:str,new_password:str) -> bool:
+        try:
+            filter_criteria = {
+                "user_id": user_id,
+                "email" : email
+                }
 
+            updated_password = {
+                "$set" :{
+                    "hash_password": genrate_password_hash(new_password)
+                }
+            }
+
+            self.db.update_one(filter_criteria, updated_password)
+            logger.info(f"User {user_id} password updated")
+
+            return True
+
+        except Exception as e:
+            logger.error(e)
+            raise e
     
+
+
+
+
+
+
+
+
 class AuthServices:
     def __init__(self):
         self.jwt_secret = settings.jwt_secret
         self.jwt_algorithm = settings.jwt_algorithm
     
-    async def generate_access_token(self,user_data: dict, expairy: timedelta = None, refresh_token: bool = False) -> str:
+    async def generate_access_token(self,user_data: dict, expiry: timedelta | None = None, refresh_token: bool = False, expairy: timedelta | None = None) -> str:
         """
         Generate access token.
         Return: Access Token
         """
         try:
+            # Backward compat: old callers used misspelled `expairy` kwarg.
+            effective_expiry = expiry if expiry is not None else expairy
             payload = {
                 "user": user_data,
-                "exp": datetime.now() + (expairy if expairy is not None else timedelta(hours=1)),
-                "jit": str(uuid.uuid4()),
+                "exp": datetime.now(timezone.utc) + (effective_expiry if effective_expiry else timedelta(hours=1)),
+                "jti": str(uuid.uuid4()),
                 "refresh": refresh_token
             }
             

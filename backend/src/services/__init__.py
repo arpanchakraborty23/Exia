@@ -7,7 +7,8 @@ __all__ = [
     "MongoServices",
     "UserServices",
     "AuthServices",
-    "AcessTokenBearer",
+    "AccessTokenBearer",
+    "RefreshTokenBearer",
     "verify_password",
     "genrate_password_hash",
 ]

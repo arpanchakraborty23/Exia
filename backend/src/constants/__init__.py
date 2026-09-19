@@ -9,6 +9,8 @@ __all__ = [
     "LoginUserRequest",
     "LoginUserResponse",
     "CreateNewUserModel",
+    "NewPasswordRequest",
+    "NewPasswordResponse",
     "AgentTokenRequest",
     "AgentTokenResponse",
     "AgentSessionModel"

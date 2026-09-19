@@ -9,13 +9,13 @@ from src.constants import get_settings, AgentTokenRequest, AgentTokenResponse, A
 # pyrefly: ignore [missing-import]
 from src.services import MongoServices
 # pyrefly: ignore [missing-import]
-from src.services import AcessTokenBearer, AuthServices
+from src.services import AccessTokenBearer, AuthServices
 
 # intialization
 settings = get_settings()
 db_service = MongoServices(url=settings.mongodb_uri,db=settings.mongodb_database,collection=settings.mongodb_session_collection or "sessions")
 auth_services = AuthServices()
-access_token_bearer = AcessTokenBearer()
+access_token_bearer = AccessTokenBearer()
 logger = logging.getLogger(__name__)
 
 api_router = APIRouter(prefix="/api", tags=["Token"])
@@ -63,25 +63,23 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
 
 
 
-        # Optional DB recording if configured
-        if db_service.connect():
-            try:
-                # Session Data
-                session_data = AgentSessionModel(
-                    session_id =room_name,
-                    user_id = participant_identity,
-                    name = participant_name,
-                    token = participant_token,
-                    conversation = [],
-                    session_summary = None
-                )
+        # Optional DB recording (best-effort: never fail token creation on DB error)
+        try:
+            # Session Data
+            session_data = AgentSessionModel(
+                session_id =room_name,
+                user_id = participant_identity,
+                name = participant_name,
+                token = participant_token,
+                conversation = [],
+                session_summary = None
+            )
 
-                # Insert Session data
-                db_service.insert_one(session_data.model_dump())
+            # Insert Session data (connect/disconnect handled inside)
+            db_service.insert_one(session_data.model_dump())
 
-            except Exception as db_err:
-                logger.error(f"Failed to record session in MongoDB: {db_err}")
-                
+        except Exception as db_err:
+            logger.error(f"Failed to record session in MongoDB: {db_err}")
 
         return AgentTokenResponse(
             user_id=participant_identity,
@@ -94,6 +92,3 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
     except HTTPException as e:
         logger.error(f"Agent Session Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-    finally:
-        db_service.disconnect()

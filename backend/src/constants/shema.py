@@ -27,6 +27,13 @@ class LoginUserResponse(BaseModel):
     user : dict = None
 
 
+class NewPasswordRequest(BaseModel):
+    new_password: str = None    
+
+class NewPasswordResponse(BaseModel):
+    message : str = None 
+
+
 # livekit Session token
 class AgentTokenRequest(BaseModel):
     user_id: str = None
