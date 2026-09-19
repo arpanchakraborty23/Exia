@@ -36,12 +36,12 @@ class NewPasswordResponse(BaseModel):
 
 # livekit Session token
 class AgentTokenRequest(BaseModel):
-    user_id: str = None
-    name: str = None
+    room_name: Optional[str] = None
 
 
 class AgentTokenResponse(BaseModel):
-    user_id : str = None
+    room_name : Optional[str] = None
+    user_id : str = None    
     server_url: str = None
     session_id: str = None
     token : str = None

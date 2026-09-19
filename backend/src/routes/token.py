@@ -41,7 +41,8 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         # decode jwt token payload
         payload = token_details if isinstance(token_details, dict) else auth_services.decode_token(token_details)
 
-        room_name =  f"room-{str(uuid.uuid4())[:6]}"
+        room_name = request.get("room_name","unlisted")
+        session_name =  f"room-{str(uuid.uuid4())[:6]}"
         participant_identity = payload['user']['user_id']
         participant_name = payload['user']['name']
 
@@ -67,7 +68,8 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         try:
             # Session Data
             session_data = AgentSessionModel(
-                session_id =room_name,
+                room_name=room_name,
+                session_id =session_id,
                 user_id = participant_identity,
                 name = participant_name,
                 token = participant_token,
