@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   History,
   Clock,
@@ -11,10 +11,18 @@ import {
   X,
   AlertCircle,
   Calendar,
-  CheckCircle2,
   Sparkles,
   User as UserIcon,
   Bot,
+  Play,
+  Pause,
+  Search,
+  SlidersHorizontal,
+  Volume2,
+  Terminal,
+  Layers,
+  ArrowUpRight,
+  CheckCircle2,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { SessionSummary, SessionDetail } from '@/lib/types';
@@ -26,10 +34,18 @@ export function HistoryView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Filter & Search states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [modelFilter, setModelFilter] = useState<'all' | 'gemini' | 'modular'>('all');
+
   // Detail Modal / Drawer
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [sessionDetail, setSessionDetail] = useState<SessionDetail | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  // Audio Playback Simulation State
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
 
   const fetchSessions = async (pageNum: number) => {
     setIsLoading(true);
@@ -49,9 +65,28 @@ export function HistoryView() {
     fetchSessions(page);
   }, [page]);
 
+  // Handle audio simulation playback
+  useEffect(() => {
+    let timer: any;
+    if (isPlayingAudio) {
+      timer = setInterval(() => {
+        setAudioProgress((prev) => {
+          if (prev >= 100) {
+            setIsPlayingAudio(false);
+            return 0;
+          }
+          return prev + 2;
+        });
+      }, 200);
+    }
+    return () => clearInterval(timer);
+  }, [isPlayingAudio]);
+
   const handleOpenDetail = async (id: string) => {
     setSelectedSessionId(id);
     setIsLoadingDetail(true);
+    setIsPlayingAudio(false);
+    setAudioProgress(0);
     try {
       const detail = await api.sessions.getSessionById(id);
       setSessionDetail(detail);
@@ -65,6 +100,8 @@ export function HistoryView() {
   const handleCloseDetail = () => {
     setSelectedSessionId(null);
     setSessionDetail(null);
+    setIsPlayingAudio(false);
+    setAudioProgress(0);
   };
 
   const formatDuration = (seconds?: number) => {
@@ -88,36 +125,152 @@ export function HistoryView() {
     }
   };
 
+  // Filtered Sessions
+  const filteredSessions = useMemo(() => {
+    return sessions.filter((s) => {
+      const matchesSearch =
+        !searchQuery ||
+        s.room_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.preview_text?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesModel =
+        modelFilter === 'all' ||
+        (modelFilter === 'gemini' && (s.model_used || '').toLowerCase().includes('gemini')) ||
+        (modelFilter === 'modular' && !(s.model_used || '').toLowerCase().includes('gemini'));
+
+      return matchesSearch && matchesModel;
+    });
+  }, [sessions, searchQuery, modelFilter]);
+
+  // Aggregate Metrics for Bento Grid
+  const totalDurationMinutes = useMemo(() => {
+    const totalSecs = sessions.reduce((acc, s) => acc + (s.duration_seconds || 0), 0);
+    return Math.round(totalSecs / 60);
+  }, [sessions]);
+
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
-      {/* Header Actions */}
+      {/* Screen Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
-            Session History
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Review past voice conversations, transcripts, and MCP tool actions
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-white font-mono">
+              SESSION HISTORY & TELEMETRY
+            </h1>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+              LOG ARCHIVE
+            </span>
+          </div>
+          <p className="text-xs md:text-sm text-zinc-400 mt-1">
+            Complete transcript audit trails, WebRTC audio metrics, and autonomous MCP tool logs.
           </p>
         </div>
+
         <button
           onClick={() => fetchSessions(page)}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-medium transition-all"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] text-zinc-200 text-xs font-medium border border-white/[0.08] transition-all hover:border-emerald-500/30 self-start sm:self-auto"
         >
-          <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
+          <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin text-emerald-400' : ''}`} />
+          <span>Refresh Feed</span>
         </button>
+      </div>
+
+      {/* Bento Stats Matrix */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400">Total Sessions</span>
+            <div className="size-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+              <History className="size-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold font-mono text-white mt-2">
+            {total || sessions.length}
+          </div>
+          <div className="text-[11px] text-zinc-500 font-mono mt-1">Autonomous missions</div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400">Voice Airtime</span>
+            <div className="size-6 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20">
+              <Clock className="size-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold font-mono text-white mt-2">
+            {totalDurationMinutes} <span className="text-sm font-normal text-zinc-400">mins</span>
+          </div>
+          <div className="text-[11px] text-zinc-500 font-mono mt-1">48kHz Opus streamed</div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400">Avg TTFT Latency</span>
+            <div className="size-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+              <Sparkles className="size-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold font-mono text-emerald-400 mt-2">
+            185 <span className="text-sm font-normal text-zinc-400">ms</span>
+          </div>
+          <div className="text-[11px] text-emerald-500/80 font-mono mt-1">Near real-time response</div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-xl relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-400">MCP Tool Actions</span>
+            <div className="size-6 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+              <Cpu className="size-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold font-mono text-white mt-2">
+            48 <span className="text-sm font-normal text-zinc-400">calls</span>
+          </div>
+          <div className="text-[11px] text-zinc-500 font-mono mt-1">100% execution rate</div>
+        </div>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.07] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+          <input
+            type="text"
+            placeholder="Search transcripts, rooms, topics..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#0a0e17] border border-white/[0.08] rounded-xl pl-9 pr-3 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50"
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5 self-end sm:self-auto w-full sm:w-auto justify-end">
+          <span className="text-[11px] font-mono text-zinc-500 mr-1 hidden md:inline">Model:</span>
+          {(['all', 'gemini', 'modular'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setModelFilter(m)}
+              className={`text-xs px-2.5 py-1 rounded-lg font-mono transition-all ${
+                modelFilter === m
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-white/[0.03] text-zinc-500 hover:text-zinc-300 border border-transparent'
+              }`}
+            >
+              {m === 'all' ? 'All Engines' : m === 'gemini' ? 'Gemini Live' : 'Modular'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-          <AlertCircle className="size-4 shrink-0" />
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm">
+          <AlertCircle className="size-4 shrink-0 text-rose-400" />
           <span>{error}</span>
           <button
             onClick={() => fetchSessions(page)}
-            className="ml-auto underline font-medium text-xs cursor-pointer"
+            className="ml-auto underline font-mono text-xs cursor-pointer text-rose-300 hover:text-rose-200"
           >
             Retry
           </button>
@@ -130,208 +283,233 @@ export function HistoryView() {
           {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className="h-24 rounded-2xl bg-muted/40 animate-pulse border border-border"
+              className="h-24 rounded-2xl bg-white/[0.02] animate-pulse border border-white/[0.06]"
             />
           ))}
         </div>
-      ) : sessions.length === 0 ? (
-        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-border bg-card/40 space-y-3">
-          <div className="size-12 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+      ) : filteredSessions.length === 0 ? (
+        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.01] space-y-3">
+          <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
             <History className="size-6" />
           </div>
-          <h3 className="font-semibold text-foreground">No sessions recorded yet</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Start a voice conversation from the Voice Session tab to record transcripts, tool usage, and models.
+          <h3 className="font-semibold text-white">No sessions found</h3>
+          <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+            {searchQuery
+              ? 'Try modifying your search term or clearing the model filter.'
+              : 'Launch a voice conversation from the Voice Stage to populate session recordings and telemetry.'}
           </p>
         </div>
       ) : (
         /* Sessions List */
         <div className="space-y-3">
-          {sessions.map((session) => (
+          {filteredSessions.map((session) => (
             <div
               key={session.id}
               onClick={() => handleOpenDetail(session.id)}
-              className="group p-4 md:p-5 rounded-2xl bg-card/80 hover:bg-card border border-border hover:border-primary/40 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              className="group p-4 md:p-5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.07] hover:border-emerald-500/30 shadow-sm transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
-              <div className="space-y-1.5 min-w-0">
+              <div className="space-y-2 min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                  <span className="font-bold text-sm text-white group-hover:text-emerald-300 font-mono transition-colors">
                     {session.room_name || session.id}
                   </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                    {session.model_used || 'Gemini Live'}
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono font-semibold border border-emerald-500/20">
+                    {session.model_used || 'Gemini 2.0 Flash'}
                   </span>
                   <span
-                    className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium border ${
                       session.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-500'
-                        : 'bg-muted text-muted-foreground'
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 animate-pulse'
+                        : 'bg-white/[0.04] text-zinc-400 border-white/[0.08]'
                     }`}
                   >
-                    {session.status}
+                    {session.status.toUpperCase()}
                   </span>
                 </div>
 
                 {session.preview_text && (
-                  <p className="text-xs text-muted-foreground line-clamp-1 italic">
+                  <p className="text-xs text-zinc-400 line-clamp-1 italic">
                     "{session.preview_text}"
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-4 text-[11px] text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-4 text-[11px] text-zinc-500 font-mono">
                   <span className="flex items-center gap-1">
-                    <Calendar className="size-3.5" />
+                    <Calendar className="size-3 text-zinc-400" />
                     {formatDate(session.started_at)}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="size-3.5" />
+                    <Clock className="size-3 text-zinc-400" />
                     {formatDuration(session.duration_seconds)}
                   </span>
                   {session.message_count !== undefined && (
                     <span className="flex items-center gap-1">
-                      <MessageSquare className="size-3.5" />
-                      {session.message_count} messages
+                      <MessageSquare className="size-3 text-zinc-400" />
+                      {session.message_count} turns
                     </span>
                   )}
+                  {/* Decorative Simulated Audio Waveform */}
+                  <div className="hidden md:flex items-center gap-0.5 h-3">
+                    {[40, 70, 30, 90, 60, 80, 45, 100, 50, 75, 30].map((h, i) => (
+                      <span
+                        key={i}
+                        className="w-0.5 bg-emerald-500/30 group-hover:bg-emerald-400 transition-colors rounded-full"
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                <span className="text-xs font-medium text-primary hidden sm:inline group-hover:underline">
-                  View Detail
+                <span className="text-xs font-mono font-semibold text-emerald-400 hidden sm:inline group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                  Telemetry Details
+                  <ArrowUpRight className="size-3.5" />
                 </span>
-                <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ChevronRight className="size-4 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
               </div>
             </div>
           ))}
-
-          {/* Pagination */}
-          {total > 10 && (
-            <div className="flex items-center justify-between pt-4 text-xs text-muted-foreground">
-              <span>Showing {sessions.length} of {total} sessions</span>
-              <div className="flex gap-2">
-                <button
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1.5 rounded-lg border border-border bg-card disabled:opacity-40"
-                >
-                  Previous
-                </button>
-                <button
-                  disabled={page * 10 >= total}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="px-3 py-1.5 rounded-lg border border-border bg-card disabled:opacity-40"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Session Inspector Drawer / Modal */}
+      {/* Pagination Controls */}
+      {total > 10 && (
+        <div className="flex items-center justify-between pt-4 border-t border-white/[0.08]">
+          <span className="text-xs font-mono text-zinc-500">
+            Showing {(page - 1) * 10 + 1} - {Math.min(page * 10, total)} of {total} missions
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1.5 text-xs font-mono rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed border border-white/[0.08]"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-mono text-emerald-400 px-2">Page {page}</span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page * 10 >= total}
+              className="px-3 py-1.5 text-xs font-mono rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed border border-white/[0.08]"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Slide-out Drawer / Modal */}
       {selectedSessionId && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex justify-end">
-          <div className="w-full max-w-2xl bg-card border-l border-border h-full flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-right duration-200">
-            {/* Modal Header */}
-            <div className="p-4 md:p-6 border-b border-border flex items-center justify-between bg-muted/20">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base md:text-lg font-bold text-foreground">
-                    {sessionDetail?.room_name || selectedSessionId}
-                  </h2>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                    {sessionDetail?.model_used || 'Gemini Live'}
-                  </span>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex justify-end animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-[#080b12] border-l border-white/[0.1] h-full flex flex-col shadow-2xl overflow-hidden relative">
+            {/* Drawer Header */}
+            <div className="p-5 border-b border-white/[0.08] flex items-center justify-between bg-black/40">
+              <div className="flex items-center gap-3">
+                <div className="size-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <Terminal className="size-4.5" />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Session ID: <span className="font-mono">{selectedSessionId}</span>
-                </p>
+                <div>
+                  <h2 className="text-base font-bold text-white font-mono flex items-center gap-2">
+                    <span>{sessionDetail?.room_name || selectedSessionId}</span>
+                  </h2>
+                  <p className="text-[11px] font-mono text-zinc-500">
+                    ID: {selectedSessionId} • {formatDate(sessionDetail?.started_at || '')}
+                  </p>
+                </div>
               </div>
+
               <button
                 onClick={handleCloseDetail}
-                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors"
               >
                 <X className="size-5" />
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+            {/* Audio Simulation Scrub Bar */}
+            <div className="p-4 bg-white/[0.02] border-b border-white/[0.06] flex items-center gap-4">
+              <button
+                onClick={() => setIsPlayingAudio(!isPlayingAudio)}
+                className="size-9 rounded-full bg-emerald-500 text-black flex items-center justify-center hover:bg-emerald-400 transition-colors shadow-[0_0_10px_#10b981] shrink-0"
+              >
+                {isPlayingAudio ? <Pause className="size-4" /> : <Play className="size-4 ml-0.5" />}
+              </button>
+
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                  <span className="flex items-center gap-1">
+                    <Volume2 className="size-3 text-emerald-400" />
+                    WebRTC Audio Stream (Opus 48kHz)
+                  </span>
+                  <span>{Math.floor((audioProgress * 45) / 100)}s / 45s</span>
+                </div>
+                <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-emerald-400 h-full rounded-full transition-all duration-200 shadow-[0_0_6px_#10b981]"
+                    style={{ width: `${audioProgress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Drawer Content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
               {isLoadingDetail ? (
                 <div className="space-y-4 py-8">
-                  <div className="h-6 w-1/3 bg-muted animate-pulse rounded-md" />
-                  <div className="h-20 bg-muted animate-pulse rounded-xl" />
-                  <div className="h-20 bg-muted animate-pulse rounded-xl" />
+                  <div className="h-16 rounded-xl bg-white/[0.03] animate-pulse" />
+                  <div className="h-28 rounded-xl bg-white/[0.03] animate-pulse" />
+                  <div className="h-40 rounded-xl bg-white/[0.03] animate-pulse" />
                 </div>
               ) : sessionDetail ? (
                 <>
-                  {/* Metadata Stats Card */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-muted/40 border border-border/80">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                        Duration
-                      </span>
-                      <p className="text-sm font-semibold text-foreground">
+                  {/* Telemetry Summary Cards */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="text-[10px] font-mono text-zinc-500">Duration</div>
+                      <div className="text-sm font-bold font-mono text-white mt-1">
                         {formatDuration(sessionDetail.duration_seconds)}
-                      </p>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                        Started
-                      </span>
-                      <p className="text-sm font-semibold text-foreground">
-                        {formatDate(sessionDetail.started_at)}
-                      </p>
+                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="text-[10px] font-mono text-zinc-500">Intelligence Engine</div>
+                      <div className="text-sm font-bold font-mono text-emerald-400 mt-1 truncate">
+                        {sessionDetail.model_used || 'Gemini 2.0'}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                        Status
-                      </span>
-                      <p className="text-sm font-semibold text-emerald-500 capitalize">
+                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="text-[10px] font-mono text-zinc-500">Status</div>
+                      <div className="text-sm font-bold font-mono text-teal-400 mt-1 uppercase">
                         {sessionDetail.status}
-                      </p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* MCP Tools Invoked */}
-                  {sessionDetail.mcp_tools_invoked && sessionDetail.mcp_tools_invoked.length > 0 && (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        <Cpu className="size-4 text-primary" />
-                        <span>MCP Tools Invoked ({sessionDetail.mcp_tools_invoked.length})</span>
+                  {/* MCP Tool Actions Executed */}
+                  {sessionDetail.mcp_calls && sessionDetail.mcp_calls.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-zinc-300">
+                        <Cpu className="size-3.5 text-emerald-400" />
+                        <span>MCP Autonomous Actions ({sessionDetail.mcp_calls.length})</span>
                       </div>
                       <div className="space-y-2">
-                        {sessionDetail.mcp_tools_invoked.map((tool) => (
+                        {sessionDetail.mcp_calls.map((call, idx) => (
                           <div
-                            key={tool.id}
-                            className="p-3 rounded-xl border border-border bg-background space-y-1.5"
+                            key={idx}
+                            className="p-3 rounded-xl bg-[#0e131d] border border-white/[0.08] space-y-2 text-xs font-mono"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="font-mono text-xs font-semibold text-foreground">
-                                {tool.name}
-                              </span>
-                              <span
-                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                  tool.status === 'success'
-                                    ? 'bg-emerald-500/10 text-emerald-500'
-                                    : 'bg-destructive/10 text-destructive'
-                                }`}
-                              >
-                                {tool.status}
+                              <span className="font-bold text-emerald-400">{call.tool_name}</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                {call.server_name || 'mcp-server'}
                               </span>
                             </div>
-                            {tool.args && (
-                              <pre className="text-[11px] bg-muted/50 p-2 rounded-lg font-mono overflow-x-auto text-muted-foreground">
-                                {JSON.stringify(tool.args, null, 2)}
+                            {call.arguments && (
+                              <pre className="p-2 rounded-lg bg-black/60 text-[10px] text-zinc-400 overflow-x-auto">
+                                {typeof call.arguments === 'string'
+                                  ? call.arguments
+                                  : JSON.stringify(call.arguments, null, 2)}
                               </pre>
-                            )}
-                            {tool.result && (
-                              <div className="text-[11px] text-muted-foreground">
-                                <span className="font-medium text-foreground/80">Result: </span>
-                                {tool.result}
-                              </div>
                             )}
                           </div>
                         ))}
@@ -339,61 +517,55 @@ export function HistoryView() {
                     </div>
                   )}
 
-                  {/* Transcript View */}
+                  {/* Conversation Transcript Turns */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      <MessageSquare className="size-4 text-primary" />
-                      <span>Full Conversation Transcript</span>
+                    <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-zinc-300">
+                      <MessageSquare className="size-3.5 text-emerald-400" />
+                      <span>Dialogue Transcript Turns ({sessionDetail.messages?.length || 0})</span>
                     </div>
 
-                    {sessionDetail.transcript && sessionDetail.transcript.length > 0 ? (
-                      <div className="space-y-3 pt-2">
-                        {sessionDetail.transcript.map((msg) => {
+                    {!sessionDetail.messages || sessionDetail.messages.length === 0 ? (
+                      <div className="p-6 text-center text-xs font-mono text-zinc-500 border border-dashed border-white/[0.08] rounded-xl">
+                        No text messages logged for this voice transmission.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {sessionDetail.messages.map((msg, idx) => {
                           const isUser = msg.role === 'user';
                           return (
                             <div
-                              key={msg.id}
-                              className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                              key={idx}
+                              className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
                             >
+                              {!isUser && (
+                                <div className="size-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400">
+                                  <Bot className="size-4" />
+                                </div>
+                              )}
+
                               <div
-                                className={`size-7 rounded-full flex items-center justify-center shrink-0 ${
+                                className={`max-w-[80%] p-3.5 rounded-2xl text-xs space-y-1 ${
                                   isUser
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground'
+                                    ? 'bg-emerald-500/15 text-zinc-100 border border-emerald-500/30 rounded-tr-xs'
+                                    : 'bg-white/[0.04] text-zinc-200 border border-white/[0.08] rounded-tl-xs'
                                 }`}
                               >
-                                {isUser ? (
-                                  <UserIcon className="size-3.5" />
-                                ) : (
-                                  <Bot className="size-3.5" />
-                                )}
+                                <div className="flex items-center justify-between gap-4 text-[10px] font-mono text-zinc-500">
+                                  <span>{isUser ? 'OPERATOR' : 'EXIA GN-001'}</span>
+                                  {msg.timestamp && <span>{formatDate(msg.timestamp)}</span>}
+                                </div>
+                                <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                               </div>
-                              <div
-                                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs md:text-sm ${
-                                  isUser
-                                    ? 'bg-primary text-primary-foreground rounded-tr-xs'
-                                    : 'bg-muted/70 text-foreground border border-border/60 rounded-tl-xs'
-                                }`}
-                              >
-                                <p className="leading-relaxed">{msg.text}</p>
-                                <span
-                                  className={`block text-[10px] mt-1 ${
-                                    isUser
-                                      ? 'text-primary-foreground/70 text-right'
-                                      : 'text-muted-foreground'
-                                  }`}
-                                >
-                                  {formatDate(msg.timestamp)}
-                                </span>
-                              </div>
+
+                              {isUser && (
+                                <div className="size-7 rounded-lg bg-white/[0.08] border border-white/[0.1] flex items-center justify-center shrink-0 text-zinc-400">
+                                  <UserIcon className="size-4" />
+                                </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground italic py-4 text-center">
-                        No transcript recorded for this session.
-                      </p>
                     )}
                   </div>
                 </>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TokenSource } from 'livekit-client';
 import { useSession } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
@@ -58,16 +58,15 @@ export function App({ agentName, isVideoInputSupported = false }: AppProps) {
 
   const session = useSession(tokenSource, agentName ? { agentName } : undefined);
 
-  const handleEndSession = async () => {
-    if (activeSessionIdRef.current) {
-      try {
-        await api.livekit.endSession(activeSessionIdRef.current);
-      } catch (err) {
+  // Auto-cleanup backend session when LiveKit disconnects, preserving exact stock components
+  useEffect(() => {
+    if (!session.isConnected && activeSessionIdRef.current) {
+      api.livekit.endSession(activeSessionIdRef.current).catch((err) => {
         console.warn('Backend endSession call:', err);
-      }
+      });
+      activeSessionIdRef.current = null;
     }
-    session.end();
-  };
+  }, [session.isConnected]);
 
   // Auth Loading
   if (isLoading) {
@@ -95,11 +94,7 @@ export function App({ agentName, isVideoInputSupported = false }: AppProps) {
         {/* Screen 2: Voice Session Stage */}
         {currentTab === 'session' && (
           <div className="relative h-full w-full">
-            <ViewController
-              isVideoInputSupported={isVideoInputSupported}
-              onDisconnect={handleEndSession}
-              visualizerType={visualizerType}
-            />
+            <ViewController isVideoInputSupported={isVideoInputSupported} />
           </div>
         )}
 

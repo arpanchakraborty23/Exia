@@ -137,12 +137,12 @@ class AuthServices:
         Return: Access Token Payload
         """
         try:
-            token = jwt.decode(
+            token_data = jwt.decode(
                 token,
                 key=self.jwt_secret,
                 algorithms=[self.jwt_algorithm]
             )
-            return token
+            return token_data
         except jwt.PyJWTError as e:
             logger.error(e)
             raise e

@@ -9,11 +9,12 @@ from src.constants import get_settings, AgentTokenRequest, AgentTokenResponse, A
 # pyrefly: ignore [missing-import]
 from src.db import MongoServices
 # pyrefly: ignore [missing-import]
-from src.services import AcessTokenBearer
+from src.services import AcessTokenBearer, AuthServices
 
 # intialization
 settings = get_settings()
 db_service = MongoServices(url=settings.mongodb_uri,db=settings.mongodb_database,collection=settings.mongodb_session_collection or "sessions")
+auth_services = AuthServices()
 access_token_bearer = AcessTokenBearer()
 logger = logging.getLogger(__name__)
 
@@ -37,9 +38,12 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
                 detail="Server configuration error: LiveKit credentials missing",
             )
 
-        room_name = request.room_name or f"room-{str(uuid.uuid4())[:6]}"
-        participant_identity = request.user_id
-        participant_name = request.name 
+        # decode jwt token payload
+        payload = auth_services.decode_token(token_details)
+
+        room_name =  f"room-{str(uuid.uuid4())[:6]}"
+        participant_identity = payload['user']['user_id']
+        participant_name = payload['user']['name']
 
         livekit_token = (
             api.AccessToken(livekit_api_key, livekit_secret_key)
