@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.aliases import AliasChoices
-from typing import Optional, Dict
+from typing import Literal, Optional, Dict, List
 
 
 # Auth
@@ -73,4 +73,59 @@ class MCPServerAddResponse(BaseModel):
     )
     server_url: Optional[str] = None
     server_status: Optional[str] = None
+    message: Optional[str] = None
+
+
+class MCPServerUpdateRequest(BaseModel):
+    server_name: Optional[str] = None
+    server_url: Optional[str] = None
+    server_key: Optional[str] = None
+
+class MCPServerUpdateResponse(BaseModel):
+    new_server_name: Optional[str] = None
+    new_server_url: Optional[str] = None
+    new_server_key: Optional[str] = None
+
+
+# mcp server listing (one item, never exposes server_key)
+class MCPServerListItem(BaseModel):
+    server_name: Optional[str] = None
+    transport: Optional[str] = None
+    server_url: Optional[str] = None
+    status: Optional[str] = None
+    mcp_tool_count: Optional[int] = None
+
+
+class MCPServerListResponse(BaseModel):
+    servers: List[MCPServerListItem] = Field(default_factory=list)
+    count: int = 0
+
+
+# tools of a specific mcp server
+class MCPServerToolInfo(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+
+class MCPServerToolsResponse(BaseModel):
+    server_name: Optional[str] = None
+    server_url: Optional[str] = None
+    status: Optional[str] = None
+    tools: List[MCPServerToolInfo] = Field(default_factory=list)
+    tools_count: int = 0
+
+
+# active / inactive toggle (status-only update in db)
+class MCPServerStatusUpdateRequest(BaseModel):
+    status: Literal["active", "inactive"]
+
+
+class MCPServerStatusUpdateResponse(BaseModel):
+    server_name: Optional[str] = None
+    status: Optional[str] = None
+    message: Optional[str] = None
+
+
+class MCPServerDeleteResponse(BaseModel):
+    server_name: Optional[str] = None
     message: Optional[str] = None

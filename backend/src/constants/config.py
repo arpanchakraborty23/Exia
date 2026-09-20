@@ -23,10 +23,15 @@ class Settings(BaseSettings):
     jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     
-    # livekit 
+    # livekit
     livekit_api_key: str = ""
     livekit_api_secret: str = ""
-    livekit_api_host: str = ""
+    livekit_api_host: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "livekit_api_host", "livekit_url", "livekit_host", "livekit_api_url"
+        ),
+    )
 
     # Mongodb
     mongodb_uri: str = ""

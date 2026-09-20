@@ -20,10 +20,10 @@ class AgentSessionModel(BaseModel):
     session_id: str = Field(...,description="agent session id")
     name     : str = Field(...,description="participant name")
     token    : str = Field(...,description="agent token")
-    session_summary : Optional[str] = Field(None,description="summary") 
+    session_summary : Optional[str] = Field(None,description="summary")
     conversation : Optional[Dict] = Field(None,description="session conversation")
-    created_at : datetime = Field(default_factory=datetime.now())
-    updated_at : datetime = Field(default_factory=datetime.now())
+    created_at : datetime = Field(default_factory=datetime.now)
+    updated_at : datetime = Field(default_factory=datetime.now)
 
     
     

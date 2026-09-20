@@ -20,18 +20,18 @@ logger = logging.getLogger(__name__)
 
 api_router = APIRouter(prefix="/api", tags=["Token"])
 
-# livekit credentials
-livekit_api_key = settings.livekit_api_key
-livekit_secret_key = settings.livekit_api_secret
-livekit_url = settings.livekit_api_host
-
-
 @api_router.post("/agent/token",response_model=AgentTokenResponse, status_code=status.HTTP_201_CREATED)
 async def token(request: AgentTokenRequest, token_details = Depends(access_token_bearer)):
     """
     Agent Token request
     """
     try:
+        # Read fresh settings per-request (module-level values go stale after .env changes)
+        current = get_settings()
+        livekit_api_key = current.livekit_api_key
+        livekit_secret_key = current.livekit_api_secret
+        livekit_url = current.livekit_api_host
+
         if not all([livekit_api_key, livekit_secret_key, livekit_url]):
             raise HTTPException(
                 status_code=status.HTTP_511_NETWORK_AUTHENTICATION_REQUIRED,
@@ -41,8 +41,8 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         # decode jwt token payload
         payload = token_details if isinstance(token_details, dict) else auth_services.decode_token(token_details)
 
-        room_name = request.get("room_name","unlisted")
-        session_name =  f"room-{str(uuid.uuid4())[:6]}"
+        room_name = (request.room_name or "unlisted")
+        session_id = f"room-{str(uuid.uuid4())[:6]}"
         participant_identity = payload['user']['user_id']
         participant_name = payload['user']['name']
 
@@ -68,29 +68,31 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         try:
             # Session Data
             session_data = AgentSessionModel(
-                room_name=room_name,
-                session_id =session_id,
-                user_id = participant_identity,
-                name = participant_name,
-                token = participant_token,
-                conversation = [],
-                session_summary = None
+                session_id=session_id,
+                user_id=participant_identity,
+                name=participant_name,
+                token=participant_token,
+                conversation=None,
+                session_summary=None,
             )
 
             # Insert Session data (connect/disconnect handled inside)
-            db_service.insert_one(session_data.model_dump())
+            insert_result = db_service.insert_one(session_data.model_dump())
+            logger.info("Agent session recorded: session_id=%s inserted_id=%s",session_id,getattr(insert_result, "inserted_id", None),)
 
         except Exception as db_err:
-            logger.error(f"Failed to record session in MongoDB: {db_err}")
+            logger.exception("Failed to record session in MongoDB: %s", db_err)
 
         return AgentTokenResponse(
+            room_name=room_name,
             user_id=participant_identity,
             server_url=livekit_url,
-            session_id=room_name,
-            token = participant_token
-
+            session_id=session_id,
+            token=participant_token,
         )
 
-    except HTTPException as e:
-        logger.error(f"Agent Session Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Agent Session Error: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to create agent token")

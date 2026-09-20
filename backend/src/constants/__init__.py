@@ -16,6 +16,13 @@ __all__ = [
     "AgentSessionModel",
     "MCPServerAddRequest",
     "MCPServerAddResponse",
-    "MCPServerModel"
+    "MCPServerModel",
+    "MCPServerListItem",
+    "MCPServerListResponse",
+    "MCPServerToolInfo",
+    "MCPServerToolsResponse",
+    "MCPServerStatusUpdateRequest",
+    "MCPServerStatusUpdateResponse",
+    "MCPServerDeleteResponse"
 
 ]

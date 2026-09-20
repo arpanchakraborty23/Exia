@@ -39,6 +39,13 @@ class MCPServices:
                     detail="server_name and server_url are required",
                 )
 
+            # Prevent duplicate server_name per user
+            if self.db.exists({"user_id": user_id, "server_name": server_name}):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"MCP server '{server_name}' already exists",
+                )
+
             # Test mcp connection
             connection = await self.connect_mcp(url=server_url, key=server_key)
 
@@ -134,3 +141,136 @@ class MCPServices:
                 "server_url": url,
                 "message": str(e),
             }
+
+    def _public_projection(self) -> dict:
+        # Never leak server_key or internal _id to clients
+        return {"_id": 0, "server_key": 0}
+
+    async def list_mcps(self, user_id: str) -> dict:
+        """List all MCP servers of a user (without secrets)."""
+        try:
+            docs = self.db.find_many(
+                {"user_id": user_id},
+                projection=self._public_projection(),
+            )
+            servers = [
+                {
+                    "server_name": d.get("server_name"),
+                    "transport": d.get("transport"),
+                    "server_url": d.get("server_url"),
+                    "status": d.get("status"),
+                    "mcp_tool_count": d.get("mcp_tool_count", 0),
+                }
+                for d in (docs or [])
+            ]
+            return {"servers": servers, "count": len(servers)}
+        except Exception as e:
+            logger.exception("Failed to list MCP servers: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to list MCP servers",
+            )
+
+    async def get_mcp_tools(
+        self, user_id: str, server_name: str, refresh: bool = False
+    ) -> dict:
+        """Return stored tools of one server; optionally refresh live and persist."""
+        try:
+            doc = self.db.find_one({"user_id": user_id, "server_name": server_name})
+            if not doc:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"MCP server '{server_name}' not found",
+                )
+
+            if refresh:
+                connection = await self.connect_mcp(
+                    url=doc.get("server_url"), key=doc.get("server_key")
+                )
+                if connection["status"] != "success":
+                    raise HTTPException(
+                        status_code=status.HTTP_502_BAD_GATEWAY,
+                        detail=connection.get("message", "Failed to connect to MCP server"),
+                    )
+                self.db.update_one(
+                    {"user_id": user_id, "server_name": server_name},
+                    {"$set": {
+                        "mcp_tools_list": connection["tools"],
+                        "mcp_tool_count": connection["tools_count"],
+                    }},
+                )
+                doc["mcp_tools_list"] = connection["tools"]
+                doc["mcp_tool_count"] = connection["tools_count"]
+
+            tools = doc.get("mcp_tools_list") or []
+            return {
+                "server_name": doc.get("server_name"),
+                "server_url": doc.get("server_url"),
+                "status": doc.get("status"),
+                "tools": tools,
+                "tools_count": doc.get("mcp_tool_count", len(tools)),
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception("Failed to get MCP tools: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to get MCP server tools",
+            )
+
+    async def update_mcp_status(self, user_id: str, server_name: str, new_status: str) -> dict:
+        """Active/inactive toggle — status-only update in db."""
+        try:
+            if new_status not in ("active", "inactive"):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="status must be 'active' or 'inactive'",
+                )
+            result = self.db.update_one(
+                {"user_id": user_id, "server_name": server_name},
+                {"$set": {"status": new_status}},
+            )
+            if result.matched_count == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"MCP server '{server_name}' not found",
+                )
+            logger.info("MCP server '%s' status -> %s", server_name, new_status)
+            return {
+                "server_name": server_name,
+                "status": new_status,
+                "message": f"MCP server '{server_name}' {new_status}",
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception("Failed to update MCP status: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update MCP server status",
+            )
+
+    async def delete_mcp(self, user_id: str, server_name: str) -> dict:
+        """Delete one MCP server of the user."""
+        try:
+            result = self.db.delete_one({"user_id": user_id, "server_name": server_name})
+            if result.deleted_count == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"MCP server '{server_name}' not found",
+                )
+            logger.info("MCP server '%s' deleted", server_name)
+            return {
+                "server_name": server_name,
+                "message": f"MCP server '{server_name}' deleted",
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception("Failed to delete MCP server: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to delete MCP server",
+            )
+        
