@@ -18,6 +18,8 @@ from fastapi.responses import RedirectResponse
 from src.routes.auth import auth_route
 from src.routes.token import api_router
 from src.routes.mcp import mcp_route
+from src.routes.prompts import prompt_route
+from src.routes.model_config import model_route
 
 # ==============================================================================
 # Logging Configuration
@@ -97,6 +99,18 @@ TAGS_METADATA: List[Dict[str, Any]] = [
         "description":(
             "Operations for mcp servers give access any kind of tools to Exia"
         )
+    },
+    {
+        "name": "Prompts",
+        "description": (
+            "CRUD operations for user prompt directives (system personas and quick macros)."
+        ),
+    },
+    {
+        "name": "Models",
+        "description": (
+            "Model engine configuration for the voice agent pipeline."
+        ),
     },
 ]
 
@@ -220,6 +234,14 @@ logger.info("Registered router: Token (/api/agent/token)")
 # mcps (/api/mcp)
 app.include_router(mcp_route)
 logger.info("Registered router: Token (/api/mcp/add)")
+
+# prompts (/api/prompts)
+app.include_router(prompt_route)
+logger.info("Registered router: Prompts (/api/prompts)")
+
+# model engine config (/api/models/config)
+app.include_router(model_route)
+logger.info("Registered router: Models (/api/models/config)")
 
 # ==============================================================================
 # System & Diagnostic Endpoints

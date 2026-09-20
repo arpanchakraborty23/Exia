@@ -2,6 +2,8 @@ from .db import *
 from .auth import *
 from .security import *
 from .mcp import *
+from .prompts import PromptServices
+from .model_config import ModelConfigServices
 
 __all__ = [
     "MongoDBValidation",
@@ -11,5 +13,7 @@ __all__ = [
     "AccessTokenBearer",
     "RefreshTokenBearer",
     "genrate_password_hash",
-    "MCPServices"
+    "MCPServices",
+    "PromptServices",
+    "ModelConfigServices"
 ]

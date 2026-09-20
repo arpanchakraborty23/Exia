@@ -39,3 +39,24 @@ class MCPServerModel(BaseModel):
     mcp_tools_list: list = Field(...,description="mcp tools list")
     mcp_tool_count: int = Field(...,description="mcp tools count")
     status : str = Field(...,description="mcp server status")
+
+
+class PromptModel(BaseModel):
+    __table__="prompts"
+
+    user_id: str = Field(...,description="owner user id")
+    prompt_id: str = Field(...,description="public prompt id (pr_...)")
+    title: str = Field(...,description="directive name")
+    prompt_text: str = Field(...,description="prompt instructions")
+    type: str = Field(...,description="system persona or quick macro")
+    tags: list = Field(default_factory=list,description="prompt tags")
+    created_at: str = Field(...,description="iso creation timestamp")
+    updated_at: Optional[str] = Field(None,description="iso update timestamp")
+
+
+class ModelConfigModel(BaseModel):
+    __table__="model_config"
+
+    user_id: str = Field(...,description="owner user id")
+    config: Dict = Field(default_factory=dict,description="model engine config")
+    updated_at: Optional[str] = Field(None,description="iso update timestamp")

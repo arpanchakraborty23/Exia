@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, status, HTTPException
 
 # pyrefly: ignore [missing-import]
-from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest, LoginUserResponse, NewPasswordRequest, NewPasswordResponse
+from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest, LoginUserResponse, NewPasswordRequest, NewPasswordResponse, ChangePasswordRequest, ChangePasswordResponse
 # pyrefly: ignore [missing-import]
 from src.services import UserServices, AuthServices, AccessTokenBearer, RefreshTokenBearer
 from src.utils import verify_password
@@ -238,6 +238,65 @@ async def update_password(user_data: NewPasswordRequest,token_data: dict = Depen
         raise
     except Exception as e:
         logger.error(f"Update password error :{e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
+
+
+@auth_route.post("/auth/change-password", response_model=ChangePasswordResponse, status_code=status.HTTP_200_OK)
+async def change_password(user_data: ChangePasswordRequest, token_data: dict = Depends(access_token_bearer)):
+    """Settings-view compat: verify current password, then update (frontend POSTs here)."""
+    try:
+        payload_user = token_data.get("user", {}) if isinstance(token_data, dict) else {}
+        user_id = payload_user.get("user_id")
+        email = payload_user.get("email")
+
+        if not user_id or not email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload"
+            )
+
+        if not user_data.current_password or not user_data.new_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password and new password are required"
+            )
+
+        if len(user_data.new_password) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password length must be at least 8 characters !"
+            )
+
+        db_user = await user_services.get_user_by_email(email)
+        if not db_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid User"
+            )
+
+        db_hash = db_user.get("hash_password") if isinstance(db_user, dict) else getattr(db_user, "hash_password", None)
+        if not db_hash or not verify_password(user_data.current_password, db_hash):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Current password is incorrect"
+            )
+
+        updated = await user_services.update_user_password(user_id, email, user_data.new_password)
+        if not updated:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Internal Server Error"
+            )
+
+        return ChangePasswordResponse(message="Password successfully updated")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Change password error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"

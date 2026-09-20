@@ -45,6 +45,24 @@ class Settings(BaseSettings):
             "mongodb_mcp_collection", "mongodb_mcp_collections"
         ),
     )
+    mongodb_prompt_collection: str = Field(
+        default="prompts",
+        validation_alias=AliasChoices(
+            "mongodb_prompt_collection", "mongodb_prompt_collections"
+        ),
+    )
+    mongodb_model_collection: str = Field(
+        default="model_config",
+        validation_alias=AliasChoices(
+            "mongodb_model_collection", "mongodb_model_collections"
+        ),
+    )
+    mongodb_blacklist_collection: str = Field(
+        default="token_blacklist",
+        validation_alias=AliasChoices(
+            "mongodb_blacklist_collection", "mongodb_token_blacklist"
+        ),
+    )
 
 # The standard Pydantic singleton pattern
 @lru_cache(maxsize=1)

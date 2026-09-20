@@ -23,6 +23,15 @@ __all__ = [
     "MCPServerToolsResponse",
     "MCPServerStatusUpdateRequest",
     "MCPServerStatusUpdateResponse",
-    "MCPServerDeleteResponse"
+    "MCPServerDeleteResponse",
+    "PromptCreateRequest",
+    "PromptUpdateRequest",
+    "PromptResponse",
+    "PromptDeleteResponse",
+    "ModelConfigSchema",
+    "ChangePasswordRequest",
+    "ChangePasswordResponse",
+    "PromptModel",
+    "ModelConfigModel"
 
 ]
