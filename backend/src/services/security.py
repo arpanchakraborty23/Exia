@@ -3,8 +3,10 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 
 from .auth import AuthServices
+from .token_blacklist import TokenBlacklistServices
 
 auth_services = AuthServices()
+blacklist_services = TokenBlacklistServices()
 
 class TokenBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
@@ -38,6 +40,14 @@ class TokenBearer(HTTPBearer):
             )
 
         self.verify_token_data(token_data)
+
+        # Reject logged-out (revoked) tokens
+        if blacklist_services.is_revoked(token_data.get("jti")):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked. Please sign in again.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         return token_data
 

@@ -31,6 +31,8 @@ __all__ = [
     "ModelConfigSchema",
     "ChangePasswordRequest",
     "ChangePasswordResponse",
+    "LogoutRequest",
+    "LogoutResponse",
     "PromptModel",
     "ModelConfigModel"
 

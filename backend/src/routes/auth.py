@@ -3,9 +3,10 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, status, HTTPException
 
 # pyrefly: ignore [missing-import]
-from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest, LoginUserResponse, NewPasswordRequest, NewPasswordResponse, ChangePasswordRequest, ChangePasswordResponse
+from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest, LoginUserResponse, NewPasswordRequest, NewPasswordResponse, ChangePasswordRequest, ChangePasswordResponse, LogoutRequest, LogoutResponse
 # pyrefly: ignore [missing-import]
-from src.services import UserServices, AuthServices, AccessTokenBearer, RefreshTokenBearer
+from src.services import UserServices, AuthServices, AccessTokenBearer, RefreshTokenBearer, TokenBlacklistServices
+from src.services.security import TokenBearer
 from src.utils import verify_password
 
 # Logger
@@ -16,6 +17,9 @@ user_services = UserServices()
 auth_services = AuthServices()
 access_token_bearer = AccessTokenBearer()
 refresh_token_bearer = RefreshTokenBearer()
+# Accepts any valid (access or refresh) token so logout can revoke the session
+any_token_bearer = TokenBearer()
+blacklist_services = TokenBlacklistServices()
 # Correct names
 access_token = access_token_bearer
 refresh_token = refresh_token_bearer
@@ -297,6 +301,43 @@ async def change_password(user_data: ChangePasswordRequest, token_data: dict = D
         raise
     except Exception as e:
         logger.error(f"Change password error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
+
+
+@auth_route.post("/auth/logout", response_model=LogoutResponse, status_code=status.HTTP_200_OK)
+async def logout(body: LogoutRequest | None = None, token_data: dict = Depends(any_token_bearer)):
+    """Revoke the bearer token (and optional refresh token) so it can't be reused."""
+    try:
+        jti = token_data.get("jti") if isinstance(token_data, dict) else None
+        exp = token_data.get("exp") if isinstance(token_data, dict) else None
+        if not jti:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload"
+            )
+
+        blacklist_services.revoke(jti, exp)
+
+        # Optionally revoke the refresh token too (closes the refresh hole)
+        refresh_token = (body.refresh_token if body else None)
+        if refresh_token:
+            try:
+                refresh_data = auth_services.decode_token(refresh_token)
+                if isinstance(refresh_data, dict) and refresh_data.get("jti"):
+                    blacklist_services.revoke(refresh_data.get("jti"), refresh_data.get("exp"))
+            except Exception as decode_err:
+                logger.warning("Logout: refresh token decode failed: %s", decode_err)
+
+        logger.info("Token revoked (jti=%s)", jti)
+        return LogoutResponse(message="Logged out successfully")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"

@@ -197,3 +197,12 @@ class ChangePasswordRequest(BaseModel):
 
 class ChangePasswordResponse(BaseModel):
     message: Optional[str] = None
+
+
+class LogoutRequest(BaseModel):
+    # Optional refresh token to revoke alongside the access token in Authorization header
+    refresh_token: Optional[str] = None
+
+
+class LogoutResponse(BaseModel):
+    message: Optional[str] = None
