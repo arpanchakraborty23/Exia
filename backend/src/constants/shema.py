@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.aliases import AliasChoices
 from typing import Optional, Dict
 
 
@@ -45,3 +46,31 @@ class AgentTokenResponse(BaseModel):
     server_url: str = None
     session_id: str = None
     token : str = None
+
+
+# mcp server
+class MCPServerAddRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    server_name: Optional[str] = None
+    transport: Optional[str] = Field(
+        default="remote",
+        validation_alias=AliasChoices("transport", "trasport"),
+        serialization_alias="transport",
+    )
+    server_url: Optional[str] = None
+    server_key: Optional[str] = None
+    server_status: Optional[str] = None
+
+class MCPServerAddResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    server_name: Optional[str] = None
+    transport: Optional[str] = Field(
+        default="remote",
+        validation_alias=AliasChoices("transport", "trasport"),
+        serialization_alias="transport",
+    )
+    server_url: Optional[str] = None
+    server_status: Optional[str] = None
+    message: Optional[str] = None

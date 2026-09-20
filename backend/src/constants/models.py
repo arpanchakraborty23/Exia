@@ -28,4 +28,14 @@ class AgentSessionModel(BaseModel):
     
     
     
-    
+class MCPServerModel(BaseModel):
+    __table__="mcp"
+
+    user_id : str = Field(...,max_length=7)
+    server_name: str = Field(...,description="mcp server name")
+    server_url: str = Field(...,description="mcp server url")
+    server_key : Optional[str] = Field(None,description="mcp server key")
+    transport: str = Field(...,description="mcp protocall")
+    mcp_tools_list: list = Field(...,description="mcp tools list")
+    mcp_tool_count: int = Field(...,description="mcp tools count")
+    status : str = Field(...,description="mcp server status")

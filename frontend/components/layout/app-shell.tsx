@@ -28,7 +28,7 @@ const TAB_TITLES: Record<NavTab, { title: string; subtitle: string; code: string
   },
   mcp: {
     title: 'Model Context Protocol (MCP)',
-    subtitle: 'Configure local stdio and remote SSE tool servers with 1-click catalog',
+    subtitle: 'Configure remote SSE tool servers with 1-click catalog (Remote MCP supported)',
     code: 'MCP-03',
   },
   prompts: {

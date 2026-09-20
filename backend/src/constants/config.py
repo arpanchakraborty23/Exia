@@ -1,5 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
+from pydantic import Field
+from pydantic.aliases import AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -32,7 +34,12 @@ class Settings(BaseSettings):
     mongodb_user_collection: str = ""
     mongodb_session_collection: str = ""
     mongodb_sesison_summary: str = ""  # (Typo note: consider renaming to session_summary)
-    mongodb_mcp_collections: str = ""
+    mongodb_mcp_collection: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "mongodb_mcp_collection", "mongodb_mcp_collections"
+        ),
+    )
 
 # The standard Pydantic singleton pattern
 @lru_cache(maxsize=1)

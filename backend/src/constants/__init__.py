@@ -13,5 +13,9 @@ __all__ = [
     "NewPasswordResponse",
     "AgentTokenRequest",
     "AgentTokenResponse",
-    "AgentSessionModel"
+    "AgentSessionModel",
+    "MCPServerAddRequest",
+    "MCPServerAddResponse",
+    "MCPServerModel"
+
 ]

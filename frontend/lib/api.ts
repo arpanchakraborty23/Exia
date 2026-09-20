@@ -71,16 +71,16 @@ const DEFAULT_MODEL_CONFIG: ModelConfig = {
 const DEFAULT_MCP_SERVERS: MCPServer[] = [
   {
     id: 'mcp-1',
-    name: 'Local Filesystem',
-    server_type: 'stdio',
-    command_or_url: 'npx -y @modelcontextprotocol/server-filesystem D:/Workspace',
+    name: 'Home Assistant IoT Core',
+    server_type: 'sse',
+    command_or_url: 'http://homeassistant.local:8123/api/mcp/sse',
     enabled: true,
     status: 'connected',
     created_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
   },
   {
     id: 'mcp-2',
-    name: 'Home Automation Bridge',
+    name: 'Home Automation Cloud Gateway',
     server_type: 'sse',
     command_or_url: 'http://localhost:8123/api/mcp/sse',
     auth_token: 'Bearer ha_secret_token_123',
@@ -90,9 +90,9 @@ const DEFAULT_MCP_SERVERS: MCPServer[] = [
   },
   {
     id: 'mcp-3',
-    name: 'PostgreSQL Database',
-    server_type: 'stdio',
-    command_or_url: 'uvx mcp-server-postgres --conn postgresql://localhost/home_db',
+    name: 'Remote Telemetry & Weather SSE',
+    server_type: 'sse',
+    command_or_url: 'https://api.homeassistant.internal/mcp/sse',
     enabled: false,
     status: 'disconnected',
     created_at: new Date(Date.now() - 3600000 * 12).toISOString(),

@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, status, HTTPException
 # pyrefly: ignore [missing-import]
 from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest, LoginUserResponse, NewPasswordRequest, NewPasswordResponse
 # pyrefly: ignore [missing-import]
-from src.services import UserServices, AuthServices, AccessTokenBearer, RefreshTokenBearer, verify_password
+from src.services import UserServices, AuthServices, AccessTokenBearer, RefreshTokenBearer
+from src.utils import verify_password
 
 # Logger
 logger = logging.getLogger(__name__)

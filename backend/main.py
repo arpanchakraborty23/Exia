@@ -17,6 +17,7 @@ from fastapi.responses import RedirectResponse
 
 from src.routes.auth import auth_route
 from src.routes.token import api_router
+from src.routes.mcp import mcp_route
 
 # ==============================================================================
 # Logging Configuration
@@ -90,6 +91,12 @@ TAGS_METADATA: List[Dict[str, Any]] = [
         "description": (
             "System telemetry and diagnostic endpoints to verify service availability."
         ),
+    },
+    {
+        "name": "MCP",
+        "description":(
+            "Operations for mcp servers give access any kind of tools to Exia"
+        )
     },
 ]
 
@@ -209,6 +216,10 @@ logger.info("Registered router: Auth (/api/signup, /api/signin, /api/refresh_tok
 # LiveKit Agent session token routes (/api/agent/token)
 app.include_router(api_router)
 logger.info("Registered router: Token (/api/agent/token)")
+
+# mcps (/api/mcp)
+app.include_router(mcp_route)
+logger.info("Registered router: Token (/api/mcp/add)")
 
 # ==============================================================================
 # System & Diagnostic Endpoints

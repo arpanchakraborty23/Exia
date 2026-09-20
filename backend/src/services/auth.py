@@ -7,7 +7,7 @@ import jwt
 
 from src.constants import get_settings, CreateNewUserModel, CreateUserResponse
 from .db import MongoServices
-from src.utils import genrate_password_hash, verify_password
+from src.utils import genrate_password_hash
 
 
 # Configuration
