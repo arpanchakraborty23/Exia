@@ -1,22 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  FileText,
-  Plus,
-  Trash2,
-  Edit3,
-  Check,
-  Copy,
-  Terminal,
-  Sparkles,
-  Zap,
-  Sliders,
   AlertCircle,
-  RefreshCw,
-  X,
+  Check,
   Code,
+  Copy,
+  Edit3,
+  FileText,
   Lightbulb,
+  Plus,
+  RefreshCw,
+  Sliders,
+  Sparkles,
+  Terminal,
+  Trash2,
+  X,
+  Zap,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { PromptItem } from '@/lib/types';
@@ -143,7 +143,11 @@ export function PromptsView() {
     fetchPrompts();
   }, []);
 
-  const handleOpenAdd = (preset?: { title: string; prompt_text: string; type: 'system' | 'quick' }) => {
+  const handleOpenAdd = (preset?: {
+    title: string;
+    prompt_text: string;
+    type: 'system' | 'quick';
+  }) => {
     setEditingPrompt(null);
     setTitle(preset?.title || '');
     setPromptText(preset?.prompt_text || '');
@@ -219,20 +223,21 @@ export function PromptsView() {
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 p-4 md:p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-foreground font-mono">
+            <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
               DIRECTIVE & PROMPT MATRIX
             </h1>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/30">
+            <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               TACTICAL BRAIN
             </span>
           </div>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Configure system instructions, voice response brevity, and smart home command macros for Exia.
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+            Configure system instructions, voice response brevity, and smart home command macros for
+            Exia.
           </p>
         </div>
 
@@ -240,14 +245,14 @@ export function PromptsView() {
           <button
             onClick={fetchPrompts}
             disabled={isLoading}
-            className="p-2 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-all cursor-pointer shadow-xs"
+            className="bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border cursor-pointer rounded-xl border p-2 shadow-xs transition-all"
             title="Refresh"
           >
             <RefreshCw className={`size-4 ${isLoading ? 'animate-spin text-emerald-500' : ''}`} />
           </button>
           <button
             onClick={() => handleOpenAdd()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-400"
           >
             <Plus className="size-4" />
             <span>New Custom Directive</span>
@@ -256,31 +261,34 @@ export function PromptsView() {
       </div>
 
       {/* Active Directive Spotlight Banner */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-card to-card border border-emerald-500/35 backdrop-blur-xl relative overflow-hidden shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+      <div className="via-card to-card relative overflow-hidden rounded-2xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 p-5 shadow-xs backdrop-blur-xl">
+        <div className="relative z-10 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+              <span className="size-2 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+              <span className="font-mono text-xs font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
                 LIVE AGENT DIRECTIVE IN PLAY
               </span>
             </div>
-            <h3 className="text-base font-bold font-mono text-foreground">
+            <h3 className="text-foreground font-mono text-base font-bold">
               Exia GN-001 Tactical Autonomous Butler
             </h3>
-            <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
-              Real-time voice tone tuned to concise military brevity, proactive IoT anomaly detection, and rapid tool dispatching.
+            <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">
+              Real-time voice tone tuned to concise military brevity, proactive IoT anomaly
+              detection, and rapid tool dispatching.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-right font-mono text-[11px] text-muted-foreground hidden sm:block">
+            <div className="text-muted-foreground hidden text-right font-mono text-[11px] sm:block">
               <div>System Tokens: ~180</div>
-              <div className="text-emerald-600 dark:text-emerald-400 font-semibold">Audio Latency: Optimized</div>
+              <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                Audio Latency: Optimized
+              </div>
             </div>
             <button
               onClick={() => handleOpenAdd(CURATED_DIRECTIVES[0])}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/35 text-xs font-mono font-medium hover:bg-emerald-500/25 transition-all cursor-pointer shadow-xs"
+              className="cursor-pointer rounded-xl border border-emerald-500/35 bg-emerald-500/15 px-3.5 py-1.5 font-mono text-xs font-medium text-emerald-700 shadow-xs transition-all hover:bg-emerald-500/25 dark:text-emerald-300"
             >
               Tune Parameters
             </button>
@@ -289,23 +297,23 @@ export function PromptsView() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center justify-between border-b border-border pb-3">
+      <div className="border-border flex items-center justify-between border-b pb-3">
         <div className="flex items-center gap-1.5">
           {(['all', 'system', 'quick'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition-all cursor-pointer ${
+              className={`cursor-pointer rounded-xl px-3 py-1.5 font-mono text-xs font-medium transition-all ${
                 filterType === t
-                  ? 'bg-muted text-foreground border border-border shadow-xs font-bold'
+                  ? 'bg-muted text-foreground border-border border font-bold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
             >
               {t === 'all'
                 ? `All Directives (${prompts.length})`
                 : t === 'system'
-                ? 'System Personas'
-                : 'Quick Macros'}
+                  ? 'System Personas'
+                  : 'Quick Macros'}
             </button>
           ))}
         </div>
@@ -313,7 +321,7 @@ export function PromptsView() {
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-sm font-mono">
+        <div className="flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 font-mono text-sm text-rose-600 dark:text-rose-300">
           <AlertCircle className="size-4 shrink-0 text-rose-500" />
           <span>{error}</span>
         </div>
@@ -321,21 +329,21 @@ export function PromptsView() {
 
       {/* Directives Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="h-44 rounded-2xl bg-card border border-border animate-pulse" />
+            <div key={n} className="bg-card border-border h-44 animate-pulse rounded-2xl border" />
           ))}
         </div>
       ) : filteredPrompts.length === 0 ? (
-        <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-border bg-card/40 space-y-3">
-          <FileText className="size-10 text-muted-foreground mx-auto" />
-          <h3 className="font-semibold text-foreground">No directives match this filter</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+        <div className="border-border bg-card/40 space-y-3 rounded-2xl border border-dashed px-4 py-12 text-center">
+          <FileText className="text-muted-foreground mx-auto size-10" />
+          <h3 className="text-foreground font-semibold">No directives match this filter</h3>
+          <p className="text-muted-foreground mx-auto max-w-sm text-xs">
             Choose a curated preset below or add a new custom instruction.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {filteredPrompts.map((item) => {
             const isCopied = copiedId === item.id;
             const isSystem = item.type === 'system';
@@ -344,7 +352,7 @@ export function PromptsView() {
             return (
               <div
                 key={item.id}
-                className={`p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between group shadow-xs ${
+                className={`group flex flex-col justify-between rounded-2xl border p-5 shadow-xs transition-all duration-200 ${
                   isActive
                     ? 'bg-card border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.08)]'
                     : 'bg-card hover:bg-card/90 border-border hover:border-emerald-500/30'
@@ -352,15 +360,19 @@ export function PromptsView() {
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="size-8 rounded-xl bg-muted text-foreground flex items-center justify-center shrink-0 border border-border">
-                        {isSystem ? <Terminal className="size-4 text-emerald-500" /> : <Sparkles className="size-4 text-teal-500" />}
+                    <div className="flex min-w-0 items-center gap-2">
+                      <div className="bg-muted text-foreground border-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
+                        {isSystem ? (
+                          <Terminal className="size-4 text-emerald-500" />
+                        ) : (
+                          <Sparkles className="size-4 text-teal-500" />
+                        )}
                       </div>
                       <div className="truncate">
-                        <h3 className="font-bold text-sm text-foreground truncate font-mono">
+                        <h3 className="text-foreground truncate font-mono text-sm font-bold">
                           {item.title}
                         </h3>
-                        <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border">
+                        <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[10px] uppercase">
                           {item.type}
                         </span>
                       </div>
@@ -369,7 +381,7 @@ export function PromptsView() {
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleCopy(item.prompt_text, item.id)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
                         title="Copy to clipboard"
                       >
                         {isCopied ? (
@@ -380,14 +392,14 @@ export function PromptsView() {
                       </button>
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
                         title="Edit prompt"
                       >
                         <Edit3 className="size-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        className="text-muted-foreground cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-rose-500/10 hover:text-rose-500"
                         title="Delete prompt"
                       >
                         <Trash2 className="size-4" />
@@ -395,22 +407,22 @@ export function PromptsView() {
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border text-xs text-foreground font-mono leading-relaxed line-clamp-4 select-text">
+                  <div className="bg-muted/50 border-border text-foreground line-clamp-4 rounded-xl border p-3 font-mono text-xs leading-relaxed select-text">
                     {item.prompt_text}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 mt-4 border-t border-border text-xs">
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                <div className="border-border mt-4 flex items-center justify-between border-t pt-3 text-xs">
+                  <span className="text-muted-foreground font-mono text-[10px]">
                     {item.prompt_text.length} chars
                   </span>
 
                   <button
                     onClick={() => handleSetActive(item.id)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-mono font-medium transition-all cursor-pointer ${
+                    className={`cursor-pointer rounded-lg px-3 py-1 font-mono text-[11px] font-medium transition-all ${
                       isActive
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 font-bold'
-                        : 'bg-muted text-muted-foreground hover:text-foreground border border-border'
+                        ? 'border border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-700 dark:text-emerald-300'
+                        : 'bg-muted text-muted-foreground hover:text-foreground border-border border'
                     }`}
                   >
                     {isActive ? '✓ Active Live' : 'Set as Active'}
@@ -423,43 +435,44 @@ export function PromptsView() {
       )}
 
       {/* Preset Library Showcase */}
-      <div className="space-y-4 pt-4 border-t border-border">
+      <div className="border-border space-y-4 border-t pt-4">
         <div>
-          <h2 className="text-sm font-bold font-mono text-foreground uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
             <Zap className="size-3.5 text-emerald-500" />
             <span>Curated Tactical Directives</span>
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Pre-engineered prompts calibrated for voice latency, clarity, and smart home command response.
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            Pre-engineered prompts calibrated for voice latency, clarity, and smart home command
+            response.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {CURATED_DIRECTIVES.map((preset, idx) => {
             const Icon = preset.icon;
             return (
               <div
                 key={idx}
-                className="p-4 rounded-2xl bg-card hover:bg-muted/50 border border-border hover:border-emerald-500/30 transition-all duration-200 flex flex-col justify-between shadow-xs"
+                className="bg-card hover:bg-muted/50 border-border flex flex-col justify-between rounded-2xl border p-4 shadow-xs transition-all duration-200 hover:border-emerald-500/30"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                    <div className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                       <Icon className="size-4" />
                     </div>
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border">
+                    <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[9px] font-bold">
                       {preset.badge}
                     </span>
                   </div>
-                  <h3 className="font-bold text-xs text-foreground font-mono">{preset.title}</h3>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">
+                  <h3 className="text-foreground font-mono text-xs font-bold">{preset.title}</h3>
+                  <p className="text-muted-foreground line-clamp-3 text-[11px] leading-relaxed">
                     {preset.prompt_text}
                   </p>
                 </div>
 
                 <button
                   onClick={() => handleOpenAdd(preset)}
-                  className="mt-4 w-full py-1.5 px-3 rounded-xl bg-muted hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-emerald-300 text-foreground text-xs font-mono font-medium border border-border hover:border-emerald-500/40 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="bg-muted text-foreground border-border mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-emerald-500/40 hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-emerald-300"
                 >
                   <Plus className="size-3.5" />
                   <span>Import Directive</span>
@@ -472,58 +485,60 @@ export function PromptsView() {
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-5 text-foreground">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-150">
+          <div className="bg-card border-border text-foreground w-full max-w-lg space-y-5 rounded-2xl border p-6 shadow-2xl">
+            <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="size-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/25">
+                <div className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                   <FileText className="size-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground font-mono">
+                  <h3 className="text-foreground font-mono text-sm font-bold">
                     {editingPrompt ? 'Edit Directive' : 'New Directive'}
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-muted-foreground text-[11px]">
                     LiveKit system persona injected at voice session start
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg p-1.5 transition-colors"
               >
                 <X className="size-5" />
               </button>
             </div>
 
             {modalError && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs font-mono">
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 font-mono text-xs text-rose-600 dark:text-rose-300">
                 {modalError}
               </div>
             )}
 
-            <form onSubmit={handleSave} className="space-y-4 text-xs font-mono">
+            <form onSubmit={handleSave} className="space-y-4 font-mono text-xs">
               <div>
-                <label className="block text-foreground font-semibold mb-1">Directive Name</label>
+                <label className="text-foreground mb-1 block font-semibold">Directive Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Exia Tactical Butler"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-emerald-500/50"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-emerald-500/50 focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-foreground font-semibold mb-1">Type Classification</label>
+                <label className="text-foreground mb-1 block font-semibold">
+                  Type Classification
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setType('system')}
-                    className={`py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${
                       type === 'system'
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 font-bold'
+                        ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-700 dark:text-emerald-300'
                         : 'bg-muted/40 text-muted-foreground border-border hover:text-foreground'
                     }`}
                   >
@@ -533,9 +548,9 @@ export function PromptsView() {
                   <button
                     type="button"
                     onClick={() => setType('quick')}
-                    className={`py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${
                       type === 'quick'
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 font-bold'
+                        ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-700 dark:text-emerald-300'
                         : 'bg-muted/40 text-muted-foreground border-border hover:text-foreground'
                     }`}
                   >
@@ -546,30 +561,34 @@ export function PromptsView() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="mb-1 flex items-center justify-between">
                   <label className="text-foreground font-semibold">Prompt Instructions</label>
-                  <span className="text-[10px] text-muted-foreground">Insert variable pills below</span>
+                  <span className="text-muted-foreground text-[10px]">
+                    Insert variable pills below
+                  </span>
                 </div>
                 <textarea
                   rows={6}
                   placeholder="Enter system instructions for Exia..."
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
-                  className="w-full bg-muted/40 border border-border rounded-xl p-3 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-emerald-500/50 leading-relaxed resize-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full resize-none rounded-xl border p-3 leading-relaxed focus:border-emerald-500/50 focus:outline-none"
                   required
                 />
               </div>
 
               {/* Dynamic Variable Chips */}
               <div className="space-y-1.5">
-                <span className="text-[10px] text-muted-foreground">Click to insert dynamic variable:</span>
+                <span className="text-muted-foreground text-[10px]">
+                  Click to insert dynamic variable:
+                </span>
                 <div className="flex flex-wrap gap-1.5">
                   {VARIABLE_PILLS.map((v) => (
                     <button
                       key={v}
                       type="button"
                       onClick={() => handleInsertVariable(v)}
-                      className="px-2 py-1 rounded-md bg-muted hover:bg-emerald-500/15 text-foreground hover:text-emerald-700 dark:hover:text-emerald-300 border border-border text-[10px] transition-colors cursor-pointer"
+                      className="bg-muted text-foreground border-border cursor-pointer rounded-md border px-2 py-1 text-[10px] transition-colors hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-emerald-300"
                     >
                       {v}
                     </button>
@@ -577,20 +596,24 @@ export function PromptsView() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+              <div className="border-border flex items-center justify-end gap-3 border-t pt-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer rounded-xl px-4 py-2 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)] disabled:opacity-50 cursor-pointer"
+                  className="cursor-pointer rounded-xl bg-emerald-500 px-5 py-2 font-bold text-black shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-400 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : editingPrompt ? 'Update Directive' : 'Save Directive'}
+                  {isSubmitting
+                    ? 'Saving...'
+                    : editingPrompt
+                      ? 'Update Directive'
+                      : 'Save Directive'}
                 </button>
               </div>
             </form>

@@ -1,14 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { api, getStoredToken, getStoredUser, setStoredToken, setStoredUser } from '@/lib/api';
 import { User } from '@/lib/types';
-import {
-  api,
-  getStoredToken,
-  setStoredToken,
-  getStoredUser,
-  setStoredUser,
-} from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
@@ -17,7 +11,10 @@ interface AuthContextType {
   isLoading: boolean;
   login: (emailOrUsername: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  changePassword: (currentPass: string, newPass: string) => Promise<{ success: boolean; message: string }>;
+  changePassword: (
+    currentPass: string,
+    newPass: string
+  ) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,7 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStoredToken(res.access_token);
         const resolvedUser: User = res.user || {
           id: 'usr_' + Math.random().toString(36).substring(2, 7),
-          email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@homeassistant.local`,
+          email: emailOrUsername.includes('@')
+            ? emailOrUsername
+            : `${emailOrUsername}@homeassistant.local`,
           name: emailOrUsername.split('@')[0],
         };
         setUser(resolvedUser);

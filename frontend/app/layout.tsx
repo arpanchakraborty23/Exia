@@ -62,7 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="icon" type="image/jpeg" href="/images/exia-logo.jpg" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="overflow-x-hidden bg-background text-foreground">
+      <body className="bg-background text-foreground overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

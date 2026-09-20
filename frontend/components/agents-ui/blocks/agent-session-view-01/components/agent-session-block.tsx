@@ -222,31 +222,31 @@ export function AgentSessionView_01({
       <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
 
       {/* Connection State Indicator Banner */}
-      <div className="absolute top-4 inset-x-0 z-40 flex justify-center pointer-events-none">
-        <div className="pointer-events-auto px-4 py-1.5 rounded-full bg-card/85 backdrop-blur-md border border-border/80 shadow-lg flex items-center gap-2.5 text-xs font-medium tracking-tight animate-in fade-in slide-in-from-top-2 duration-200">
+      <div className="pointer-events-none absolute inset-x-0 top-4 z-40 flex justify-center">
+        <div className="bg-card/85 border-border/80 animate-in fade-in slide-in-from-top-2 pointer-events-auto flex items-center gap-2.5 rounded-full border px-4 py-1.5 text-xs font-medium tracking-tight shadow-lg backdrop-blur-md duration-200">
           {agentState === 'connecting' && (
             <>
-              <span className="size-2 rounded-full bg-amber-500 animate-ping" />
-              <span className="text-amber-500 font-semibold">Connecting...</span>
+              <span className="size-2 animate-ping rounded-full bg-amber-500" />
+              <span className="font-semibold text-amber-500">Connecting...</span>
             </>
           )}
           {agentState === 'listening' && (
             <>
-              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-emerald-500 font-semibold">Listening</span>
+              <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
+              <span className="font-semibold text-emerald-500">Listening</span>
               <span className="text-muted-foreground text-[11px]">— Speak naturally</span>
             </>
           )}
           {agentState === 'thinking' && (
             <>
-              <span className="size-2 rounded-full bg-blue-500 animate-spin" />
-              <span className="text-blue-500 font-semibold">Thinking...</span>
+              <span className="size-2 animate-spin rounded-full bg-blue-500" />
+              <span className="font-semibold text-blue-500">Thinking...</span>
             </>
           )}
           {agentState === 'speaking' && (
             <>
-              <span className="size-2 rounded-full bg-violet-500 animate-pulse" />
-              <span className="text-violet-500 font-semibold">Speaking</span>
+              <span className="size-2 animate-pulse rounded-full bg-violet-500" />
+              <span className="font-semibold text-violet-500">Speaking</span>
             </>
           )}
           {agentState !== 'connecting' &&
@@ -254,7 +254,7 @@ export function AgentSessionView_01({
             agentState !== 'thinking' &&
             agentState !== 'speaking' && (
               <>
-                <span className="size-2 rounded-full bg-muted-foreground" />
+                <span className="bg-muted-foreground size-2 rounded-full" />
                 <span className="text-muted-foreground capitalize">{agentState || 'Ready'}</span>
               </>
             )}

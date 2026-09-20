@@ -1,16 +1,15 @@
 import {
-  User,
-  LoginResponse,
   LiveKitTokenResponse,
-  SessionSummary,
-  SessionDetail,
+  LoginResponse,
   MCPServer,
-  PromptItem,
   ModelConfig,
+  PromptItem,
+  SessionDetail,
+  SessionSummary,
+  User,
 } from './types';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 // In-memory / localStorage fallback stores for seamless offline/demo support
 const STORAGE_KEYS = {
@@ -115,7 +114,7 @@ const DEFAULT_PROMPTS: PromptItem[] = [
     title: 'Good Morning Routine',
     type: 'quick',
     prompt_text:
-      'Trigger my morning routine: check today\'s weather forecast, give me my top 3 agenda items, and read unread reminders.',
+      "Trigger my morning routine: check today's weather forecast, give me my top 3 agenda items, and read unread reminders.",
     tags: ['routine', 'daily'],
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
   },
@@ -225,10 +224,7 @@ const DEFAULT_SESSIONS: SessionDetail[] = [
   },
 ];
 
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getStoredToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -249,11 +245,13 @@ async function apiRequest<T>(
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.detail || errorData.message || `Request failed with status ${res.status}`);
+      throw new Error(
+        errorData.detail || errorData.message || `Request failed with status ${res.status}`
+      );
     }
 
     return await res.json();
-  } catch (err: any) {
+  } catch (err) {
     // If backend is unreachable (Failed to fetch), throw so caller can handle or use fallback
     throw err;
   }
@@ -281,7 +279,9 @@ export const api = {
         // Resilient fallback for demo / testing
         const fallbackUser: User = {
           id: 'usr_' + Math.random().toString(36).substring(2, 8),
-          email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@homeassistant.local`,
+          email: emailOrUsername.includes('@')
+            ? emailOrUsername
+            : `${emailOrUsername}@homeassistant.local`,
           name: emailOrUsername.split('@')[0],
           created_at: new Date().toISOString(),
         };
@@ -295,7 +295,10 @@ export const api = {
       }
     },
 
-    async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    async changePassword(
+      currentPassword: string,
+      newPassword: string
+    ): Promise<{ message: string }> {
       try {
         return await apiRequest<{ message: string }>('/auth/change-password', {
           method: 'POST',
@@ -328,16 +331,20 @@ export const api = {
           method: 'POST',
           body: JSON.stringify({ room_name: roomName }),
         });
-      } catch (err) {
+      } catch {
         // Fallback to FastAPI /api/agent/token endpoint
         try {
           return await apiRequest<LiveKitTokenResponse>('/agent/token', {
             method: 'POST',
             body: JSON.stringify({ room_name: roomName }),
           });
-        } catch (err2: any) {
+        } catch (err2) {
           console.error('Failed to obtain token from FastAPI backend:', err2);
-          throw new Error(err2?.message || 'Failed to fetch LiveKit token from backend server');
+          const errorMessage =
+            err2 instanceof Error
+              ? err2.message
+              : 'Failed to fetch LiveKit token from backend server';
+          throw new Error(errorMessage);
         }
       }
     },
@@ -356,7 +363,10 @@ export const api = {
 
   // 3. Sessions History
   sessions: {
-    async getSessions(page = 1, limit = 10): Promise<{ sessions: SessionSummary[]; total: number }> {
+    async getSessions(
+      page = 1,
+      limit = 10
+    ): Promise<{ sessions: SessionSummary[]; total: number }> {
       try {
         return await apiRequest<{ sessions: SessionSummary[]; total: number }>(
           `/sessions?page=${page}&limit=${limit}`
@@ -393,7 +403,12 @@ export const api = {
           preview_text: 'Archived session record',
           transcript: [
             { id: '1', role: 'user', text: 'Hello assistant', timestamp: new Date().toISOString() },
-            { id: '2', role: 'assistant', text: 'Hello! How can I help you today?', timestamp: new Date().toISOString() },
+            {
+              id: '2',
+              role: 'assistant',
+              text: 'Hello! How can I help you today?',
+              timestamp: new Date().toISOString(),
+            },
           ],
         };
       }

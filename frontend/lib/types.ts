@@ -29,7 +29,7 @@ export interface SessionMessage {
 export interface MCPToolInvocation {
   id: string;
   name: string;
-  args?: Record<string, any>;
+  args?: Record<string, unknown>;
   result?: string;
   status: 'success' | 'error' | 'pending';
   timestamp: string;

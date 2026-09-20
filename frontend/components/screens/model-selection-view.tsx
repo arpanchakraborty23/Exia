@@ -1,26 +1,34 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  AlertCircle,
+  CheckCircle2,
+  Cpu,
+  Layers,
+  Loader2,
+  Mic,
+  RefreshCw,
+  Save,
   Sliders,
   Sparkles,
-  Layers,
-  CheckCircle2,
-  AlertCircle,
-  Save,
-  Loader2,
-  RefreshCw,
   Volume2,
-  Mic,
-  Cpu,
   Zap,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { ModelConfig } from '@/lib/types';
 
 const GEMINI_MODELS = [
-  { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash (Fastest, Live S2S)', badge: 'OPTIMAL FOR EXIA' },
-  { id: 'gemini-2.0-flash-thinking-exp', name: 'Gemini 2.0 Flash Thinking (Reasoning)', badge: 'EXPERIMENTAL' },
+  {
+    id: 'gemini-2.0-flash-exp',
+    name: 'Gemini 2.0 Flash (Fastest, Live S2S)',
+    badge: 'OPTIMAL FOR EXIA',
+  },
+  {
+    id: 'gemini-2.0-flash-thinking-exp',
+    name: 'Gemini 2.0 Flash Thinking (Reasoning)',
+    badge: 'EXPERIMENTAL',
+  },
 ];
 
 const GEMINI_VOICES = [
@@ -105,20 +113,21 @@ export function ModelSelectionView() {
   const currentMode = config?.pipeline_mode || 'gemini_live';
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8 p-4 md:p-8">
       {/* Screen Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-foreground font-mono">
+            <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
               INTELLIGENCE & MODEL ENGINE
             </h1>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/30">
+            <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               AUDIO INFERENCE
             </span>
           </div>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Choose between Google Gemini Live native speech-to-speech or a customized modular STT/LLM/TTS pipeline.
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+            Choose between Google Gemini Live native speech-to-speech or a customized modular
+            STT/LLM/TTS pipeline.
           </p>
         </div>
 
@@ -126,7 +135,7 @@ export function ModelSelectionView() {
           <button
             onClick={fetchConfig}
             disabled={isLoading || isSaving}
-            className="p-2 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-all cursor-pointer shadow-xs"
+            className="bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border cursor-pointer rounded-xl border p-2 shadow-xs transition-all"
             title="Reload config"
           >
             <RefreshCw className={`size-4 ${isLoading ? 'animate-spin text-emerald-500' : ''}`} />
@@ -134,7 +143,7 @@ export function ModelSelectionView() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50 cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-400 disabled:opacity-50"
           >
             {isSaving ? (
               <Loader2 className="size-4 animate-spin" />
@@ -143,21 +152,23 @@ export function ModelSelectionView() {
             ) : (
               <Save className="size-4" />
             )}
-            <span>{isSaving ? 'Deploying...' : saveSuccess ? 'Saved & Synced' : 'Apply Configuration'}</span>
+            <span>
+              {isSaving ? 'Deploying...' : saveSuccess ? 'Saved & Synced' : 'Apply Configuration'}
+            </span>
           </button>
         </div>
       </div>
 
       {/* Notifications */}
       {saveSuccess && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-mono">
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/15 p-4 font-mono text-xs text-emerald-700 dark:text-emerald-300">
           <CheckCircle2 className="size-4 shrink-0 text-emerald-500" />
           <span>Model configuration saved. Exia will use this engine on subsequent sessions.</span>
         </div>
       )}
 
       {error && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs font-mono">
+        <div className="flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 font-mono text-xs text-rose-600 dark:text-rose-300">
           <AlertCircle className="size-4 shrink-0 text-rose-500" />
           <span>{error}</span>
         </div>
@@ -165,18 +176,18 @@ export function ModelSelectionView() {
 
       {/* Architecture Selection Bento Cards */}
       <div className="space-y-3">
-        <label className="text-xs font-mono uppercase tracking-wider text-muted-foreground font-bold block">
+        <label className="text-muted-foreground block font-mono text-xs font-bold tracking-wider uppercase">
           Select Primary Audio Pipeline Architecture
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Card 1: Gemini Live */}
           <div
             onClick={() =>
               setConfig((prev) => (prev ? { ...prev, pipeline_mode: 'gemini_live' } : null))
             }
-            className={`p-6 rounded-2xl border transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+            className={`relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-6 transition-all duration-200 ${
               currentMode === 'gemini_live'
-                ? 'bg-gradient-to-b from-emerald-500/10 via-card to-card border-emerald-500/40 shadow-sm dark:from-emerald-950/20 dark:to-card'
+                ? 'via-card to-card dark:to-card border-emerald-500/40 bg-gradient-to-b from-emerald-500/10 shadow-sm dark:from-emerald-950/20'
                 : 'bg-card hover:bg-muted/40 border-border'
             }`}
           >
@@ -184,28 +195,28 @@ export function ModelSelectionView() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`size-10 rounded-xl flex items-center justify-center border ${
+                    className={`flex size-10 items-center justify-center rounded-xl border ${
                       currentMode === 'gemini_live'
-                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                        ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-600 shadow-[0_0_10px_rgba(16,185,129,0.2)] dark:text-emerald-400'
                         : 'bg-muted text-muted-foreground border-border'
                     }`}
                   >
                     <Sparkles className="size-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-foreground font-mono">
+                    <h3 className="text-foreground font-mono text-sm font-bold">
                       Gemini Live Multimodal
                     </h3>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                    <span className="font-mono text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                       Native Speech-to-Speech (Zero STT latency)
                     </span>
                   </div>
                 </div>
 
                 <span
-                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                  className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold ${
                     currentMode === 'gemini_live'
-                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40'
+                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                       : 'bg-muted text-muted-foreground border-border'
                   }`}
                 >
@@ -213,18 +224,21 @@ export function ModelSelectionView() {
                 </span>
               </div>
 
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Direct WebSocket WebRTC pipeline. Voice tokens are understood natively without transcription errors, allowing natural pauses, laughing, and emotion.
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Direct WebSocket WebRTC pipeline. Voice tokens are understood natively without
+                transcription errors, allowing natural pauses, laughing, and emotion.
               </p>
 
               {/* Latency benchmark metric */}
-              <div className="p-3 rounded-xl bg-muted/60 border border-border flex items-center justify-between text-[11px] font-mono">
+              <div className="bg-muted/60 border-border flex items-center justify-between rounded-xl border p-3 font-mono text-[11px]">
                 <span className="text-muted-foreground font-semibold">End-to-End Latency:</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">~180ms - 240ms (Real-time)</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  ~180ms - 240ms (Real-time)
+                </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border text-[10px] font-mono text-muted-foreground">
+            <div className="border-border text-muted-foreground mt-4 flex items-center gap-2 border-t pt-3 font-mono text-[10px]">
               <span>Opus 48kHz</span>
               <span>•</span>
               <span>Native Interruption Handling</span>
@@ -238,9 +252,9 @@ export function ModelSelectionView() {
             onClick={() =>
               setConfig((prev) => (prev ? { ...prev, pipeline_mode: 'modular' } : null))
             }
-            className={`p-6 rounded-2xl border transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+            className={`relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-6 transition-all duration-200 ${
               currentMode === 'modular'
-                ? 'bg-gradient-to-b from-teal-500/10 via-card to-card border-teal-500/40 shadow-sm dark:from-teal-950/20 dark:to-card'
+                ? 'via-card to-card dark:to-card border-teal-500/40 bg-gradient-to-b from-teal-500/10 shadow-sm dark:from-teal-950/20'
                 : 'bg-card hover:bg-muted/40 border-border'
             }`}
           >
@@ -248,28 +262,28 @@ export function ModelSelectionView() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`size-10 rounded-xl flex items-center justify-center border ${
+                    className={`flex size-10 items-center justify-center rounded-xl border ${
                       currentMode === 'modular'
-                        ? 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30'
+                        ? 'border-teal-500/30 bg-teal-500/15 text-teal-600 dark:text-teal-400'
                         : 'bg-muted text-muted-foreground border-border'
                     }`}
                   >
                     <Layers className="size-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-foreground font-mono">
+                    <h3 className="text-foreground font-mono text-sm font-bold">
                       Modular Pipeline (STT + LLM + TTS)
                     </h3>
-                    <span className="text-[10px] text-teal-600 dark:text-teal-400 font-mono font-semibold">
+                    <span className="font-mono text-[10px] font-semibold text-teal-600 dark:text-teal-400">
                       Multi-vendor component flexibility
                     </span>
                   </div>
                 </div>
 
                 <span
-                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                  className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold ${
                     currentMode === 'modular'
-                      ? 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/40'
+                      ? 'border-teal-500/40 bg-teal-500/15 text-teal-700 dark:text-teal-300'
                       : 'bg-muted text-muted-foreground border-border'
                   }`}
                 >
@@ -277,18 +291,19 @@ export function ModelSelectionView() {
                 </span>
               </div>
 
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Combines Deepgram Nova-2 speech recognition, Claude 3.5 Sonnet / OpenAI reasoning, and Cartesia Sonic high-speed neural synthesis.
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Combines Deepgram Nova-2 speech recognition, Claude 3.5 Sonnet / OpenAI reasoning,
+                and Cartesia Sonic high-speed neural synthesis.
               </p>
 
               {/* Latency benchmark metric */}
-              <div className="p-3 rounded-xl bg-muted/60 border border-border flex items-center justify-between text-[11px] font-mono">
+              <div className="bg-muted/60 border-border flex items-center justify-between rounded-xl border p-3 font-mono text-[11px]">
                 <span className="text-muted-foreground font-semibold">End-to-End Latency:</span>
-                <span className="text-teal-600 dark:text-teal-400 font-bold">~420ms - 550ms</span>
+                <span className="font-bold text-teal-600 dark:text-teal-400">~420ms - 550ms</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border text-[10px] font-mono text-muted-foreground">
+            <div className="border-border text-muted-foreground mt-4 flex items-center gap-2 border-t pt-3 font-mono text-[10px]">
               <span>Custom Voice Clones</span>
               <span>•</span>
               <span>Local Ollama Support</span>
@@ -301,21 +316,23 @@ export function ModelSelectionView() {
 
       {/* Pipeline Config Details */}
       {config && (
-        <div className="p-6 rounded-2xl bg-card border border-border space-y-6 shadow-xs">
+        <div className="bg-card border-border space-y-6 rounded-2xl border p-6 shadow-xs">
           {currentMode === 'gemini_live' ? (
             /* Gemini Live Settings */
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-border pb-3">
-                <h3 className="text-sm font-bold font-mono text-foreground flex items-center gap-2">
+              <div className="border-border flex items-center justify-between border-b pb-3">
+                <h3 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold">
                   <Sparkles className="size-4 text-emerald-500" />
                   <span>Gemini Live Voice Parameters</span>
                 </h3>
-                <span className="text-xs font-mono text-muted-foreground">Engine: Google DeepMind</span>
+                <span className="text-muted-foreground font-mono text-xs">
+                  Engine: Google DeepMind
+                </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-2">
+                  <label className="text-muted-foreground mb-2 block font-mono text-xs">
                     Hosted Live Model
                   </label>
                   <select
@@ -323,7 +340,7 @@ export function ModelSelectionView() {
                     onChange={(e) =>
                       setConfig((prev) => (prev ? { ...prev, gemini_model: e.target.value } : null))
                     }
-                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+                    className="bg-muted/40 border-border text-foreground w-full cursor-pointer rounded-xl border px-3 py-2 font-mono text-xs focus:border-emerald-500/50 focus:outline-none"
                   >
                     {GEMINI_MODELS.map((m) => (
                       <option key={m.id} value={m.id} className="bg-card text-foreground">
@@ -334,7 +351,7 @@ export function ModelSelectionView() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-muted-foreground mb-2">
+                  <label className="text-muted-foreground mb-2 block font-mono text-xs">
                     Voice Persona & Timbre
                   </label>
                   <select
@@ -342,7 +359,7 @@ export function ModelSelectionView() {
                     onChange={(e) =>
                       setConfig((prev) => (prev ? { ...prev, gemini_voice: e.target.value } : null))
                     }
-                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+                    className="bg-muted/40 border-border text-foreground w-full cursor-pointer rounded-xl border px-3 py-2 font-mono text-xs focus:border-emerald-500/50 focus:outline-none"
                   >
                     {GEMINI_VOICES.map((v) => (
                       <option key={v.id} value={v.id} className="bg-card text-foreground">
@@ -354,18 +371,18 @@ export function ModelSelectionView() {
               </div>
 
               {/* Temperature & Token Controls */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+              <div className="grid grid-cols-1 gap-5 pt-2 md:grid-cols-2">
                 <div>
-                  <div className="flex items-center justify-between text-xs font-mono mb-2">
+                  <div className="mb-2 flex items-center justify-between font-mono text-xs">
                     <span className="text-muted-foreground">Response Temperature</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
                       {config.temperature ?? 0.7}{' '}
-                      <span className="text-[10px] text-muted-foreground font-normal">
+                      <span className="text-muted-foreground text-[10px] font-normal">
                         {(config.temperature ?? 0.7) <= 0.3
                           ? '(Tactical / Deterministic)'
                           : (config.temperature ?? 0.7) <= 0.7
-                          ? '(Balanced)'
-                          : '(Creative)'}
+                            ? '(Balanced)'
+                            : '(Creative)'}
                       </span>
                     </span>
                   </div>
@@ -380,14 +397,14 @@ export function ModelSelectionView() {
                         prev ? { ...prev, temperature: parseFloat(e.target.value) } : null
                       )
                     }
-                    className="w-full h-2 bg-muted rounded-lg accent-emerald-500 cursor-pointer"
+                    className="bg-muted h-2 w-full cursor-pointer rounded-lg accent-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between text-xs font-mono mb-2">
+                  <div className="mb-2 flex items-center justify-between font-mono text-xs">
                     <span className="text-muted-foreground">Max Token Length</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
                       {config.max_output_tokens ?? 1024} tokens
                     </span>
                   </div>
@@ -402,7 +419,7 @@ export function ModelSelectionView() {
                         prev ? { ...prev, max_output_tokens: parseInt(e.target.value) } : null
                       )
                     }
-                    className="w-full h-2 bg-muted rounded-lg accent-emerald-500 cursor-pointer"
+                    className="bg-muted h-2 w-full cursor-pointer rounded-lg accent-emerald-500"
                   />
                 </div>
               </div>
@@ -410,18 +427,18 @@ export function ModelSelectionView() {
           ) : (
             /* Modular Settings */
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-border pb-3">
-                <h3 className="text-sm font-bold font-mono text-foreground flex items-center gap-2">
+              <div className="border-border flex items-center justify-between border-b pb-3">
+                <h3 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold">
                   <Layers className="size-4 text-teal-500" />
                   <span>Modular Pipeline Components</span>
                 </h3>
-                <span className="text-xs font-mono text-muted-foreground">Multi-Vendor Hybrid</span>
+                <span className="text-muted-foreground font-mono text-xs">Multi-Vendor Hybrid</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {/* STT */}
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
+                  <label className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs">
                     <Mic className="size-3.5 text-teal-500" />
                     <span>Speech-to-Text (STT)</span>
                   </label>
@@ -430,10 +447,14 @@ export function ModelSelectionView() {
                     onChange={(e) =>
                       setConfig((prev) => (prev ? { ...prev, stt_provider: e.target.value } : null))
                     }
-                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-teal-500/50 cursor-pointer"
+                    className="bg-muted/40 border-border text-foreground w-full cursor-pointer rounded-xl border px-3 py-2 font-mono text-xs focus:border-teal-500/50 focus:outline-none"
                   >
                     {STT_OPTIONS.map((o) => (
-                      <option key={o.provider} value={o.provider} className="bg-card text-foreground">
+                      <option
+                        key={o.provider}
+                        value={o.provider}
+                        className="bg-card text-foreground"
+                      >
                         {o.name}
                       </option>
                     ))}
@@ -442,7 +463,7 @@ export function ModelSelectionView() {
 
                 {/* LLM */}
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
+                  <label className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs">
                     <Cpu className="size-3.5 text-teal-500" />
                     <span>Reasoning Engine (LLM)</span>
                   </label>
@@ -451,7 +472,7 @@ export function ModelSelectionView() {
                     onChange={(e) =>
                       setConfig((prev) => (prev ? { ...prev, llm_model: e.target.value } : null))
                     }
-                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-teal-500/50 cursor-pointer"
+                    className="bg-muted/40 border-border text-foreground w-full cursor-pointer rounded-xl border px-3 py-2 font-mono text-xs focus:border-teal-500/50 focus:outline-none"
                   >
                     {LLM_OPTIONS.map((o) => (
                       <option key={o.model} value={o.model} className="bg-card text-foreground">
@@ -463,7 +484,7 @@ export function ModelSelectionView() {
 
                 {/* TTS */}
                 <div className="space-y-2">
-                  <label className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
+                  <label className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs">
                     <Volume2 className="size-3.5 text-teal-500" />
                     <span>Voice Synthesis (TTS)</span>
                   </label>
@@ -472,10 +493,14 @@ export function ModelSelectionView() {
                     onChange={(e) =>
                       setConfig((prev) => (prev ? { ...prev, tts_provider: e.target.value } : null))
                     }
-                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-teal-500/50 cursor-pointer"
+                    className="bg-muted/40 border-border text-foreground w-full cursor-pointer rounded-xl border px-3 py-2 font-mono text-xs focus:border-teal-500/50 focus:outline-none"
                   >
                     {TTS_OPTIONS.map((o) => (
-                      <option key={o.provider} value={o.provider} className="bg-card text-foreground">
+                      <option
+                        key={o.provider}
+                        value={o.provider}
+                        className="bg-card text-foreground"
+                      >
                         {o.name}
                       </option>
                     ))}

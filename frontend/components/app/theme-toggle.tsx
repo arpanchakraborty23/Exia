@@ -1,8 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Monitor, Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 
 interface ThemeToggleProps {
@@ -21,11 +21,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     return (
       <div
         className={cn(
-          'flex items-center h-8 w-[142px] px-1 rounded-xl border border-border bg-card/60 backdrop-blur-md opacity-60',
+          'border-border bg-card/60 flex h-8 w-[142px] items-center rounded-xl border px-1 opacity-60 backdrop-blur-md',
           className
         )}
       >
-        <div className="h-5 w-full rounded-lg bg-muted animate-pulse" />
+        <div className="bg-muted h-5 w-full animate-pulse rounded-lg" />
       </div>
     );
   }
@@ -35,7 +35,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       role="radiogroup"
       aria-label="Color scheme selection"
       className={cn(
-        'flex items-center p-1 rounded-xl border border-border bg-card/80 backdrop-blur-md shadow-xs select-none',
+        'border-border bg-card/80 flex items-center rounded-xl border p-1 shadow-xs backdrop-blur-md select-none',
         className
       )}
     >
@@ -45,14 +45,16 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         title="Switch to Light theme"
         aria-checked={theme === 'light'}
         className={cn(
-          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 cursor-pointer text-xs font-mono',
+          'flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs transition-all duration-200',
           theme === 'light'
-            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold shadow-xs border border-emerald-500/30'
+            ? 'border border-emerald-500/30 bg-emerald-500/15 font-semibold text-emerald-600 shadow-xs dark:text-emerald-400'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
         )}
       >
         <Sun className="size-3.5" />
-        <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Light</span>
+        <span className="hidden text-[10px] font-bold tracking-wider uppercase sm:inline">
+          Light
+        </span>
       </button>
 
       <button
@@ -61,14 +63,16 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         title="Switch to Dark theme"
         aria-checked={theme === 'dark'}
         className={cn(
-          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 cursor-pointer text-xs font-mono',
+          'flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs transition-all duration-200',
           theme === 'dark'
-            ? 'bg-emerald-500/15 text-emerald-400 font-semibold shadow-xs border border-emerald-500/30'
+            ? 'border border-emerald-500/30 bg-emerald-500/15 font-semibold text-emerald-400 shadow-xs'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
         )}
       >
         <Moon className="size-3.5" />
-        <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Dark</span>
+        <span className="hidden text-[10px] font-bold tracking-wider uppercase sm:inline">
+          Dark
+        </span>
       </button>
 
       <button
@@ -77,14 +81,16 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         title="Follow System theme"
         aria-checked={theme === 'system'}
         className={cn(
-          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 cursor-pointer text-xs font-mono',
+          'flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs transition-all duration-200',
           theme === 'system'
-            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold shadow-xs border border-emerald-500/30'
+            ? 'border border-emerald-500/30 bg-emerald-500/15 font-semibold text-emerald-600 shadow-xs dark:text-emerald-400'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
         )}
       >
         <Monitor className="size-3.5" />
-        <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Auto</span>
+        <span className="hidden text-[10px] font-bold tracking-wider uppercase sm:inline">
+          Auto
+        </span>
       </button>
     </div>
   );

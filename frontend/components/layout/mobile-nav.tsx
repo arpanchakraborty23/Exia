@@ -1,14 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  Mic,
-  History,
-  Cpu,
-  FileText,
-  Sliders,
-  Settings as SettingsIcon,
-} from 'lucide-react';
+import { Cpu, FileText, History, Mic, Settings as SettingsIcon, Sliders } from 'lucide-react';
 import { NavTab } from './sidebar';
 
 interface MobileNavProps {
@@ -17,7 +10,11 @@ interface MobileNavProps {
   isCallActive?: boolean;
 }
 
-const MOBILE_ITEMS: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const MOBILE_ITEMS: {
+  id: NavTab;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { id: 'session', label: 'Voice', icon: Mic },
   { id: 'history', label: 'History', icon: History },
   { id: 'mcp', label: 'MCP', icon: Cpu },
@@ -28,8 +25,8 @@ const MOBILE_ITEMS: { id: NavTab; label: string; icon: React.ComponentType<{ cla
 
 export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavProps) {
   return (
-    <div className="md:hidden fixed bottom-3 left-3 right-3 z-40">
-      <nav className="bg-card/90 backdrop-blur-2xl border border-border rounded-2xl px-2 py-1.5 flex items-center justify-around shadow-2xl shadow-black/20 text-card-foreground">
+    <div className="fixed right-3 bottom-3 left-3 z-40 md:hidden">
+      <nav className="bg-card/90 border-border text-card-foreground flex items-center justify-around rounded-2xl border px-2 py-1.5 shadow-2xl shadow-black/20 backdrop-blur-2xl">
         {MOBILE_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
@@ -39,9 +36,9 @@ export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavPr
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative cursor-pointer ${
+              className={`relative flex cursor-pointer flex-col items-center justify-center rounded-xl px-2.5 py-1 transition-all ${
                 isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                  ? 'font-semibold text-emerald-600 dark:text-emerald-400'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -49,15 +46,15 @@ export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavPr
                 <Icon
                   className={`size-5 transition-colors ${
                     isActive
-                      ? 'text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                      ? 'text-emerald-600 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)] dark:text-emerald-400'
                       : 'text-muted-foreground'
                   }`}
                 />
                 {isVoice && isCallActive && (
-                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_#10b981]" />
+                  <span className="absolute -top-1 -right-1 size-2 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
                 )}
               </div>
-              <span className="text-[10px] mt-0.5 tracking-tight font-mono">{item.label}</span>
+              <span className="mt-0.5 font-mono text-[10px] tracking-tight">{item.label}</span>
               {isActive && (
                 <span className="absolute -bottom-0.5 size-1 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
               )}

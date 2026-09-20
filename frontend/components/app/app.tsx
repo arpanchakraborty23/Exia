@@ -2,19 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TokenSource } from 'livekit-client';
+import { Loader2 } from 'lucide-react';
 import { useSession } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
-import { Loader2 } from 'lucide-react';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
 import { AppShell } from '@/components/layout/app-shell';
 import { NavTab } from '@/components/layout/sidebar';
-import { LoginView } from '@/components/screens/login-view';
 import { HistoryView } from '@/components/screens/history-view';
+import { LoginView } from '@/components/screens/login-view';
 import { MCPView } from '@/components/screens/mcp-view';
-import { PromptsView } from '@/components/screens/prompts-view';
 import { ModelSelectionView } from '@/components/screens/model-selection-view';
+import { PromptsView } from '@/components/screens/prompts-view';
 import { SettingsView } from '@/components/screens/settings-view';
 import { Toaster } from '@/components/ui/sonner';
 import { useAuth } from '@/context/auth-context';
@@ -71,8 +71,8 @@ export function App({ agentName, isVideoInputSupported = false }: AppProps) {
   // Auth Loading
   if (isLoading) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-background text-muted-foreground gap-3">
-        <Loader2 className="size-8 animate-spin text-primary" />
+      <div className="bg-background text-muted-foreground flex h-screen w-screen flex-col items-center justify-center gap-3">
+        <Loader2 className="text-primary size-8 animate-spin" />
         <p className="text-xs font-medium">Loading Home Assistant...</p>
       </div>
     );
