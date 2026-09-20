@@ -18,6 +18,7 @@ class AgentSessionModel(BaseModel):
 
     user_id  : str = Field(...,max_length=7)
     session_id: str = Field(...,description="agent session id")
+    room_name: Optional[str] = Field(None,description="livekit room name")
     name     : str = Field(...,description="participant name")
     token    : str = Field(...,description="agent token")
     session_summary : Optional[str] = Field(None,description="summary")

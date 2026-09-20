@@ -9,8 +9,10 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
   login: (emailOrUsername: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  clearError: () => void;
   changePassword: (
     currentPass: string,
     newPass: string
@@ -23,6 +25,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const clearError = () => setError(null);
 
   useEffect(() => {
     const savedToken = getStoredToken();
@@ -43,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (emailOrUsername: string, password: string): Promise<boolean> => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await api.auth.login(emailOrUsername, password);
       if (res.access_token) {
@@ -59,9 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStoredUser(resolvedUser);
         return true;
       }
+      setError('Authentication failed: no access token received.');
       return false;
     } catch (err: any) {
+      const message = err?.message || 'Authentication sequence failed.';
       console.error('Login error:', err);
+      setError(message);
       throw err;
     } finally {
       setIsLoading(false);
@@ -97,8 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isAuthenticated: !!token,
         isLoading,
+        error,
         login,
         logout,
+        clearError,
         changePassword,
       }}
     >

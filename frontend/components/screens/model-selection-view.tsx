@@ -74,15 +74,19 @@ export function ModelSelectionView() {
     } catch {
       // Fallback default configuration
       setConfig({
+        mode: 'gemini_live',
         pipeline_mode: 'gemini_live',
         gemini_model: 'gemini-2.0-flash-exp',
         gemini_voice: 'Charon',
         temperature: 0.7,
         max_output_tokens: 1024,
         stt_provider: 'Deepgram',
+        stt_model: 'nova-2',
+        llm_provider: 'Anthropic',
         llt_provider: 'Anthropic',
         llm_model: 'claude-3-5-sonnet',
         tts_provider: 'Cartesia',
+        tts_model: 'sonic-english',
       });
     } finally {
       setIsLoading(false);

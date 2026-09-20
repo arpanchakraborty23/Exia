@@ -5,6 +5,7 @@ from .mcp import *
 from .prompts import PromptServices
 from .model_config import ModelConfigServices
 from .token_blacklist import TokenBlacklistServices
+from .sessions import SessionServices
 
 __all__ = [
     "MongoDBValidation",
@@ -17,5 +18,6 @@ __all__ = [
     "MCPServices",
     "PromptServices",
     "ModelConfigServices",
-    "TokenBlacklistServices"
+    "TokenBlacklistServices",
+    "SessionServices"
 ]

@@ -206,3 +206,51 @@ class LogoutRequest(BaseModel):
 
 class LogoutResponse(BaseModel):
     message: Optional[str] = None
+
+
+# session history — matches frontend SessionSummary / SessionDetail
+class SessionSummarySchema(BaseModel):
+    id: str
+    user_id: Optional[str] = None
+    room_name: Optional[str] = None
+    started_at: Optional[str] = None
+    ended_at: Optional[str] = None
+    status: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    model_used: Optional[str] = None
+    message_count: Optional[int] = None
+    preview_text: Optional[str] = None
+
+
+class SessionMessageSchema(BaseModel):
+    id: Optional[str] = None
+    role: Optional[str] = None
+    text: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
+class SessionDetailSchema(SessionSummarySchema):
+    transcript: List[SessionMessageSchema] = Field(default_factory=list)
+    mcp_tools_invoked: List[Dict] = Field(default_factory=list)
+
+
+class SessionListResponse(BaseModel):
+    sessions: List[SessionSummarySchema] = Field(default_factory=list)
+    total: int = 0
+
+
+class EndSessionResponse(BaseModel):
+    message: Optional[str] = None
+
+
+# mcp generic edit (frontend edit modal) — all fields optional
+class MCPServerEditRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    server_name: Optional[str] = None
+    transport: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("transport", "trasport"),
+    )
+    server_url: Optional[str] = None
+    server_key: Optional[str] = None

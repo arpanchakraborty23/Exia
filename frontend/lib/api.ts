@@ -257,42 +257,84 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   }
 }
 
+// Backend MCP shapes (POST /api/add, GET /api/list, GET /api/{name}/tools, ...)
+interface BackendMCP {
+  server_name: string;
+  transport?: string;
+  server_url?: string;
+  status?: string;
+  mcp_tool_count?: number;
+}
+
+interface BackendMCPUpsert {
+  server_name: string;
+  transport?: string;
+  server_url?: string;
+  server_status?: string;
+  message?: string;
+}
+
+interface BackendMCPTools {
+  server_name: string;
+  server_url?: string;
+  status?: string;
+  tools?: { name?: string; description?: string }[];
+  tools_count?: number;
+}
+
+function toMCPServer(s: BackendMCP, tools?: string[]): MCPServer {
+  const enabled = (s.status || 'active') === 'active';
+  return {
+    id: s.server_name,
+    name: s.server_name,
+    server_type: s.transport === 'stdio' ? 'stdio' : 'sse',
+    command_or_url: s.server_url || '',
+    enabled,
+    status: enabled ? 'connected' : 'disconnected',
+    ...(tools ? { tools } : {}),
+  };
+}
+
+async function fetchMCPToolNames(serverName: string): Promise<string[] | undefined> {
+  try {
+    const t = await apiRequest<BackendMCPTools>(`/${encodeURIComponent(serverName)}/tools`);
+    const names = (t.tools || []).map((x) => x.name).filter(Boolean) as string[];
+    return names;
+  } catch {
+    return undefined;
+  }
+}
+
 // ---------------- API SERVICES ----------------
 
 export const api = {
   // 1. Auth
   auth: {
     async login(emailOrUsername: string, password: string): Promise<LoginResponse> {
-      try {
-        // Try real backend endpoint first
-        return await apiRequest<LoginResponse>('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({
-            email: emailOrUsername,
-            username: emailOrUsername,
-            password: password,
-            hash_password: password, // Support backend naming
-          }),
-        });
-      } catch (err) {
-        console.warn('Backend login unavailable, using simulated local authentication:', err);
-        // Resilient fallback for demo / testing
-        const fallbackUser: User = {
-          id: 'usr_' + Math.random().toString(36).substring(2, 8),
-          email: emailOrUsername.includes('@')
-            ? emailOrUsername
-            : `${emailOrUsername}@homeassistant.local`,
-          name: emailOrUsername.split('@')[0],
-          created_at: new Date().toISOString(),
-        };
-        const token = 'ha_mock_jwt_' + Math.random().toString(36).substring(2);
-        return {
-          access_token: token,
-          refresh_token: 'ha_mock_refresh_' + Math.random().toString(36).substring(2),
-          user: fallbackUser,
-          message: 'Authenticated locally',
-        };
-      }
+      // Backend: POST /api/signin { email, password }
+      const raw = await apiRequest<{
+        access_token: string;
+        refresh_token?: string;
+        message?: string;
+        user?: { user_id?: string; id?: string; email?: string; name?: string };
+      }>('/signin', {
+        method: 'POST',
+        body: JSON.stringify({ email: emailOrUsername, password }),
+      });
+      // Normalize backend user { user_id, ... } to frontend User { id, ... }
+      const user: User | undefined = raw.user
+        ? {
+            id: raw.user.user_id || raw.user.id || '',
+            email: raw.user.email || emailOrUsername,
+            name: raw.user.name,
+          }
+        : undefined;
+      return {
+        access_token: raw.access_token,
+        refresh_token: raw.refresh_token,
+        message: raw.message,
+        user,
+      };
     },
 
     async changePassword(
@@ -325,27 +367,17 @@ export const api = {
   // 2. LiveKit Voice Session
   livekit: {
     async getToken(roomName?: string): Promise<LiveKitTokenResponse> {
+      // Backend: POST /api/agent/token { room_name } -> { server_url, token, session_id, user_id }
       try {
-        // Fetch LiveKit access token directly from FastAPI backend endpoint
-        return await apiRequest<LiveKitTokenResponse>('/livekit/token', {
+        return await apiRequest<LiveKitTokenResponse>('/agent/token', {
           method: 'POST',
           body: JSON.stringify({ room_name: roomName }),
         });
-      } catch {
-        // Fallback to FastAPI /api/agent/token endpoint
-        try {
-          return await apiRequest<LiveKitTokenResponse>('/agent/token', {
-            method: 'POST',
-            body: JSON.stringify({ room_name: roomName }),
-          });
-        } catch (err2) {
-          console.error('Failed to obtain token from FastAPI backend:', err2);
-          const errorMessage =
-            err2 instanceof Error
-              ? err2.message
-              : 'Failed to fetch LiveKit token from backend server';
-          throw new Error(errorMessage);
-        }
+      } catch (err) {
+        console.error('Failed to obtain token from FastAPI backend:', err);
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to fetch LiveKit token from backend server';
+        throw new Error(errorMessage);
       }
     },
 
@@ -415,13 +447,18 @@ export const api = {
     },
   },
 
-  // 4. MCP Servers
+  // 4. MCP Servers (backend: POST /api/add, GET /api/list, PUT/DELETE /api/{name}, ...)
   mcp: {
     async list(): Promise<MCPServer[]> {
       try {
-        return await apiRequest<MCPServer[]>('/mcp');
+        const data = await apiRequest<{ servers: BackendMCP[]; count: number }>('/list');
+        return await Promise.all(
+          (data.servers || []).map(async (s) =>
+            toMCPServer(s, await fetchMCPToolNames(s.server_name))
+          )
+        );
       } catch (err) {
-        console.warn('Backend GET /mcp failed, using local storage/defaults:', err);
+        console.warn('Backend GET /list failed, using local storage/defaults:', err);
         if (typeof window !== 'undefined') {
           const raw = localStorage.getItem(STORAGE_KEYS.MCP);
           if (raw) return JSON.parse(raw);
@@ -431,61 +468,92 @@ export const api = {
     },
 
     async create(server: Omit<MCPServer, 'id' | 'created_at'>): Promise<MCPServer> {
-      try {
-        return await apiRequest<MCPServer>('/mcp', {
-          method: 'POST',
-          body: JSON.stringify(server),
+      // Backend: POST /api/add (always creates as active)
+      const created = await apiRequest<BackendMCPUpsert>('/add', {
+        method: 'POST',
+        body: JSON.stringify({
+          server_name: server.name,
+          transport: server.server_type,
+          server_url: server.command_or_url,
+          server_key: server.auth_token || undefined,
+        }),
+      });
+      const enabled = server.enabled !== false;
+      const status = enabled ? 'active' : 'inactive';
+      if (!enabled) {
+        await apiRequest(`/${encodeURIComponent(created.server_name)}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status }),
         });
-      } catch (err) {
-        console.warn('Backend POST /mcp failed, updating local state:', err);
-        const newServer: MCPServer = {
-          ...server,
-          id: `mcp-${Date.now()}`,
-          created_at: new Date().toISOString(),
-          status: 'connected',
-        };
-        const current = await this.list();
-        const updated = [newServer, ...current];
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.MCP, JSON.stringify(updated));
-        }
-        return newServer;
       }
+      return toMCPServer(
+        {
+          server_name: created.server_name,
+          transport: created.transport,
+          server_url: created.server_url,
+          status,
+        },
+        await fetchMCPToolNames(created.server_name)
+      );
     },
 
     async update(id: string, server: Partial<MCPServer>): Promise<MCPServer> {
-      try {
-        return await apiRequest<MCPServer>(`/mcp/${id}`, {
-          method: 'PUT',
-          body: JSON.stringify(server),
-        });
-      } catch (err) {
-        console.warn(`Backend PUT /mcp/${id} failed, updating local state:`, err);
-        const current = await this.list();
-        const updated = current.map((item) =>
-          item.id === id ? { ...item, ...server, updated_at: new Date().toISOString() } : item
+      const keys = Object.keys(server);
+      // Enabled-only toggle -> status route
+      if (keys.length === 1 && 'enabled' in server) {
+        const status = server.enabled ? 'active' : 'inactive';
+        const res = await apiRequest<{ server_name: string; status: string }>(
+          `/${encodeURIComponent(id)}/status`,
+          { method: 'PATCH', body: JSON.stringify({ status }) }
         );
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.MCP, JSON.stringify(updated));
+        const enabled = res.status === 'active';
+        const current = await this.list().catch(() => [] as MCPServer[]);
+        const existing = current.find((s) => s.id === res.server_name);
+        if (existing) {
+          return { ...existing, enabled, status: enabled ? 'connected' : 'disconnected' };
         }
-        return updated.find((s) => s.id === id)!;
+        return {
+          id: res.server_name,
+          name: res.server_name,
+          server_type: 'sse',
+          command_or_url: '',
+          enabled,
+          status: enabled ? 'connected' : 'disconnected',
+        };
       }
+      // Field edit -> PUT /api/{name}, then optional status toggle
+      const body: Record<string, unknown> = {};
+      if (server.name !== undefined) body.server_name = server.name;
+      if (server.server_type !== undefined) body.transport = server.server_type;
+      if (server.command_or_url !== undefined) body.server_url = server.command_or_url;
+      if (server.auth_token !== undefined) body.server_key = server.auth_token;
+      const updated = await apiRequest<BackendMCPUpsert>(`/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+      let status = updated.server_status || 'active';
+      if (server.enabled !== undefined) {
+        status = server.enabled ? 'active' : 'inactive';
+        await apiRequest(`/${encodeURIComponent(updated.server_name)}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status }),
+        });
+      }
+      return toMCPServer(
+        {
+          server_name: updated.server_name,
+          transport: updated.transport,
+          server_url: updated.server_url,
+          status,
+        },
+        await fetchMCPToolNames(updated.server_name)
+      );
     },
 
     async delete(id: string): Promise<{ success: boolean }> {
-      try {
-        return await apiRequest<{ success: boolean }>(`/mcp/${id}`, {
-          method: 'DELETE',
-        });
-      } catch (err) {
-        console.warn(`Backend DELETE /mcp/${id} failed, updating local state:`, err);
-        const current = await this.list();
-        const updated = current.filter((s) => s.id !== id);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.MCP, JSON.stringify(updated));
-        }
-        return { success: true };
-      }
+      // Backend: DELETE /api/{server_name}
+      await apiRequest(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      return { success: true };
     },
   },
 

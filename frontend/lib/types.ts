@@ -63,7 +63,8 @@ export interface MCPServer {
   auth_token?: string;
   env_vars?: Record<string, string>;
   enabled: boolean;
-  created_at: string;
+  tools?: string[];
+  created_at?: string;
   updated_at?: string;
   status?: 'connected' | 'disconnected' | 'error';
 }
@@ -81,13 +82,18 @@ export interface PromptItem {
 
 export interface ModelConfig {
   mode: 'gemini_live' | 'modular';
+  // Alias used by model-selection-view (mirrored by backend GET/PUT /models/config)
+  pipeline_mode?: 'gemini_live' | 'modular';
   gemini_model: string;
   gemini_voice: string;
   stt_provider: string;
   stt_model: string;
   llm_provider: string;
+  // Alternate key sent by model-selection-view (normalized server-side)
+  llt_provider?: string;
   llm_model: string;
   tts_provider: string;
   tts_model: string;
   temperature: number;
+  max_output_tokens?: number;
 }

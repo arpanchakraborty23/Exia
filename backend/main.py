@@ -20,6 +20,7 @@ from src.routes.token import api_router
 from src.routes.mcp import mcp_route
 from src.routes.prompts import prompt_route
 from src.routes.model_config import model_route
+from src.routes.sessions import session_route
 
 # ==============================================================================
 # Logging Configuration
@@ -110,6 +111,12 @@ TAGS_METADATA: List[Dict[str, Any]] = [
         "name": "Models",
         "description": (
             "Model engine configuration for the voice agent pipeline."
+        ),
+    },
+    {
+        "name": "Sessions",
+        "description": (
+            "Voice session history listing, detail, and close-out."
         ),
     },
 ]
@@ -242,6 +249,10 @@ logger.info("Registered router: Prompts (/api/prompts)")
 # model engine config (/api/models/config)
 app.include_router(model_route)
 logger.info("Registered router: Models (/api/models/config)")
+
+# voice session history (/api/sessions)
+app.include_router(session_route)
+logger.info("Registered router: Sessions (/api/sessions)")
 
 # ==============================================================================
 # System & Diagnostic Endpoints

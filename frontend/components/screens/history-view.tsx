@@ -499,51 +499,56 @@ export function HistoryView() {
                   </div>
 
                   {/* MCP Tool Actions Executed */}
-                  {sessionDetail.mcp_calls && sessionDetail.mcp_calls.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold">
-                        <Cpu className="size-3.5 text-emerald-400" />
-                        <span>MCP Autonomous Actions ({sessionDetail.mcp_calls.length})</span>
-                      </div>
+                  {sessionDetail.mcp_tools_invoked &&
+                    sessionDetail.mcp_tools_invoked.length > 0 && (
                       <div className="space-y-2">
-                        {sessionDetail.mcp_calls.map((call, idx) => (
-                          <div
-                            key={idx}
-                            className="border-border space-y-2 rounded-xl border bg-[#0e131d] p-3 font-mono text-xs"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-emerald-400">{call.tool_name}</span>
-                              <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-400">
-                                {call.server_name || 'mcp-server'}
-                              </span>
+                        <div className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold">
+                          <Cpu className="size-3.5 text-emerald-400" />
+                          <span>
+                            MCP Autonomous Actions ({sessionDetail.mcp_tools_invoked.length})
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {sessionDetail.mcp_tools_invoked.map((call, idx) => (
+                            <div
+                              key={call.id || idx}
+                              className="border-border space-y-2 rounded-xl border bg-[#0e131d] p-3 font-mono text-xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-emerald-400">{call.name}</span>
+                                <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-400">
+                                  {call.status || 'mcp-server'}
+                                </span>
+                              </div>
+                              {call.args && (
+                                <pre className="bg-card text-muted-foreground overflow-x-auto rounded-lg p-2 text-[10px]">
+                                  {typeof call.args === 'string'
+                                    ? call.args
+                                    : JSON.stringify(call.args, null, 2)}
+                                </pre>
+                              )}
                             </div>
-                            {call.arguments && (
-                              <pre className="bg-card text-muted-foreground overflow-x-auto rounded-lg p-2 text-[10px]">
-                                {typeof call.arguments === 'string'
-                                  ? call.arguments
-                                  : JSON.stringify(call.arguments, null, 2)}
-                              </pre>
-                            )}
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Conversation Transcript Turns */}
                   <div className="space-y-3">
                     <div className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold">
                       <MessageSquare className="size-3.5 text-emerald-400" />
-                      <span>Dialogue Transcript Turns ({sessionDetail.messages?.length || 0})</span>
+                      <span>
+                        Dialogue Transcript Turns ({sessionDetail.transcript?.length || 0})
+                      </span>
                     </div>
 
-                    {!sessionDetail.messages || sessionDetail.messages.length === 0 ? (
+                    {!sessionDetail.transcript || sessionDetail.transcript.length === 0 ? (
                       <div className="text-muted-foreground border-border rounded-xl border border-dashed p-6 text-center font-mono text-xs">
                         No text messages logged for this voice transmission.
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {sessionDetail.messages.map((msg, idx) => {
+                        {sessionDetail.transcript.map((msg, idx) => {
                           const isUser = msg.role === 'user';
                           return (
                             <div
@@ -567,7 +572,7 @@ export function HistoryView() {
                                   <span>{isUser ? 'OPERATOR' : 'EXIA GN-001'}</span>
                                   {msg.timestamp && <span>{formatDate(msg.timestamp)}</span>}
                                 </div>
-                                <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                               </div>
 
                               {isUser && (

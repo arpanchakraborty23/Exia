@@ -33,6 +33,12 @@ __all__ = [
     "ChangePasswordResponse",
     "LogoutRequest",
     "LogoutResponse",
+    "SessionSummarySchema",
+    "SessionMessageSchema",
+    "SessionDetailSchema",
+    "SessionListResponse",
+    "EndSessionResponse",
+    "MCPServerEditRequest",
     "PromptModel",
     "ModelConfigModel"
 

@@ -5,6 +5,7 @@ from src.services import AccessTokenBearer, MCPServices
 from src.constants import (
     MCPServerAddRequest,
     MCPServerAddResponse,
+    MCPServerEditRequest,
     MCPServerListResponse,
     MCPServerToolsResponse,
     MCPServerStatusUpdateRequest,
@@ -114,6 +115,26 @@ async def update_mcp_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update MCP server status",
+        )
+
+
+@mcp_route.put("/{server_name}", response_model=MCPServerAddResponse, status_code=status.HTTP_200_OK)
+async def edit_mcp(
+    server_name: str,
+    body: MCPServerEditRequest,
+    token_data: dict = Depends(access_token_bearer),
+):
+    """Generic edit: rename / url / key / transport (re-validates live connection)."""
+    try:
+        user_id = _get_user_id(token_data)
+        return await mcp_services.edit_mcp(user_id, server_name, body)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to edit MCP server: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update MCP server",
         )
 
 

@@ -69,6 +69,7 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
             # Session Data
             session_data = AgentSessionModel(
                 session_id=session_id,
+                room_name=room_name,
                 user_id=participant_identity,
                 name=participant_name,
                 token=participant_token,

@@ -5,7 +5,7 @@ from fastmcp.client.transports import StreamableHttpTransport
 import logging
 
 from .db import MongoServices
-from src.constants import get_settings, MCPServerAddRequest, MCPServerModel
+from src.constants import get_settings, MCPServerAddRequest, MCPServerEditRequest, MCPServerModel
 
 # Configuration
 settings = get_settings()
@@ -272,5 +272,86 @@ class MCPServices:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete MCP server",
+            )
+
+    async def edit_mcp(
+        self, user_id: str, server_name: str, patch: MCPServerEditRequest
+    ) -> dict:
+        """Generic edit: rename / url / key / transport. Re-validates live if connection fields change."""
+        try:
+            data = patch.model_dump(by_alias=False, exclude_unset=True)
+            data.pop("trasport", None)  # legacy safety, field alias already normalizes
+            if not data:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="No fields to update",
+                )
+
+            doc = self.db.find_one({"user_id": user_id, "server_name": server_name})
+            if not doc:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"MCP server '{server_name}' not found",
+                )
+
+            new_name = (data.get("server_name") or "").strip() or None
+            if new_name and new_name != server_name:
+                if self.db.exists({"user_id": user_id, "server_name": new_name}):
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"MCP server '{new_name}' already exists",
+                    )
+
+            url_changed = "server_url" in data and data["server_url"] != doc.get("server_url")
+            key_changed = "server_key" in data and data["server_key"] != doc.get("server_key")
+            if url_changed or key_changed:
+                effective_url = data.get("server_url", doc.get("server_url"))
+                effective_key = data.get("server_key", doc.get("server_key"))
+                if not effective_url:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="server_url is required",
+                    )
+                connection = await self.connect_mcp(url=effective_url, key=effective_key)
+                if connection["status"] != "success":
+                    raise HTTPException(
+                        status_code=status.HTTP_502_BAD_GATEWAY,
+                        detail=connection.get("message", "Failed to connect to MCP server"),
+                    )
+                data["mcp_tools_list"] = connection["tools"]
+                data["mcp_tool_count"] = connection["tools_count"]
+
+            if new_name and new_name != server_name:
+                data["server_name"] = new_name
+
+            result = self.db.update_one(
+                {"user_id": user_id, "server_name": server_name},
+                {"$set": data},
+            )
+            if result.matched_count == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"MCP server '{server_name}' not found",
+                )
+
+            updated = self.db.find_one(
+                {"user_id": user_id, "server_name": data.get("server_name", server_name)},
+                self._public_projection(),
+            ) or {**doc, **data}
+            logger.info("MCP server '%s' updated", server_name)
+            return {
+                "server_name": updated.get("server_name"),
+                "transport": updated.get("transport"),
+                "server_url": updated.get("server_url"),
+                "server_status": updated.get("status"),
+                "message": f"MCP server '{updated.get('server_name')}' updated successfully",
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception("Failed to edit MCP server: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update MCP server",
             )
         

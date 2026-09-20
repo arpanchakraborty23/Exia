@@ -61,7 +61,10 @@ class ModelConfigServices:
         try:
             doc = self.db.find_one({"user_id": user_id}, {"_id": 0})
             stored = _normalize((doc or {}).get("config", {}))
-            return {**DEFAULT_MODEL_CONFIG, **stored}
+            merged = {**DEFAULT_MODEL_CONFIG, **stored}
+            # Mirror for model-selection-view which reads `pipeline_mode`
+            merged["pipeline_mode"] = merged.get("mode")
+            return merged
         except Exception as e:
             logger.exception("Failed to get model config: %s", e)
             raise HTTPException(
@@ -89,7 +92,10 @@ class ModelConfigServices:
                 upsert=True,
             )
             logger.info("Model config updated for user %s", user_id)
-            return {**DEFAULT_MODEL_CONFIG, **merged}
+            result = {**DEFAULT_MODEL_CONFIG, **merged}
+            # Mirror for model-selection-view which reads `pipeline_mode`
+            result["pipeline_mode"] = result.get("mode")
+            return result
         except HTTPException:
             raise
         except Exception as e:
