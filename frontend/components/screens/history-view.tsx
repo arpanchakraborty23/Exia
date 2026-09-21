@@ -6,18 +6,15 @@ import {
   ArrowUpRight,
   Bot,
   Calendar,
-  CheckCircle2,
   ChevronRight,
   Clock,
   Cpu,
   History,
-  Layers,
   MessageSquare,
   Pause,
   Play,
   RefreshCw,
   Search,
-  SlidersHorizontal,
   Sparkles,
   Terminal,
   User as UserIcon,
@@ -54,8 +51,8 @@ export function HistoryView() {
       const data = await api.sessions.getSessions(pageNum, 10);
       setSessions(data.sessions || []);
       setTotal(data.total || data.sessions?.length || 0);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load session history');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load session history');
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +64,7 @@ export function HistoryView() {
 
   // Handle audio simulation playback
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setInterval> | undefined;
     if (isPlayingAudio) {
       timer = setInterval(() => {
         setAudioProgress((prev) => {
@@ -90,7 +87,7 @@ export function HistoryView() {
     try {
       const detail = await api.sessions.getSessionById(id);
       setSessionDetail(detail);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load detail:', err);
     } finally {
       setIsLoadingDetail(false);
@@ -340,7 +337,7 @@ export function HistoryView() {
 
                 {session.preview_text && (
                   <p className="text-muted-foreground line-clamp-1 text-xs italic">
-                    "{session.preview_text}"
+                    &ldquo;{session.preview_text}&rdquo;
                   </p>
                 )}
 

@@ -41,6 +41,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     >
       <button
         type="button"
+        role="radio"
         onClick={() => setTheme('light')}
         title="Switch to Light theme"
         aria-checked={theme === 'light'}
@@ -59,6 +60,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
       <button
         type="button"
+        role="radio"
         onClick={() => setTheme('dark')}
         title="Switch to Dark theme"
         aria-checked={theme === 'dark'}
@@ -77,6 +79,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
       <button
         type="button"
+        role="radio"
         onClick={() => setTheme('system')}
         title="Follow System theme"
         aria-checked={theme === 'system'}

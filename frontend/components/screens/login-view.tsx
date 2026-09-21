@@ -28,8 +28,8 @@ export function LoginView({ onSuccess }: LoginViewProps) {
     try {
       await login(emailOrUsername.trim(), password);
       onSuccess?.();
-    } catch (err: any) {
-      setLocalError(err.message || 'Authentication sequence failed.');
+    } catch (err: unknown) {
+      setLocalError(err instanceof Error ? err.message : 'Authentication sequence failed.');
     }
   };
 

@@ -114,7 +114,9 @@ export function App({ agentName, isVideoInputSupported = false }: AppProps) {
         {currentTab === 'settings' && (
           <SettingsView
             visualizerType={visualizerType}
-            onChangeVisualizerType={(type: any) => setVisualizerType(type)}
+            onChangeVisualizerType={(type: string) =>
+              setVisualizerType(type as 'aura' | 'wave' | 'bar' | 'radial')
+            }
           />
         )}
       </AppShell>

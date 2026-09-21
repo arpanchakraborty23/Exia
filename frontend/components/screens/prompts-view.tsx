@@ -4,11 +4,9 @@ import React, { useEffect, useState } from 'react';
 import {
   AlertCircle,
   Check,
-  Code,
   Copy,
   Edit3,
   FileText,
-  Lightbulb,
   Plus,
   RefreshCw,
   Sliders,
@@ -191,8 +189,8 @@ export function PromptsView() {
       }
       setIsModalOpen(false);
       fetchPrompts();
-    } catch (err: any) {
-      setModalError(err?.message || 'Failed to save directive');
+    } catch (err: unknown) {
+      setModalError(err instanceof Error ? err.message : 'Failed to save directive');
     } finally {
       setIsSubmitting(false);
     }
@@ -203,8 +201,8 @@ export function PromptsView() {
     try {
       await api.prompts.deletePrompt(id);
       setPrompts((prev) => prev.filter((p) => p.id !== id));
-    } catch (err: any) {
-      setError(err?.message || 'Failed to delete directive');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete directive');
     }
   };
 

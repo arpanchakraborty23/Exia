@@ -57,13 +57,7 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-export function Sidebar({
-  currentTab,
-  onSelectTab,
-  isCallActive,
-  isCollapsed,
-  onToggleCollapse,
-}: SidebarProps) {
+export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollapse }: SidebarProps) {
   const { user, logout } = useAuth();
 
   return (

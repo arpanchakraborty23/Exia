@@ -11,9 +11,13 @@ import logging
 import time
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List
+from functools import lru_cache
+import mimetypes
+from pathlib import Path
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 
 from src.routes.auth import auth_route
 from src.routes.token import api_router
@@ -259,20 +263,6 @@ logger.info("Registered router: Sessions (/api/sessions)")
 # ==============================================================================
 
 @app.get(
-    "/",
-    include_in_schema=False,
-    summary="Root Documentation Redirect",
-    description="Redirects root requests to the interactive Swagger UI API documentation.",
-)
-async def root() -> RedirectResponse:
-    """
-    Redirects incoming root `/` requests to the interactive API documentation.
-    """
-    logger.debug("Redirecting root request to /api/docs")
-    return RedirectResponse(url="/api/docs")
-
-
-@app.get(
     "/api/health",
     tags=["Health"],
     summary="Service Health Check",
@@ -289,3 +279,135 @@ def read_root() -> Dict[str, str]:
     """
     logger.info("Health probe check requested - system operational")
     return {"status": "ok"}
+
+
+# ==============================================================================
+# Frontend Static Files Mount, In-Memory LRU Cache & SPA Routing
+# ==============================================================================
+
+FRONTEND_BASE = Path(__file__).resolve().parent.parent / "frontend"
+FRONTEND_DIST = FRONTEND_BASE / "dist"
+FRONTEND_OUT = FRONTEND_BASE / "out"
+
+MIME_TYPE_MAP = {
+    ".html": "text/html; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".mjs": "application/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".json": "application/json",
+    ".map": "application/json",
+    ".ico": "image/x-icon",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".ttf": "font/ttf",
+    ".otf": "font/otf",
+    ".txt": "text/plain; charset=utf-8",
+}
+
+
+def get_static_build_dir() -> Path | None:
+    """Detects available frontend production build directory (dist or out)."""
+    if FRONTEND_DIST.exists():
+        return FRONTEND_DIST
+    if FRONTEND_OUT.exists():
+        return FRONTEND_OUT
+    return None
+
+
+@lru_cache(maxsize=1024)
+def get_cached_static_file(file_path_str: str, mtime: float) -> tuple[bytes, str, str]:
+    """
+    High-performance LRU cache for static files in memory.
+    Caches the binary content, exact MIME type, and ETag.
+    Using `mtime` in the cache key ensures that rebuilt files automatically
+    invalidate and reload fresh content without server restarts.
+    """
+    path = Path(file_path_str)
+    content = path.read_bytes()
+
+    suffix = path.suffix.lower()
+    media_type = MIME_TYPE_MAP.get(suffix)
+    if not media_type:
+        guessed_type, _ = mimetypes.guess_type(path.name)
+        media_type = guessed_type or "application/octet-stream"
+
+    etag = f'"{hash((file_path_str, mtime, len(content)))}"'
+    return content, media_type, etag
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_frontend_spa(request: Request, full_path: str):
+    """
+    Serves the static frontend build from in-memory LRU cache and provides
+    SPA client-side fallback routing. Eliminates redundant disk reads.
+    """
+    # Allow API endpoints, docs, and OpenAPI schema to pass through
+    if (
+        full_path.startswith("api")
+        or full_path == "api"
+        or full_path in ("docs", "redoc", "openapi.json")
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": "Not Found"},
+        )
+
+    build_dir = get_static_build_dir()
+    if not build_dir:
+        logger.debug("No frontend build directory found. Redirecting to /api/docs.")
+        return RedirectResponse(url="/api/docs")
+
+    clean_path = full_path.lstrip("/")
+
+    # Check if a specific file was requested (direct asset match)
+    file_to_serve: Path | None = None
+    is_html = False
+
+    if clean_path:
+        candidate = (build_dir / clean_path).resolve()
+        # Security check: ensure path stays within build directory
+        if candidate.is_file() and (candidate == build_dir or build_dir in candidate.parents):
+            file_to_serve = candidate
+            is_html = candidate.suffix.lower() == ".html"
+
+    # SPA fallback: if not a concrete file, serve index.html
+    if not file_to_serve:
+        index_file = build_dir / "index.html"
+        if index_file.is_file():
+            file_to_serve = index_file
+            is_html = True
+
+    if not file_to_serve or not file_to_serve.is_file():
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": "Frontend index.html not found in build directory"},
+        )
+
+    # Retrieve from in-memory LRU cache
+    mtime = file_to_serve.stat().st_mtime
+    content, media_type, etag = get_cached_static_file(str(file_to_serve), mtime)
+
+    # Check conditional ETag for HTTP 304 Not Modified
+    if_none_match = request.headers.get("if-none-match")
+    if if_none_match and if_none_match == etag:
+        return Response(status_code=status.HTTP_304_NOT_MODIFIED)
+
+    # Next.js static chunk assets with hashes can be cached permanently; HTML revalidates
+    if "_next/static" in clean_path or not is_html:
+        cache_control = "public, max-age=31536000, immutable"
+    else:
+        cache_control = "no-cache, must-revalidate"
+
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "ETag": etag,
+            "Cache-Control": cache_control,
+        },
+    )

@@ -3,25 +3,18 @@
 import React, { useState } from 'react';
 import { useTheme } from 'next-themes';
 import {
-  Activity,
   AlertCircle,
   Check,
   CheckCircle2,
   Loader2,
   Lock,
   LogOut,
-  Mic,
   Monitor,
   Moon,
   Palette,
-  Server,
-  Settings,
-  Shield,
-  Sliders,
   Sun,
   User,
   Volume2,
-  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
@@ -86,8 +79,10 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Passkey update failed. Verify current credentials.');
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Passkey update failed. Verify current credentials.'
+      );
     } finally {
       setIsSubmitting(false);
     }

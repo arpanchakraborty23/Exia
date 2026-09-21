@@ -10,10 +10,8 @@ import {
   Mic,
   RefreshCw,
   Save,
-  Sliders,
   Sparkles,
   Volume2,
-  Zap,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { ModelConfig } from '@/lib/types';
@@ -107,8 +105,8 @@ export function ModelSelectionView() {
       await api.model.updateConfig(config);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to update model engine configuration');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update model engine configuration');
     } finally {
       setIsSaving(false);
     }

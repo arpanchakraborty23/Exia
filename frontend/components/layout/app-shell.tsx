@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronRight, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wifi } from 'lucide-react';
 import { ThemeToggle } from '@/components/app/theme-toggle';
-import { useAuth } from '@/context/auth-context';
 import { cn } from '@/lib/shadcn/utils';
 import { MobileNav } from './mobile-nav';
 import { NavTab, Sidebar } from './sidebar';
@@ -49,7 +48,6 @@ const TAB_TITLES: Record<NavTab, { title: string; subtitle: string; code: string
 };
 
 export function AppShell({ currentTab, onSelectTab, isCallActive, children }: AppShellProps) {
-  const { user } = useAuth();
   const currentMeta = TAB_TITLES[currentTab];
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 

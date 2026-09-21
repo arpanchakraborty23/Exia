@@ -1,5 +1,6 @@
 import { Public_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
+import { Analytics } from '@vercel/analytics/next';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 import { cn } from '@/lib/shadcn/utils';
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         >
           <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
