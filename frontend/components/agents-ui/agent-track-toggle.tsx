@@ -77,7 +77,7 @@ export type AgentTrackToggleProps = VariantProps<typeof agentTrackToggleVariants
     /**
      * The track source to toggle (Microphone, Camera, or ScreenShare).
      */
-    source: 'camera' | 'microphone' | 'screen_share';
+    source: Track.Source | 'camera' | 'microphone' | 'screen_share';
     /**
      * Whether the toggle is in a pending/loading state.
      * When true, displays a loading spinner icon.

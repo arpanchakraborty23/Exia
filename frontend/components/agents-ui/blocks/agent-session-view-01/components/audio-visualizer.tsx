@@ -8,7 +8,7 @@ import { AgentAudioVisualizerBar } from '@/components/agents-ui/agent-audio-visu
 import { AgentAudioVisualizerGrid } from '@/components/agents-ui/agent-audio-visualizer-grid';
 import { AgentAudioVisualizerRadial } from '@/components/agents-ui/agent-audio-visualizer-radial';
 import { AgentAudioVisualizerWave } from '@/components/agents-ui/agent-audio-visualizer-wave';
-import { MOOD_COLORS, useMoodColor } from '@/hooks/agents-ui/useMoodColor';
+import { MOOD_COLORS, getMoodMeta, useMoodColor } from '@/hooks/agents-ui/useMoodColor';
 import { cn } from '@/lib/shadcn/utils';
 
 const MotionAgentAudioVisualizerAura = motion.create(AgentAudioVisualizerAura);
@@ -161,9 +161,29 @@ export function AudioVisualizer({
     }
   };
 
+  const moodMeta = getMoodMeta(mood);
+
   return (
     <div className="relative flex items-center justify-center">
+      {/* Dynamic Ambient Emotional Halo */}
+      <motion.div
+        animate={{
+          scale: state === 'speaking' ? [1, 1.2, 1.08] : [1, 1.05, 1],
+          opacity: state === 'speaking' ? [0.35, 0.65, 0.4] : [0.12, 0.25, 0.12],
+        }}
+        transition={{
+          duration: state === 'speaking' ? 2 : 3.5,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="pointer-events-none absolute inset-0 -z-10 rounded-full blur-3xl transition-colors duration-1000"
+        style={{
+          background: `radial-gradient(circle, ${moodMeta.glow} 0%, transparent 70%)`,
+        }}
+      />
+
       {renderVisualizer()}
+
       <AnimatePresence>
         {mood && !isChatOpen && (
           <motion.div
@@ -179,11 +199,12 @@ export function AudioVisualizer({
             }}
             title={expression ?? undefined}
           >
+            <span>{moodMeta.emoji}</span>
             <span
               className="size-1.5 animate-pulse rounded-full"
               style={{ backgroundColor: activeColor }}
             />
-            <span className="capitalize">{mood}</span>
+            <span className="capitalize">{moodMeta.label}</span>
           </motion.div>
         )}
       </AnimatePresence>

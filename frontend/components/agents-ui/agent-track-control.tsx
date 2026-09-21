@@ -193,7 +193,7 @@ export type AgentTrackControlProps = VariantProps<typeof toggleVariants> & {
   /**
    * The track source to control (Microphone, Camera, or ScreenShare).
    */
-  source: 'camera' | 'microphone' | 'screen_share';
+  source: Track.Source | 'camera' | 'microphone' | 'screen_share';
   /**
    * Whether the track is currently enabled/published.
    */
