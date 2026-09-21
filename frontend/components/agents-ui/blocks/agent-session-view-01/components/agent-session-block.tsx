@@ -188,11 +188,11 @@ export function AgentSessionView_01({
   const { state: agentState } = useAgent();
 
   const controls: AgentControlBarControls = {
-    leave: true,
     microphone: true,
-    chat: supportsChatInput,
-    camera: supportsVideoInput,
-    screenShare: supportsScreenShare,
+    camera: true,
+    screenShare: true,
+    chat: true,
+    leave: true,
   };
 
   const handleDisconnect = () => {

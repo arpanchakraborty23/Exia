@@ -36,7 +36,7 @@ interface AppProps {
   isVideoInputSupported?: boolean;
 }
 
-export function App({ agentName, isVideoInputSupported = false }: AppProps) {
+export function App({ agentName, isVideoInputSupported = true }: AppProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const [currentTab, setCurrentTab] = useState<NavTab>('session');
   const [visualizerType, setVisualizerType] = useState<'aura' | 'wave' | 'bar' | 'radial'>('aura');
