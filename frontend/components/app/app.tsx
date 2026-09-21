@@ -94,7 +94,10 @@ export function App({ agentName, isVideoInputSupported = true }: AppProps) {
         {/* Screen 2: Voice Session Stage */}
         {currentTab === 'session' && (
           <div className="relative h-full w-full">
-            <ViewController isVideoInputSupported={isVideoInputSupported} />
+            <ViewController
+              isVideoInputSupported={isVideoInputSupported}
+              visualizerType={visualizerType}
+            />
           </div>
         )}
 

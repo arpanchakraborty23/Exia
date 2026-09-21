@@ -2,12 +2,18 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, type MotionProps, motion } from 'motion/react';
-import { useAgent, useSessionContext, useSessionMessages } from '@livekit/components-react';
+import {
+  useAgent,
+  useAgentExpression,
+  useSessionContext,
+  useSessionMessages,
+} from '@livekit/components-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
   type AgentControlBarControls,
 } from '@/components/agents-ui/agent-control-bar';
+import { MOOD_COLORS, useMoodColor } from '@/hooks/agents-ui/useMoodColor';
 import { cn } from '@/lib/shadcn/utils';
 import { TileLayout } from './tile-view';
 
@@ -186,6 +192,8 @@ export function AgentSessionView_01({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { state: agentState } = useAgent();
+  const { mood, expression } = useAgentExpression();
+  const moodColor = useMoodColor(mood, MOOD_COLORS);
 
   const controls: AgentControlBarControls = {
     microphone: true,
@@ -258,6 +266,22 @@ export function AgentSessionView_01({
                 <span className="text-muted-foreground capitalize">{agentState || 'Ready'}</span>
               </>
             )}
+
+          {/* Expressive Mood Badge */}
+          {mood && (
+            <span
+              className="flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[11px] font-semibold capitalize transition-all duration-300"
+              style={{
+                backgroundColor: `${moodColor}18`,
+                borderColor: `${moodColor}50`,
+                color: moodColor,
+              }}
+              title={expression ?? `Agent is feeling ${mood}`}
+            >
+              <span className="size-1.5 rounded-full" style={{ backgroundColor: moodColor }} />
+              {mood}
+            </span>
+          )}
         </div>
       </div>
 
