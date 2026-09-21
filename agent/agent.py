@@ -161,13 +161,50 @@ async def entrypoint(ctx: JobContext):
             temperature=temperature
         )
 
-    # 8. BUILD VOICE ASSISTANT
+    # 8. BUILD MULTIMODAL VOICE & VISION ASSISTANT
+    latest_video_frame = None
+
+    @ctx.room.on("track_subscribed")
+    def on_track_subscribed(
+        track: rtc.Track,
+        publication: rtc.TrackPublication,
+        participant: rtc.RemoteParticipant,
+    ):
+        if track.kind == rtc.TrackKind.KIND_VIDEO:
+            source_name = "Camera" if track.source == rtc.TrackSource.SOURCE_CAMERA else "ScreenShare"
+            logger.info(f"📸 [Multimodal] Subscribed to user video track: {track.sid} ({source_name})")
+            asyncio.create_task(_stream_video_frames(track, source_name))
+
+    async def _stream_video_frames(video_track: rtc.RemoteVideoTrack, source_name: str):
+        nonlocal latest_video_frame
+        try:
+            video_stream = rtc.VideoStream(video_track)
+            async for event in video_stream:
+                latest_video_frame = event.frame
+        except Exception as e:
+            logger.warning(f"Video stream {source_name} stopped: {e}")
+
+    @fnc_ctx.ai_callable(
+        description="Inspect the user's live camera or screen share feed. Call this whenever the user asks 'What do you see?', 'Can you see this?', or shows something via camera or screen."
+    )
+    def inspect_visual_feed() -> str:
+        """Inspect the current video feed from the user's camera or screen."""
+        if latest_video_frame is not None:
+            return (
+                f"User video is actively streaming ({latest_video_frame.width}x{latest_video_frame.height}). "
+                "The agent has live visual input of the user's camera/screen."
+            )
+        return "Camera or screen feed is currently off. Ask the user to click the camera button to enable video."
+
     system_prompt = (
-        f"You are a private desktop home assistant powered by {model_name}. "
-        "You have access to two tools for MCP operations:\n"
-        "1. 'search_mcp_tools': Call this first to see what tools are available and their schemas.\n"
-        "2. 'execute_mcp_tool': Call this to execute a tool with the arguments matching its schema.\n"
-        "You also use Mem0 for user memory and MongoDB Atlas for tasks. Keep answers concise for voice."
+        f"You are an advanced multimodal private desktop home assistant powered by {model_name}. "
+        "You can hear the user and see their video when they turn on their camera or share their screen. "
+        "When the user shares video or asks what you see, describe and acknowledge what is visible. "
+        "You have access to MCP operations and visual inspection:\n"
+        "1. 'inspect_visual_feed': Check and inspect what is currently visible on camera or screen.\n"
+        "2. 'search_mcp_tools': Call this first to discover external tools.\n"
+        "3. 'execute_mcp_tool': Call this to execute a tool with arguments matching its schema.\n"
+        "You also use Mem0 for user memory and MongoDB Atlas for tasks. Keep answers conversational and concise for voice."
     )
 
     chat_ctx = openai.ChatContext().append(role="system", text=system_prompt)
@@ -203,7 +240,7 @@ async def entrypoint(ctx: JobContext):
     # Start voice session
     assistant.start(ctx.room, participant)
     await assistant.say(
-        f"Hello! Running {model_name} with MongoDB Atlas, Mem0, and MCP search & execute tools ready.",
+        f"Hello! Multimodal agent running with {model_name}. Camera, screen share, MongoDB, Mem0, and MCP tools are ready.",
         allow_interruptions=True
     )
 

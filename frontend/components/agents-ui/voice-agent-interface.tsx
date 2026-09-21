@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useTheme } from 'next-themes';
+import { type LocalAudioTrack, type RemoteAudioTrack } from 'livekit-client';
 import {
   type AgentMood,
   type AgentState,
@@ -8,8 +10,6 @@ import {
   useAgentExpression,
   useVoiceAssistant,
 } from '@livekit/components-react';
-import { type LocalAudioTrack, type RemoteAudioTrack } from 'livekit-client';
-import { useTheme } from 'next-themes';
 import { AgentAudioVisualizerAura } from '@/components/agents-ui/agent-audio-visualizer-aura';
 import { MOOD_COLORS, useMoodColor } from '@/hooks/agents-ui/useMoodColor';
 import { cn } from '@/lib/shadcn/utils';
@@ -68,7 +68,7 @@ export function VoiceAgentInterface({
       />
       {showMoodLabel && (
         <span
-          className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-sm font-semibold capitalize tracking-wide transition-colors duration-300 select-none"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-sm font-semibold tracking-wide capitalize transition-colors duration-300 select-none"
           style={{ color }}
         >
           {mood ?? 'neutral'}

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { animate, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
 import chroma from 'chroma-js';
+import { animate, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
 import type { AgentMood } from '@livekit/components-react';
 
 /**

@@ -197,9 +197,9 @@ export function AgentSessionView_01({
 
   const controls: AgentControlBarControls = {
     microphone: true,
-    camera: true,
-    screenShare: true,
-    chat: true,
+    camera: supportsVideoInput,
+    screenShare: supportsScreenShare,
+    chat: supportsChatInput,
     leave: true,
   };
 

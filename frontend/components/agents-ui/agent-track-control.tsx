@@ -144,28 +144,39 @@ function TrackDeviceSelect({
     onOpen(open);
   };
 
-  if (devices.length < 2) {
-    return null;
-  }
-
   return (
     <Select
       open={open}
-      value={activeDeviceId}
+      value={activeDeviceId || (devices[0]?.deviceId ?? '')}
       onOpenChange={handleOpenChange}
       onValueChange={onActiveDeviceChange}
     >
-      <SelectTrigger className={cn(selectVariants({ size, variant }), className)} {...props}>
+      <SelectTrigger
+        aria-label={kind === 'videoinput' ? 'Camera options' : 'Audio options'}
+        title={kind === 'videoinput' ? 'Camera options & devices' : 'Microphone options & devices'}
+        className={cn(selectVariants({ size, variant }), className)}
+        {...props}
+      >
         {size !== 'sm' && (
           <SelectValue className="font-mono text-sm" placeholder={`Select a ${kind}`} />
         )}
       </SelectTrigger>
       <SelectContent position="popper">
-        {devices.map((device) => (
-          <SelectItem key={device.deviceId} value={device.deviceId} className="font-mono text-xs">
-            {device.label}
-          </SelectItem>
-        ))}
+        {devices.length === 0 ? (
+          <div className="text-muted-foreground p-2 font-mono text-xs">
+            {kind === 'videoinput' ? 'Default Camera' : 'Default Microphone'}
+          </div>
+        ) : (
+          devices.map((device, idx) => (
+            <SelectItem
+              key={device.deviceId || `device-${idx}`}
+              value={device.deviceId}
+              className="font-mono text-xs"
+            >
+              {device.label || `${kind === 'videoinput' ? 'Camera' : 'Mic'} ${idx + 1}`}
+            </SelectItem>
+          ))
+        )}
       </SelectContent>
     </Select>
   );

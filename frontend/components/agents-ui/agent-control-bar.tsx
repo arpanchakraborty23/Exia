@@ -271,10 +271,10 @@ export function AgentControlBar({
 
   const visibleControls = {
     leave: controls?.leave ?? true,
-    microphone: controls?.microphone ?? publishPermissions.microphone,
-    screenShare: controls?.screenShare ?? publishPermissions.screenShare,
-    camera: controls?.camera ?? publishPermissions.camera,
-    chat: controls?.chat ?? publishPermissions.data,
+    microphone: controls?.microphone ?? true,
+    screenShare: controls?.screenShare ?? true,
+    camera: controls?.camera ?? true,
+    chat: controls?.chat ?? true,
   };
 
   const isEmpty = Object.values(visibleControls).every((value) => !value);

@@ -223,7 +223,7 @@ export function TileLayout({
                   layoutId="camera"
                   initial={{
                     opacity: 0,
-                    scale: 0,
+                    scale: 0.8,
                   }}
                   animate={{
                     opacity: 1,
@@ -231,20 +231,27 @@ export function TileLayout({
                   }}
                   exit={{
                     opacity: 0,
-                    scale: 0,
+                    scale: 0.8,
                   }}
                   transition={{
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
-                  className="aspect-square size-[90px] drop-shadow-lg/20"
+                  className="border-border/80 relative aspect-video w-[180px] overflow-hidden rounded-xl border bg-black/90 shadow-2xl backdrop-blur-md transition-all md:w-[240px]"
                 >
                   <VideoTrack
                     trackRef={cameraTrack || screenShareTrack}
                     width={(cameraTrack || screenShareTrack)?.publication.dimensions?.width ?? 0}
                     height={(cameraTrack || screenShareTrack)?.publication.dimensions?.height ?? 0}
-                    className="bg-muted aspect-square size-[90px] rounded-md object-cover"
+                    className="h-full w-full object-cover"
                   />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/90 via-black/50 to-transparent px-2.5 py-1.5 text-[11px] font-medium text-white">
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
+                      {isScreenShareEnabled ? 'Screen Share' : 'Camera Feed'}
+                    </span>
+                    <span className="font-mono text-[10px] text-emerald-300">Agent Seeing</span>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

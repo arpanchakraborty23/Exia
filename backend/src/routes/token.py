@@ -56,6 +56,13 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
                     room=room_name,
                     can_publish=True,
                     can_subscribe=True,
+                    can_publish_data=True,
+                    can_publish_sources=[
+                        "camera",
+                        "microphone",
+                        "screen_share",
+                        "screen_share_audio",
+                    ],
                 )
             )
         )
