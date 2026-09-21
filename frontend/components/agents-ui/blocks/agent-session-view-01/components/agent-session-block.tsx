@@ -17,81 +17,38 @@ import { MOOD_COLORS, useMoodColor } from '@/hooks/agents-ui/useMoodColor';
 import { cn } from '@/lib/shadcn/utils';
 import { TileLayout } from './tile-view';
 
-const BOTTOM_VIEW_MOTION_PROPS: MotionProps = {
+const BOTTOM_MOTION: MotionProps = {
   variants: {
-    visible: {
-      opacity: 1,
-      translateY: '0%',
-    },
-    hidden: {
-      opacity: 0,
-      translateY: '100%',
-    },
+    visible: { opacity: 1, translateY: '0%' },
+    hidden: { opacity: 0, translateY: '100%' },
   },
   initial: 'hidden',
   animate: 'visible',
   exit: 'hidden',
-  transition: {
-    duration: 0.3,
-    delay: 0.5,
-    ease: 'easeOut',
-  },
+  transition: { duration: 0.3, delay: 0.5, ease: 'easeOut' },
 };
 
-const CHAT_MOTION_PROPS: MotionProps = {
+const CHAT_MOTION: MotionProps = {
   variants: {
-    hidden: {
-      opacity: 0,
-      transition: {
-        ease: 'easeOut',
-        duration: 0.3,
-      },
-    },
-    visible: {
-      opacity: 1,
-      transition: {
-        delay: 0.2,
-        ease: 'easeOut',
-        duration: 0.3,
-      },
-    },
+    hidden: { opacity: 0, transition: { ease: 'easeOut', duration: 0.25 } },
+    visible: { opacity: 1, transition: { delay: 0.15, ease: 'easeOut', duration: 0.25 } },
   },
   initial: 'hidden',
   animate: 'visible',
   exit: 'hidden',
 };
 
-const SHIMMER_MOTION_PROPS: MotionProps = {
+const SHIMMER_MOTION: MotionProps = {
   variants: {
-    visible: {
-      opacity: 1,
-      transition: {
-        ease: 'easeIn',
-        duration: 0.5,
-        delay: 0.8,
-      },
-    },
-    hidden: {
-      opacity: 0,
-      transition: {
-        ease: 'easeIn',
-        duration: 0.5,
-        delay: 0,
-      },
-    },
+    visible: { opacity: 1, transition: { ease: 'easeIn', duration: 0.5, delay: 0.8 } },
+    hidden: { opacity: 0, transition: { ease: 'easeIn', duration: 0.4 } },
   },
   initial: 'hidden',
   animate: 'visible',
   exit: 'hidden',
 };
 
-interface FadeProps {
-  top?: boolean;
-  bottom?: boolean;
-  className?: string;
-}
-
-export function Fade({ top = false, bottom = false, className }: FadeProps) {
+export function Fade({ top = false, bottom = false, className }: { top?: boolean; bottom?: boolean; className?: string }) {
   return (
     <div
       className={cn(
@@ -104,65 +61,51 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
   );
 }
 
-export interface AgentSessionView_01Props {
-  /**
-   * Theme mode forwarded to the aura visualizer (`audioVisualizerType="aura"`) so
-   * the shader's blend mode adapts to the theme mode.
-   * Ignored by other visualizer types.
-   */
-  themeMode?: 'dark' | 'light';
-  /**
-   * Message shown above the controls before the first chat message is sent.
-   *
-   * @default 'Agent is listening, ask it a question'
-   */
-  preConnectMessage?: string;
-  /**
-   * Enables or disables the chat toggle and transcript input controls.
-   *
-   * @default true
-   */
-  supportsChatInput?: boolean;
-  /**
-   * Enables or disables camera controls in the bottom control bar.
-   *
-   * @default true
-   */
-  supportsVideoInput?: boolean;
-  /**
-   * Enables or disables screen sharing controls in the bottom control bar.
-   *
-   * @default true
-   */
-  supportsScreenShare?: boolean;
-  /**
-   * Shows a pre-connect buffer state with a shimmer message before messages appear.
-   *
-   * @default true
-   */
-  isPreConnectBufferEnabled?: boolean;
+// State config map
+const STATE_CONFIG = {
+  connecting: {
+    color: '#f59e0b',
+    label: 'Connecting',
+    dot: 'animate-ping bg-amber-400',
+    text: 'text-amber-400',
+  },
+  listening: {
+    color: '#10b981',
+    label: 'Listening',
+    dot: 'animate-pulse bg-emerald-400',
+    text: 'text-emerald-400',
+  },
+  thinking: {
+    color: '#22d3ee',
+    label: 'Thinking',
+    dot: 'animate-spin bg-cyan-400',
+    text: 'text-cyan-400',
+  },
+  speaking: {
+    color: '#8b5cf6',
+    label: 'Speaking',
+    dot: 'animate-pulse bg-violet-400',
+    text: 'text-violet-400',
+  },
+} as const;
 
-  /** Selects the visualizer style rendered in the main tile area. */
+export interface AgentSessionView_01Props {
+  themeMode?: 'dark' | 'light';
+  preConnectMessage?: string;
+  supportsChatInput?: boolean;
+  supportsVideoInput?: boolean;
+  supportsScreenShare?: boolean;
+  isPreConnectBufferEnabled?: boolean;
   audioVisualizerType?: 'bar' | 'wave' | 'grid' | 'radial' | 'aura';
-  /** Primary hex color used by supported audio visualizer variants. */
   audioVisualizerColor?: `#${string}`;
-  /** Hue shift intensity used by certain visualizers. */
   audioVisualizerColorShift?: number;
-  /** Number of bars to render when `audioVisualizerType` is `bar`. */
   audioVisualizerBarCount?: number;
-  /** Number of rows in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridRowCount?: number;
-  /** Number of columns in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridColumnCount?: number;
-  /** Number of radial bars when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialBarCount?: number;
-  /** Base radius of the radial visualizer when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialRadius?: number;
-  /** Stroke width of the wave path when `audioVisualizerType` is `wave`. */
   audioVisualizerWaveLineWidth?: number;
-  /** Optional class name merged onto the outer `<section>` container. */
   className?: string;
-  /** Callback fired when the session ends / disconnects to call backend cleanup */
   onDisconnect?: () => void;
 }
 
@@ -204,22 +147,18 @@ export function AgentSessionView_01({
   };
 
   const handleDisconnect = () => {
-    try {
-      onDisconnect?.();
-    } catch (e) {
-      console.error(e);
-    }
+    try { onDisconnect?.(); } catch (e) { console.error(e); }
     session.end();
   };
 
   useEffect(() => {
     const lastMessage = messages.at(-1);
-    const lastMessageIsLocal = lastMessage?.from?.isLocal === true;
-
-    if (scrollAreaRef.current && lastMessageIsLocal) {
+    if (scrollAreaRef.current && lastMessage?.from?.isLocal === true) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const stateConfig = STATE_CONFIG[agentState as keyof typeof STATE_CONFIG];
 
   return (
     <section
@@ -229,67 +168,57 @@ export function AgentSessionView_01({
     >
       <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
 
-      {/* Connection State Indicator Banner */}
+      {/* Floating State HUD pill */}
       <div className="pointer-events-none absolute inset-x-0 top-4 z-40 flex justify-center">
-        <div className="bg-card/85 border-border/80 animate-in fade-in slide-in-from-top-2 pointer-events-auto flex items-center gap-2.5 rounded-full border px-4 py-1.5 text-xs font-medium tracking-tight shadow-lg backdrop-blur-md duration-200">
-          {agentState === 'connecting' && (
+        <motion.div
+          key={agentState}
+          initial={{ opacity: 0, y: -6, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="pointer-events-auto flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-black/75 px-4 py-1.5 shadow-xl shadow-black/40 backdrop-blur-xl"
+        >
+          {stateConfig ? (
             <>
-              <span className="size-2 animate-ping rounded-full bg-amber-500" />
-              <span className="font-semibold text-amber-500">Connecting...</span>
+              <span className={cn('size-1.5 rounded-full', stateConfig.dot)} />
+              <span className={cn('font-mono text-xs font-semibold', stateConfig.text)}>
+                {stateConfig.label}
+              </span>
+              {agentState === 'listening' && (
+                <span className="font-mono text-[10px] text-white/30">— speak naturally</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="size-1.5 rounded-full bg-white/20" />
+              <span className="font-mono text-xs capitalize text-white/40">{agentState || 'Ready'}</span>
             </>
           )}
-          {agentState === 'listening' && (
-            <>
-              <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
-              <span className="font-semibold text-emerald-500">Listening</span>
-              <span className="text-muted-foreground text-[11px]">— Speak naturally</span>
-            </>
-          )}
-          {agentState === 'thinking' && (
-            <>
-              <span className="size-2 animate-spin rounded-full bg-blue-500" />
-              <span className="font-semibold text-blue-500">Thinking...</span>
-            </>
-          )}
-          {agentState === 'speaking' && (
-            <>
-              <span className="size-2 animate-pulse rounded-full bg-violet-500" />
-              <span className="font-semibold text-violet-500">Speaking</span>
-            </>
-          )}
-          {agentState !== 'connecting' &&
-            agentState !== 'listening' &&
-            agentState !== 'thinking' &&
-            agentState !== 'speaking' && (
-              <>
-                <span className="bg-muted-foreground size-2 rounded-full" />
-                <span className="text-muted-foreground capitalize">{agentState || 'Ready'}</span>
-              </>
-            )}
 
-          {/* Expressive Mood Badge */}
+          {/* Mood pill */}
           {mood && (
-            <span
-              className="flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[11px] font-semibold capitalize transition-all duration-300"
-              style={{
-                backgroundColor: `${moodColor}18`,
-                borderColor: `${moodColor}50`,
-                color: moodColor,
-              }}
-              title={expression ?? `Agent is feeling ${mood}`}
-            >
-              <span className="size-1.5 rounded-full" style={{ backgroundColor: moodColor }} />
-              {mood}
-            </span>
+            <>
+              <span className="text-white/15">·</span>
+              <span
+                className="rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold capitalize"
+                style={{
+                  backgroundColor: `${moodColor}15`,
+                  borderColor: `${moodColor}40`,
+                  color: moodColor,
+                }}
+                title={expression ?? `Agent is feeling ${mood}`}
+              >
+                {mood}
+              </span>
+            </>
           )}
-        </div>
+        </motion.div>
       </div>
 
-      {/* transcript */}
+      {/* Chat transcript */}
       <AnimatePresence>
         {isChatOpen && (
           <motion.div
-            {...CHAT_MOTION_PROPS}
+            {...CHAT_MOTION}
             className="absolute inset-x-0 top-0 bottom-[135px] overflow-hidden md:bottom-[170px]"
           >
             <AgentChatTranscript
@@ -315,9 +244,10 @@ export function AgentSessionView_01({
         audioVisualizerGridColumnCount={audioVisualizerGridColumnCount}
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
-      {/* Bottom */}
+
+      {/* Bottom control area */}
       <motion.div
-        {...BOTTOM_VIEW_MOTION_PROPS}
+        {...BOTTOM_MOTION}
         className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12"
       >
         {/* Pre-connect message */}
@@ -327,15 +257,16 @@ export function AgentSessionView_01({
               <motion.p
                 key="pre-connect-message"
                 aria-hidden={messages.length > 0}
-                {...SHIMMER_MOTION_PROPS}
-                className="shimmer shimmer-duration-2000 pointer-events-none mx-auto block w-full max-w-2xl pb-4 text-center text-sm font-semibold"
+                {...SHIMMER_MOTION}
+                className="shimmer-text pointer-events-none mx-auto mb-3 block w-full max-w-lg text-center font-mono text-sm font-semibold tracking-wide"
               >
                 {preConnectMessage}
               </motion.p>
             )}
           </AnimatePresence>
         )}
-        <div className="bg-background relative mx-auto max-w-2xl pb-3 md:pb-12">
+
+        <div className="relative mx-auto max-w-2xl pb-3 md:pb-10">
           <AgentControlBar
             variant="livekit"
             controls={controls}

@@ -101,7 +101,7 @@ export function VoiceAgentInterface({
             className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center select-none"
           >
             <div
-              className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1 font-mono text-xs font-semibold shadow-lg backdrop-blur-md transition-all duration-500"
+              className="flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-mono text-xs font-semibold shadow-xl backdrop-blur-xl transition-all duration-500"
               style={{
                 backgroundColor: `${color}18`,
                 borderColor: `${color}45`,
@@ -124,7 +124,7 @@ export function VoiceAgentInterface({
               <motion.p
                 initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 0.85, y: 0 }}
-                className="text-muted-foreground bg-background/50 mt-1.5 line-clamp-1 max-w-[200px] rounded px-2 py-0.5 text-center font-mono text-[10px] tracking-tight italic backdrop-blur-xs"
+                className="text-muted-foreground bg-black/50 mt-2 line-clamp-1 max-w-[220px] rounded-full px-3 py-0.5 text-center font-mono text-[10px] tracking-tight italic backdrop-blur-xl"
               >
                 &ldquo;{expression}&rdquo;
               </motion.p>

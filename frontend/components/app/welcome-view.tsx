@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, Radio, ShieldCheck, Sparkles } from 'lucide-react';
+import { Radio, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface WelcomeViewProps {
@@ -13,51 +13,108 @@ export const WelcomeView = ({
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
-    <div ref={ref} className="flex min-h-[70vh] w-full items-center justify-center p-6 select-none">
-      <div className="animate-in fade-in zoom-in-95 relative flex w-full max-w-lg flex-col items-center space-y-6 rounded-3xl border border-white/10 bg-[#080808]/90 p-8 text-center shadow-2xl backdrop-blur-2xl duration-300 md:p-10">
-        {/* Dynamic GN Ambient Glow */}
-        <div className="pointer-events-none absolute -inset-6 -z-10 rounded-full bg-radial from-emerald-500/15 via-cyan-500/10 to-transparent blur-3xl" />
+    <div ref={ref} className="relative flex min-h-[70vh] w-full items-center justify-center overflow-hidden p-6 select-none">
+      {/* Ambient aurora layers */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div
+          className="aurora-orb absolute left-1/2 top-1/3 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(139,92,246,0.5) 0%, rgba(34,211,238,0.2) 45%, transparent 70%)',
+            filter: 'blur(60px)',
+          }}
+        />
+        <div
+          className="absolute left-1/2 top-1/2 size-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-15"
+          style={{
+            background: 'radial-gradient(circle, rgba(34,211,238,0.6) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+          }}
+        />
+      </div>
 
-        {/* Animated Voice Orb */}
-        <div className="group relative cursor-pointer" onClick={onStartCall}>
-          <div className="absolute -inset-4 animate-pulse rounded-full bg-gradient-to-tr from-emerald-500/30 via-cyan-500/20 to-teal-500/30 blur-xl transition-all duration-300 group-hover:scale-115" />
-          <div className="relative flex size-24 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-cyan-500 text-black shadow-xl shadow-emerald-500/30 transition-all duration-300 group-hover:scale-105 active:scale-95 md:size-28">
-            <Mic className="size-10 stroke-[2.2] md:size-12" />
+      <div className="relative flex w-full max-w-sm flex-col items-center gap-8 text-center">
+        {/* Status badge */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/8 px-4 py-1.5 font-mono text-[11px] font-semibold tracking-widest text-violet-300 uppercase">
+          <Sparkles className="size-3 text-violet-400" />
+          <span>LiveKit WebRTC · Gemini Live</span>
+        </div>
+
+        {/* Voice Orb */}
+        <div className="relative cursor-pointer" onClick={onStartCall}>
+          {/* Outer ring halo — breathes */}
+          <div
+            className="aurora-orb absolute -inset-8 rounded-full opacity-40"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(139,92,246,0.4) 0%, rgba(34,211,238,0.15) 50%, transparent 70%)',
+              filter: 'blur(20px)',
+            }}
+          />
+          {/* Ring border */}
+          <div className="absolute -inset-3 rounded-full border border-violet-500/20 transition-all duration-500 group-hover:border-violet-400/40" />
+          <div className="absolute -inset-1.5 rounded-full border border-violet-400/10" />
+
+          {/* Core orb */}
+          <div className="float-orb relative flex size-28 items-center justify-center rounded-full transition-all duration-300 hover:scale-105 active:scale-95 md:size-32">
+            {/* Orb gradient fill */}
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background:
+                  'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 40%, #22d3ee 100%)',
+                boxShadow:
+                  '0 0 40px rgba(139,92,246,0.5), 0 0 80px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
+              }}
+            />
+            {/* Inner highlight */}
+            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
+            <Zap className="relative size-11 stroke-[1.8] text-white drop-shadow-lg md:size-13" />
           </div>
         </div>
 
+        {/* Headline */}
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-mono text-xs font-semibold text-emerald-400">
-            <Sparkles className="size-3.5" />
-            <span>LiveKit WebRTC • Gemini Live Multimodal</span>
-          </div>
-          <h2 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
-            Autonomous Voice Stage
-          </h2>
-          <p className="mx-auto max-w-sm text-xs leading-relaxed text-zinc-400 md:text-sm">
-            Engage in sub-second conversational speech with vision intelligence, real-time
+          <h1 className="font-mono text-3xl font-black tracking-tight text-white md:text-4xl">
+            EXIA
+            <span className="ml-3 font-mono text-base font-normal text-white/30 tracking-widest">
+              GN-001
+            </span>
+          </h1>
+          <p className="mx-auto max-w-xs text-sm leading-relaxed text-white/50">
+            Sub-second conversational speech with vision intelligence, real-time
             interruption, and connected MCP tools.
           </p>
         </div>
 
+        {/* CTA */}
         <Button
           size="lg"
           onClick={onStartCall}
-          className="w-full max-w-xs cursor-pointer rounded-full bg-white py-3.5 text-sm font-semibold text-black shadow-xl shadow-white/10 transition-all duration-200 hover:bg-neutral-200 active:scale-95"
+          className="group relative w-full max-w-xs cursor-pointer overflow-hidden rounded-full py-6 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95"
+          style={{
+            background: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 60%, #22d3ee 100%)',
+            boxShadow: '0 0 32px rgba(139,92,246,0.4), 0 4px 20px rgba(0,0,0,0.4)',
+          }}
         >
-          <Radio className="mr-2 size-4 animate-pulse text-emerald-600" />
-          {startButtonText || 'Initialize Voice Session'}
+          {/* Shimmer sweep on hover */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+          <Radio className="relative mr-2 size-4 animate-pulse" />
+          <span className="relative">{startButtonText || 'Initialize Voice Session'}</span>
         </Button>
 
-        <div className="flex w-full flex-wrap items-center justify-center gap-4 border-t border-white/10 pt-3 font-mono text-[11px] text-zinc-400">
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="size-3.5 text-emerald-400" />
-            <span>FastAPI Secure Tokens</span>
+        {/* Feature strip */}
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-[10px] tracking-wide text-white/25 uppercase">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck className="size-3 text-emerald-500/70" />
+            <span>Secure Tokens</span>
           </span>
-          <span>•</span>
-          <span>Spatial Noise Reduction</span>
-          <span>•</span>
-          <span>Live Multimodal Feed</span>
+          <span className="text-white/15">•</span>
+          <span>Noise Reduction</span>
+          <span className="text-white/15">•</span>
+          <span>Multimodal Vision</span>
+          <span className="text-white/15">•</span>
+          <span>MCP Tools</span>
         </div>
       </div>
     </div>

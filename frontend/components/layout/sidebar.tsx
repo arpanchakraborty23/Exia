@@ -12,7 +12,6 @@ import {
   Settings as SettingsIcon,
   Sliders,
   User as UserIcon,
-  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
@@ -39,20 +38,20 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    group: 'TACTICAL STAGE',
-    items: [{ id: 'session', label: 'Voice Stage', badge: 'LIVE', shortcut: '⌘1', icon: Mic }],
+    group: 'STAGE',
+    items: [{ id: 'session', label: 'Voice Session', badge: 'LIVE', shortcut: '⌘1', icon: Mic }],
   },
   {
-    group: 'INTELLIGENCE CORE',
+    group: 'INTELLIGENCE',
     items: [
-      { id: 'history', label: 'Session History', shortcut: '⌘2', icon: History },
+      { id: 'history', label: 'History', shortcut: '⌘2', icon: History },
       { id: 'mcp', label: 'MCP Registry', badge: 'Tools', shortcut: '⌘3', icon: Cpu },
-      { id: 'prompts', label: 'Directive Library', shortcut: '⌘4', icon: FileText },
+      { id: 'prompts', label: 'Directives', shortcut: '⌘4', icon: FileText },
       { id: 'models', label: 'Model Engine', shortcut: '⌘5', icon: Sliders },
     ],
   },
   {
-    group: 'SYSTEM & SECURITY',
+    group: 'SYSTEM',
     items: [{ id: 'settings', label: 'Configuration', shortcut: '⌘6', icon: SettingsIcon }],
   },
 ];
@@ -61,89 +60,78 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
   const { user, logout } = useAuth();
 
   return (
-    <aside className="border-sidebar-border bg-sidebar/95 text-sidebar-foreground relative z-30 flex h-screen w-72 shrink-0 flex-col border-r backdrop-blur-2xl transition-colors duration-200 select-none">
-      {/* Brand Header with GN Conduit effect */}
-      <div className="border-sidebar-border relative flex items-center justify-between overflow-hidden border-b p-4">
-        <div className="pointer-events-none absolute -top-10 -left-10 size-28 rounded-full bg-emerald-500/10 blur-2xl" />
+    <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border relative z-30 flex h-screen w-64 shrink-0 flex-col border-r backdrop-blur-2xl select-none">
+      {/* Top blue accent line */}
+      <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-blue-500/40 to-transparent" />
+
+      {/* Brand Header */}
+      <div className="border-sidebar-border relative flex items-center justify-between overflow-hidden border-b px-4 py-4">
+        <div className="pointer-events-none absolute -top-6 -left-6 size-24 rounded-full bg-blue-500/8 blur-2xl" />
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="group relative size-10 shrink-0 overflow-hidden rounded-xl border border-emerald-500/40 shadow-lg shadow-emerald-500/20">
+          <div className="relative size-9 shrink-0 overflow-hidden rounded-xl border border-blue-500/30 shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/exia-logo.jpg"
               alt="Exia GN-001"
-              className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="size-full object-cover"
             />
-            <span className="border-background absolute right-0 bottom-0 size-2.5 rounded-full border-2 bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+            {/* Live indicator — emerald = connected status (functional) */}
+            <span className="absolute bottom-0 right-0 size-2 rounded-full border-2 border-sidebar bg-emerald-500 shadow-[0_0_5px_#10b981]" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-foreground font-mono text-sm font-extrabold tracking-wider">
-                EXIA
-              </span>
-              <span className="py-0.2 rounded border border-emerald-500/30 bg-emerald-500/15 px-1.5 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-black tracking-[0.2em]">EXIA</span>
+              <span className="rounded border border-blue-500/25 bg-blue-500/10 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-blue-500 uppercase">
                 GN-001
               </span>
             </div>
             <div className="mt-0.5 flex items-center gap-1.5">
-              <span className="inline-block size-1.5 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
-              <span className="text-muted-foreground font-mono text-[11px] tracking-tight">
+              <span className="inline-block size-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]" />
+              <span className="text-sidebar-foreground/40 font-mono text-[10px] tracking-wide">
                 Autonomous Voice AI
               </span>
             </div>
           </div>
         </div>
 
-        {/* Collapse Navigation Arrow */}
         {onToggleCollapse && (
           <button
             type="button"
             onClick={onToggleCollapse}
             title="Collapse navigation (⌘B)"
             aria-label="Collapse navigation"
-            className="border-border bg-card/60 hover:bg-muted text-muted-foreground hover:text-foreground group flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border shadow-xs transition-all duration-200 hover:border-emerald-500/40"
+            className="border-sidebar-border bg-sidebar-accent text-sidebar-foreground/40 hover:text-sidebar-foreground flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-colors"
           >
-            <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
+            <ChevronLeft className="size-3.5" />
           </button>
         )}
       </div>
 
-      {/* GN Drive Realtime Telemetry HUD */}
-      <div className="px-3 pt-3">
-        <div className="bg-card/80 border-border group relative overflow-hidden rounded-xl border p-3 shadow-xs dark:bg-gradient-to-b dark:from-white/[0.04] dark:to-white/[0.01]">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex size-5 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                <Zap className="size-3 animate-pulse" />
-              </div>
-              <span className="text-foreground font-mono text-[11px] font-semibold tracking-wide">
-                GN DRIVE TACTICAL
-              </span>
-            </div>
-            <span className="rounded border border-emerald-500/30 bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-              100% SYNC
-            </span>
+      {/* Telemetry strip */}
+      <div className="px-4 pt-3">
+        <div className="border-sidebar-border bg-sidebar-accent flex items-center justify-between rounded-lg border px-3 py-2">
+          <div className="flex items-center gap-1.5">
+            <Activity className="size-3 text-blue-500/60" />
+            <span className="text-sidebar-foreground/30 font-mono text-[10px]">GN DRIVE</span>
           </div>
-
-          {/* Progress bar */}
-          <div className="bg-muted border-border h-1.5 w-full overflow-hidden rounded-full border p-0.5">
-            <div className="h-full w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 shadow-[0_0_8px_#10b981]" />
-          </div>
-
-          <div className="text-muted-foreground mt-2 flex items-center justify-between font-mono text-[10px]">
-            <span>Particles: Pure GN</span>
-            <span>Latency: &lt;180ms</span>
+          <div className="text-sidebar-foreground/30 flex items-center gap-2 font-mono text-[10px]">
+            <span>Sync: <span className="text-blue-500">100%</span></span>
+            <span className="text-sidebar-border opacity-60">·</span>
+            <span>{'<'}180ms</span>
           </div>
         </div>
       </div>
 
       {/* Navigation Sections */}
-      <div className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
+      <div className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
         {NAV_SECTIONS.map((sec) => (
-          <div key={sec.group} className="space-y-1">
-            <div className="text-muted-foreground flex items-center justify-between px-3 py-1 font-mono text-[10px] font-semibold tracking-wider uppercase">
-              <span>{sec.group}</span>
-              <Activity className="size-2.5 opacity-60" />
+          <div key={sec.group} className="space-y-0.5">
+            <div className="mb-1.5 flex items-center gap-2 px-3">
+              <span className="text-sidebar-foreground/25 font-mono text-[9px] font-semibold tracking-[0.18em] uppercase">
+                {sec.group}
+              </span>
+              <div className="border-sidebar-border h-px flex-1 border-t" />
             </div>
 
             {sec.items.map((item) => {
@@ -155,41 +143,47 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`group relative flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 ${
+                  className={`group relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150 ${
                     isActive
-                      ? 'border border-emerald-500/35 bg-emerald-500/15 font-semibold text-emerald-700 shadow-[0_0_15px_rgba(16,185,129,0.12)] dark:text-emerald-300'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground border border-transparent'
+                      ? 'bg-blue-500/10 text-blue-500'
+                      : 'text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   }`}
                 >
+                  {/* Active left accent bar */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-r bg-blue-500 shadow-[0_0_8px_rgba(29,110,247,0.6)]" />
+                  )}
+
                   <div className="flex items-center gap-2.5">
                     <Icon
-                      className={`size-4 transition-colors ${
+                      className={`size-3.5 transition-colors ${
                         isActive
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-muted-foreground group-hover:text-foreground'
+                          ? 'text-blue-500'
+                          : 'text-sidebar-foreground/30 group-hover:text-sidebar-foreground/70'
                       }`}
                     />
-                    <span>{item.label}</span>
+                    <span className={isActive ? 'font-semibold' : ''}>{item.label}</span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     {isSession && isCallActive ? (
-                      <span className="flex animate-pulse items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                      /* LIVE badge — emerald is functional status color, keep it */
+                      <span className="flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-emerald-500">
+                        <span className="size-1 animate-pulse rounded-full bg-emerald-500" />
                         LIVE
                       </span>
                     ) : item.badge ? (
                       <span
-                        className={`py-0.2 rounded px-1.5 font-mono text-[9px] font-bold tracking-wider uppercase ${
+                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase ${
                           isActive
-                            ? 'border border-emerald-500/30 bg-emerald-500/25 text-emerald-700 dark:text-emerald-300'
-                            : 'bg-muted text-muted-foreground border-border border'
+                            ? 'border border-blue-500/25 bg-blue-500/10 text-blue-500'
+                            : 'border-sidebar-border bg-sidebar-accent text-sidebar-foreground/30 border'
                         }`}
                       >
                         {item.badge}
                       </span>
                     ) : item.shortcut ? (
-                      <span className="text-muted-foreground/70 group-hover:text-muted-foreground font-mono text-[10px] transition-colors">
+                      <span className="text-sidebar-foreground/20 group-hover:text-sidebar-foreground/35 font-mono text-[9px] transition-colors">
                         {item.shortcut}
                       </span>
                     ) : null}
@@ -201,18 +195,22 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
         ))}
       </div>
 
-      {/* User Identity & Logout */}
-      <div className="border-sidebar-border bg-card/60 mt-auto border-t p-3 backdrop-blur-md">
-        <div className="bg-card border-border hover:border-border/80 flex items-center justify-between rounded-xl border p-2 shadow-xs transition-colors">
+      {/* User Footer */}
+      <div className="border-sidebar-border border-t p-3">
+        <div className="border-sidebar-border bg-sidebar-accent flex items-center justify-between rounded-lg border p-2.5 transition-colors">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-              <UserIcon className="size-4" />
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 font-mono text-[11px] font-bold text-blue-500">
+              {user?.name ? (
+                user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+              ) : (
+                <UserIcon className="size-3.5" />
+              )}
             </div>
             <div className="truncate">
-              <p className="text-foreground truncate text-xs font-semibold">
+              <p className="text-sidebar-foreground truncate font-mono text-xs font-semibold">
                 {user?.name || 'Home Operator'}
               </p>
-              <p className="text-muted-foreground truncate font-mono text-[10px]">
+              <p className="text-sidebar-foreground/35 truncate font-mono text-[10px]">
                 {user?.email || 'admin@exia.local'}
               </p>
             </div>
@@ -220,9 +218,9 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
           <button
             onClick={() => logout()}
             title="Log out"
-            className="text-muted-foreground cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-rose-500/10 hover:text-rose-500"
+            className="text-sidebar-foreground/30 shrink-0 cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-red-500/10 hover:text-red-500"
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-3.5" />
           </button>
         </div>
       </div>
