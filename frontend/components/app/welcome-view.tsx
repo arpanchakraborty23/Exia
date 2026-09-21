@@ -13,30 +13,33 @@ export const WelcomeView = ({
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
-    <div ref={ref} className="relative flex min-h-[70vh] w-full items-center justify-center overflow-hidden p-6 select-none">
-      {/* Ambient aurora layers */}
+    <div
+      ref={ref}
+      className="relative flex min-h-[70vh] w-full items-center justify-center overflow-hidden p-6 select-none"
+    >
+      {/* Ambient aurora layers — LiveKit cyan */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div
-          className="aurora-orb absolute left-1/2 top-1/3 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30"
+          className="aurora-orb absolute top-1/3 left-1/2 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-25"
           style={{
             background:
-              'radial-gradient(circle, rgba(139,92,246,0.5) 0%, rgba(34,211,238,0.2) 45%, transparent 70%)',
+              'radial-gradient(circle, rgba(31,213,249,0.45) 0%, rgba(0,44,242,0.15) 45%, transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
         <div
-          className="absolute left-1/2 top-1/2 size-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-15"
+          className="absolute top-1/2 left-1/2 size-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-12"
           style={{
-            background: 'radial-gradient(circle, rgba(34,211,238,0.6) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(31,213,249,0.5) 0%, transparent 70%)',
             filter: 'blur(40px)',
           }}
         />
       </div>
 
       <div className="relative flex w-full max-w-sm flex-col items-center gap-8 text-center">
-        {/* Status badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/8 px-4 py-1.5 font-mono text-[11px] font-semibold tracking-widest text-violet-300 uppercase">
-          <Sparkles className="size-3 text-violet-400" />
+        {/* Status badge — LiveKit primary cyan */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-1.5 font-mono text-[11px] font-semibold tracking-widest text-primary uppercase">
+          <Sparkles className="size-3 text-primary" />
           <span>LiveKit WebRTC · Gemini Live</span>
         </div>
 
@@ -44,27 +47,26 @@ export const WelcomeView = ({
         <div className="relative cursor-pointer" onClick={onStartCall}>
           {/* Outer ring halo — breathes */}
           <div
-            className="aurora-orb absolute -inset-8 rounded-full opacity-40"
+            className="aurora-orb absolute -inset-8 rounded-full opacity-35"
             style={{
               background:
-                'radial-gradient(circle, rgba(139,92,246,0.4) 0%, rgba(34,211,238,0.15) 50%, transparent 70%)',
+                'radial-gradient(circle, rgba(31,213,249,0.4) 0%, rgba(0,44,242,0.12) 50%, transparent 70%)',
               filter: 'blur(20px)',
             }}
           />
           {/* Ring border */}
-          <div className="absolute -inset-3 rounded-full border border-violet-500/20 transition-all duration-500 group-hover:border-violet-400/40" />
-          <div className="absolute -inset-1.5 rounded-full border border-violet-400/10" />
+          <div className="absolute -inset-3 rounded-full border border-primary/20 transition-all duration-500 hover:border-primary/40" />
+          <div className="absolute -inset-1.5 rounded-full border border-primary/10" />
 
           {/* Core orb */}
           <div className="float-orb relative flex size-28 items-center justify-center rounded-full transition-all duration-300 hover:scale-105 active:scale-95 md:size-32">
-            {/* Orb gradient fill */}
+            {/* Orb gradient fill — LiveKit cyan → blue */}
             <div
               className="absolute inset-0 rounded-full"
               style={{
-                background:
-                  'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 40%, #22d3ee 100%)',
+                background: 'linear-gradient(135deg, #002CF2 0%, #0066ff 40%, #1FD5F9 100%)',
                 boxShadow:
-                  '0 0 40px rgba(139,92,246,0.5), 0 0 80px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  '0 0 40px rgba(31,213,249,0.5), 0 0 80px rgba(31,213,249,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
               }}
             />
             {/* Inner highlight */}
@@ -77,24 +79,24 @@ export const WelcomeView = ({
         <div className="space-y-2">
           <h1 className="font-mono text-3xl font-black tracking-tight text-white md:text-4xl">
             EXIA
-            <span className="ml-3 font-mono text-base font-normal text-white/30 tracking-widest">
-              GN-001
+            <span className="ml-3 font-mono text-base font-normal tracking-widest text-white/30">
+
             </span>
           </h1>
           <p className="mx-auto max-w-xs text-sm leading-relaxed text-white/50">
-            Sub-second conversational speech with vision intelligence, real-time
-            interruption, and connected MCP tools.
+            Sub-second conversational speech with vision intelligence, real-time interruption, and
+            connected MCP tools.
           </p>
         </div>
 
-        {/* CTA */}
+        {/* CTA — LiveKit cyan gradient */}
         <Button
           size="lg"
           onClick={onStartCall}
-          className="group relative w-full max-w-xs cursor-pointer overflow-hidden rounded-full py-6 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95"
+          className="group relative w-full max-w-xs cursor-pointer overflow-hidden rounded-full py-6 text-sm font-semibold text-black shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95"
           style={{
-            background: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 60%, #22d3ee 100%)',
-            boxShadow: '0 0 32px rgba(139,92,246,0.4), 0 4px 20px rgba(0,0,0,0.4)',
+            background: 'linear-gradient(135deg, #002CF2 0%, #0055ff 50%, #1FD5F9 100%)',
+            boxShadow: '0 0 32px rgba(31,213,249,0.4), 0 4px 20px rgba(0,0,0,0.4)',
           }}
         >
           {/* Shimmer sweep on hover */}
@@ -106,7 +108,7 @@ export const WelcomeView = ({
         {/* Feature strip */}
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-[10px] tracking-wide text-white/25 uppercase">
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="size-3 text-emerald-500/70" />
+            <ShieldCheck className="size-3 text-muted-foreground/50" />
             <span>Secure Tokens</span>
           </span>
           <span className="text-white/15">•</span>
@@ -120,3 +122,4 @@ export const WelcomeView = ({
     </div>
   );
 };
+

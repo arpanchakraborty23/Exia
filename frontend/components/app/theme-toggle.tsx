@@ -48,7 +48,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         className={cn(
           'flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs transition-all duration-200',
           theme === 'light'
-            ? 'border border-emerald-500/30 bg-emerald-500/15 font-semibold text-emerald-600 shadow-xs dark:text-emerald-400'
+            ? 'border border-primary/30 bg-primary/12 font-semibold text-primary shadow-xs'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
         )}
       >
@@ -67,7 +67,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         className={cn(
           'flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs transition-all duration-200',
           theme === 'dark'
-            ? 'border border-emerald-500/30 bg-emerald-500/15 font-semibold text-emerald-400 shadow-xs'
+            ? 'border border-primary/30 bg-primary/12 font-semibold text-primary shadow-xs'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
         )}
       >
@@ -86,7 +86,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         className={cn(
           'flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs transition-all duration-200',
           theme === 'system'
-            ? 'border border-emerald-500/30 bg-emerald-500/15 font-semibold text-emerald-600 shadow-xs dark:text-emerald-400'
+            ? 'border border-primary/30 bg-primary/12 font-semibold text-primary shadow-xs'
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
         )}
       >

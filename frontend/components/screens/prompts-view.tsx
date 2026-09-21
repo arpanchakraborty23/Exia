@@ -29,12 +29,12 @@ const VARIABLE_PILLS = [
 
 const CURATED_DIRECTIVES = [
   {
-    title: 'Exia GN-001 Tactical Guardian',
+    title: 'Exia  Tactical Guardian',
     type: 'system' as const,
     badge: 'DEFAULT',
     icon: Terminal,
     prompt_text:
-      'You are Exia (GN-001), an autonomous mecha tactical intelligence designed for home command and personal assistance. Speak with calm, authoritative precision. Keep voice responses crisp and under 2-3 sentences unless asked for an in-depth breakdown. Prioritize safety, smart home diagnostics, and immediate tactical execution.',
+      'You are Exia (), an autonomous mecha tactical intelligence designed for home command and personal assistance. Speak with calm, authoritative precision. Keep voice responses crisp and under 2-3 sentences unless asked for an in-depth breakdown. Prioritize safety, smart home diagnostics, and immediate tactical execution.',
   },
   {
     title: 'Minimalist Voice Assistant',
@@ -209,7 +209,7 @@ export function PromptsView() {
             <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
               DIRECTIVE & PROMPT MATRIX
             </h1>
-            <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="rounded border border-primary/25 bg-primary/15 px-2 py-0.5 font-mono text-[10px] font-bold text-primary dark:text-primary">
               TACTICAL BRAIN
             </span>
           </div>
@@ -226,11 +226,11 @@ export function PromptsView() {
             className="bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border cursor-pointer rounded-xl border p-2 shadow-xs transition-all"
             title="Refresh"
           >
-            <RefreshCw className={`size-4 ${isLoading ? 'animate-spin text-emerald-500' : ''}`} />
+            <RefreshCw className={`size-4 ${isLoading ? 'animate-spin text-primary' : ''}`} />
           </button>
           <button
             onClick={() => handleOpenAdd()}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-400"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-black shadow-[0_0_15px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/90"
           >
             <Plus className="size-4" />
             <span>New Custom Directive</span>
@@ -239,17 +239,17 @@ export function PromptsView() {
       </div>
 
       {/* Active Directive Spotlight Banner */}
-      <div className="via-card to-card relative overflow-hidden rounded-2xl border border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 p-5 shadow-xs backdrop-blur-xl">
+      <div className="via-card to-card relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/8 p-5 shadow-xs backdrop-blur-xl">
         <div className="relative z-10 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="size-2 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-              <span className="font-mono text-xs font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
+              <span className="size-2 animate-pulse rounded-full bg-primary shadow-[0_0_8px_rgba(31,213,249,0.5)]" />
+              <span className="font-mono text-xs font-bold tracking-wider text-primary uppercase dark:text-primary">
                 LIVE AGENT DIRECTIVE IN PLAY
               </span>
             </div>
             <h3 className="text-foreground font-mono text-base font-bold">
-              Exia GN-001 Tactical Autonomous Butler
+              Exia  Tactical Autonomous Butler
             </h3>
             <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">
               Real-time voice tone tuned to concise military brevity, proactive IoT anomaly
@@ -260,13 +260,13 @@ export function PromptsView() {
           <div className="flex items-center gap-3">
             <div className="text-muted-foreground hidden text-right font-mono text-[11px] sm:block">
               <div>System Tokens: ~180</div>
-              <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+              <div className="font-semibold text-primary dark:text-primary">
                 Audio Latency: Optimized
               </div>
             </div>
             <button
               onClick={() => handleOpenAdd(CURATED_DIRECTIVES[0])}
-              className="cursor-pointer rounded-xl border border-emerald-500/35 bg-emerald-500/15 px-3.5 py-1.5 font-mono text-xs font-medium text-emerald-700 shadow-xs transition-all hover:bg-emerald-500/25 dark:text-emerald-300"
+              className="cursor-pointer rounded-xl border border-primary/30 bg-primary/15 px-3.5 py-1.5 font-mono text-xs font-medium text-primary shadow-xs transition-all hover:bg-primary/25 dark:text-primary"
             >
               Tune Parameters
             </button>
@@ -281,11 +281,10 @@ export function PromptsView() {
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={`cursor-pointer rounded-xl px-3 py-1.5 font-mono text-xs font-medium transition-all ${
-                filterType === t
+              className={`cursor-pointer rounded-xl px-3 py-1.5 font-mono text-xs font-medium transition-all ${filterType === t
                   ? 'bg-muted text-foreground border-border border font-bold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
+                }`}
             >
               {t === 'all'
                 ? `All Directives (${prompts.length})`
@@ -330,20 +329,19 @@ export function PromptsView() {
             return (
               <div
                 key={item.id}
-                className={`group flex flex-col justify-between rounded-2xl border p-5 shadow-xs transition-all duration-200 ${
-                  isActive
-                    ? 'bg-card border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.08)]'
-                    : 'bg-card hover:bg-card/90 border-border hover:border-emerald-500/30'
-                }`}
+                className={`group flex flex-col justify-between rounded-2xl border p-5 shadow-xs transition-all duration-200 ${isActive
+                    ? 'bg-card border-primary/35 shadow-[0_0_15px_rgba(16,185,129,0.08)]'
+                    : 'bg-card hover:bg-card/90 border-border hover:border-primary/25'
+                  }`}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
                       <div className="bg-muted text-foreground border-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
                         {isSystem ? (
-                          <Terminal className="size-4 text-emerald-500" />
+                          <Terminal className="size-4 text-primary" />
                         ) : (
-                          <Sparkles className="size-4 text-teal-500" />
+                          <Sparkles className="size-4 text-primary" />
                         )}
                       </div>
                       <div className="truncate">
@@ -363,7 +361,7 @@ export function PromptsView() {
                         title="Copy to clipboard"
                       >
                         {isCopied ? (
-                          <Check className="size-4 text-emerald-500" />
+                          <Check className="size-4 text-primary" />
                         ) : (
                           <Copy className="size-4" />
                         )}
@@ -397,11 +395,10 @@ export function PromptsView() {
 
                   <button
                     onClick={() => handleSetActive(item.id)}
-                    className={`cursor-pointer rounded-lg px-3 py-1 font-mono text-[11px] font-medium transition-all ${
-                      isActive
-                        ? 'border border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-700 dark:text-emerald-300'
+                    className={`cursor-pointer rounded-lg px-3 py-1 font-mono text-[11px] font-medium transition-all ${isActive
+                        ? 'border border-primary/35 bg-primary/15 font-bold text-primary dark:text-primary'
                         : 'bg-muted text-muted-foreground hover:text-foreground border-border border'
-                    }`}
+                      }`}
                   >
                     {isActive ? '✓ Active Live' : 'Set as Active'}
                   </button>
@@ -416,7 +413,7 @@ export function PromptsView() {
       <div className="border-border space-y-4 border-t pt-4">
         <div>
           <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
-            <Zap className="size-3.5 text-emerald-500" />
+            <Zap className="size-3.5 text-primary" />
             <span>Curated Tactical Directives</span>
           </h2>
           <p className="text-muted-foreground mt-0.5 text-xs">
@@ -431,11 +428,11 @@ export function PromptsView() {
             return (
               <div
                 key={idx}
-                className="bg-card hover:bg-muted/50 border-border flex flex-col justify-between rounded-2xl border p-4 shadow-xs transition-all duration-200 hover:border-emerald-500/30"
+                className="bg-card hover:bg-muted/50 border-border flex flex-col justify-between rounded-2xl border p-4 shadow-xs transition-all duration-200 hover:border-primary/25"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:text-primary">
                       <Icon className="size-4" />
                     </div>
                     <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[9px] font-bold">
@@ -450,7 +447,7 @@ export function PromptsView() {
 
                 <button
                   onClick={() => handleOpenAdd(preset)}
-                  className="bg-muted text-foreground border-border mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-emerald-500/40 hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-emerald-300"
+                  className="bg-muted text-foreground border-border mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-primary/35 hover:bg-primary/15 hover:text-primary dark:hover:text-primary"
                 >
                   <Plus className="size-3.5" />
                   <span>Import Directive</span>
@@ -467,7 +464,7 @@ export function PromptsView() {
           <div className="bg-card border-border text-foreground w-full max-w-lg space-y-5 rounded-2xl border p-6 shadow-2xl">
             <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 text-primary dark:text-primary">
                   <FileText className="size-4" />
                 </div>
                 <div>
@@ -501,7 +498,7 @@ export function PromptsView() {
                   placeholder="e.g. Exia Tactical Butler"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-emerald-500/50 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-primary/50 focus:outline-none"
                   required
                 />
               </div>
@@ -514,11 +511,10 @@ export function PromptsView() {
                   <button
                     type="button"
                     onClick={() => setType('system')}
-                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${
-                      type === 'system'
-                        ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-700 dark:text-emerald-300'
+                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${type === 'system'
+                        ? 'border-primary/35 bg-primary/15 font-bold text-primary dark:text-primary'
                         : 'bg-muted/40 text-muted-foreground border-border hover:text-foreground'
-                    }`}
+                      }`}
                   >
                     <Terminal className="size-3.5" />
                     <span>System Persona</span>
@@ -526,11 +522,10 @@ export function PromptsView() {
                   <button
                     type="button"
                     onClick={() => setType('quick')}
-                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${
-                      type === 'quick'
-                        ? 'border-emerald-500/40 bg-emerald-500/15 font-bold text-emerald-700 dark:text-emerald-300'
+                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${type === 'quick'
+                        ? 'border-primary/35 bg-primary/15 font-bold text-primary dark:text-primary'
                         : 'bg-muted/40 text-muted-foreground border-border hover:text-foreground'
-                    }`}
+                      }`}
                   >
                     <Sparkles className="size-3.5" />
                     <span>Quick Command</span>
@@ -550,7 +545,7 @@ export function PromptsView() {
                   placeholder="Enter system instructions for Exia..."
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full resize-none rounded-xl border p-3 leading-relaxed focus:border-emerald-500/50 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full resize-none rounded-xl border p-3 leading-relaxed focus:border-primary/50 focus:outline-none"
                   required
                 />
               </div>
@@ -566,7 +561,7 @@ export function PromptsView() {
                       key={v}
                       type="button"
                       onClick={() => handleInsertVariable(v)}
-                      className="bg-muted text-foreground border-border cursor-pointer rounded-md border px-2 py-1 text-[10px] transition-colors hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-emerald-300"
+                      className="bg-muted text-foreground border-border cursor-pointer rounded-md border px-2 py-1 text-[10px] transition-colors hover:bg-primary/15 hover:text-primary dark:hover:text-primary"
                     >
                       {v}
                     </button>
@@ -585,7 +580,7 @@ export function PromptsView() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="cursor-pointer rounded-xl bg-emerald-500 px-5 py-2 font-bold text-black shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-400 disabled:opacity-50"
+                  className="cursor-pointer rounded-xl bg-primary px-5 py-2 font-bold text-black shadow-[0_0_12px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isSubmitting
                     ? 'Saving...'

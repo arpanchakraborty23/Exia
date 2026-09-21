@@ -214,7 +214,7 @@ export function MCPView() {
             <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
               MODEL CONTEXT PROTOCOL (MCP) REGISTRY
             </h1>
-            <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+            <span className="rounded border border-primary/25 bg-primary/15 px-2 py-0.5 font-mono text-[10px] text-primary dark:text-primary">
               REMOTE ONLY
             </span>
           </div>
@@ -232,12 +232,12 @@ export function MCPView() {
             title="Refresh"
           >
             <RefreshCw
-              className={`size-4 ${isLoading ? 'animate-spin text-emerald-600 dark:text-emerald-400' : ''}`}
+              className={`size-4 ${isLoading ? 'animate-spin text-primary dark:text-primary' : ''}`}
             />
           </button>
           <button
             onClick={() => handleOpenAdd()}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-600 dark:text-black dark:hover:bg-emerald-400"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-[0_0_15px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/80 dark:text-black dark:hover:bg-primary/90"
           >
             <Plus className="size-4" />
             <span>Connect Remote Server</span>
@@ -246,11 +246,11 @@ export function MCPView() {
       </div>
 
       {/* Remote Support Notice Banner */}
-      <div className="flex items-start gap-3 rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4 text-xs text-sky-700 dark:text-sky-300">
-        <Globe className="mt-0.5 size-4 shrink-0 text-sky-600 dark:text-sky-400" />
+      <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-xs text-foreground dark:text-foreground/80">
+        <Globe className="mt-0.5 size-4 shrink-0 text-muted-foreground dark:text-muted-foreground" />
         <div className="space-y-0.5">
           <p className="font-bold">Currently, we support Remote MCP servers (SSE / HTTP Stream)</p>
-          <p className="text-[11px] text-sky-600/90 dark:text-sky-300/80">
+          <p className="text-[11px] text-muted-foreground/90 dark:text-foreground/80/80">
             Local STDIO server execution (npx / shell command) is not supported at this time. Please
             connect external or self-hosted MCP endpoints using their remote SSE URLs.
           </p>
@@ -262,7 +262,7 @@ export function MCPView() {
         <div className="bg-card/80 border-border rounded-2xl border p-4 backdrop-blur-xl">
           <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
             <span>Configured Servers</span>
-            <Cpu className="size-4 text-emerald-400" />
+            <Cpu className="size-4 text-primary" />
           </div>
           <div className="text-foreground mt-2 font-mono text-2xl font-bold">
             {servers.length}{' '}
@@ -273,9 +273,9 @@ export function MCPView() {
         <div className="bg-card/80 border-border rounded-2xl border p-4 backdrop-blur-xl">
           <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
             <span>Armed Tools</span>
-            <Wrench className="size-4 text-teal-400" />
+            <Wrench className="size-4 text-primary" />
           </div>
-          <div className="mt-2 font-mono text-2xl font-bold text-emerald-400">
+          <div className="mt-2 font-mono text-2xl font-bold text-primary">
             {totalActiveTools}{' '}
             <span className="text-muted-foreground text-xs font-normal">callable functions</span>
           </div>
@@ -284,7 +284,7 @@ export function MCPView() {
         <div className="bg-card/80 border-border rounded-2xl border p-4 backdrop-blur-xl">
           <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
             <span>Protocol Standard</span>
-            <ShieldCheck className="size-4 text-cyan-400" />
+            <ShieldCheck className="size-4 text-primary" />
           </div>
           <div className="text-foreground mt-2 font-mono text-sm font-bold">
             Remote SSE (HTTP Stream)
@@ -307,7 +307,7 @@ export function MCPView() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
-            <Radio className="size-3.5 text-emerald-400" />
+            <Radio className="size-3.5 text-primary" />
             <span>Active Server Connections ({servers.length})</span>
           </h2>
         </div>
@@ -341,7 +341,7 @@ export function MCPView() {
                   key={server.id}
                   className={`flex flex-col justify-between rounded-2xl border p-5 transition-all duration-200 ${
                     server.enabled
-                      ? 'bg-card hover:bg-card/90 border-border shadow-xs hover:border-emerald-500/30'
+                      ? 'bg-card hover:bg-card/90 border-border shadow-xs hover:border-primary/25'
                       : 'bg-card border-border/50 opacity-60'
                   }`}
                 >
@@ -352,7 +352,7 @@ export function MCPView() {
                         <div
                           className={`flex size-9 shrink-0 items-center justify-center rounded-xl border ${
                             server.enabled
-                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              ? 'border-primary/25 bg-primary/10 text-primary dark:text-primary'
                               : 'bg-muted text-muted-foreground border-border'
                           }`}
                         >
@@ -382,7 +382,7 @@ export function MCPView() {
                         onClick={() => handleToggleEnabled(server)}
                         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                           server.enabled
-                            ? 'bg-emerald-500'
+                            ? 'bg-primary'
                             : 'bg-muted-foreground/30 dark:bg-zinc-700'
                         }`}
                       >
@@ -421,12 +421,12 @@ export function MCPView() {
                     <button
                       onClick={() => handleTestPing(server.id)}
                       disabled={isTesting || !server.enabled}
-                      className="text-muted-foreground inline-flex cursor-pointer items-center gap-1.5 font-mono text-[11px] transition-colors hover:text-emerald-600 disabled:opacity-40 dark:hover:text-emerald-400"
+                      className="text-muted-foreground inline-flex cursor-pointer items-center gap-1.5 font-mono text-[11px] transition-colors hover:text-primary disabled:opacity-40 dark:hover:text-primary"
                     >
                       {isTesting ? (
-                        <Loader2 className="size-3 animate-spin text-emerald-600 dark:text-emerald-400" />
+                        <Loader2 className="size-3 animate-spin text-primary dark:text-primary" />
                       ) : (
-                        <Zap className="size-3 text-emerald-600 dark:text-emerald-400" />
+                        <Zap className="size-3 text-primary dark:text-primary" />
                       )}
                       <span>{isTesting ? 'Pinging...' : 'Test Connection'}</span>
                     </button>
@@ -460,7 +460,7 @@ export function MCPView() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
-              <Zap className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+              <Zap className="size-3.5 text-primary dark:text-primary" />
               <span>Recommended 1-Click MCP Presets</span>
             </h2>
             <p className="text-muted-foreground mt-0.5 text-xs">
@@ -475,11 +475,11 @@ export function MCPView() {
             return (
               <div
                 key={idx}
-                className="bg-card hover:bg-muted/50 border-border group flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200 hover:border-emerald-500/30"
+                className="bg-card hover:bg-muted/50 border-border group flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200 hover:border-primary/25"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 transition-transform group-hover:scale-105 dark:text-emerald-400">
+                    <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary transition-transform group-hover:scale-105 dark:text-primary">
                       <Icon className="size-4" />
                     </div>
                     <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[10px]">
@@ -494,7 +494,7 @@ export function MCPView() {
 
                 <button
                   onClick={() => handleOpenAdd(preset)}
-                  className="bg-card border-border text-foreground mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-300"
+                  className="bg-card border-border text-foreground mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-primary/35 hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
                 >
                   <Plus className="size-3.5" />
                   <span>Use Preset</span>
@@ -511,7 +511,7 @@ export function MCPView() {
           <div className="bg-card border-border text-foreground w-full max-w-lg space-y-5 rounded-2xl border p-6 shadow-2xl">
             <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 text-primary dark:text-primary">
                   <Globe className="size-4" />
                 </div>
                 <div>
@@ -532,8 +532,8 @@ export function MCPView() {
             </div>
 
             {/* Remote Support Note */}
-            <div className="flex items-start gap-2.5 rounded-xl border border-sky-500/20 bg-sky-500/10 p-2.5 text-[11px] text-sky-700 dark:text-sky-300">
-              <Globe className="mt-0.5 size-3.5 shrink-0 text-sky-600 dark:text-sky-400" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-border bg-accent p-2.5 text-[11px] text-foreground dark:text-foreground/80">
+              <Globe className="mt-0.5 size-3.5 shrink-0 text-muted-foreground dark:text-muted-foreground" />
               <span>
                 Currently, only <strong>Remote MCP (SSE / HTTP Stream)</strong> is supported. Local
                 (stdio) command execution is unavailable.
@@ -562,7 +562,7 @@ export function MCPView() {
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label className="text-foreground font-semibold">Transport Protocol</label>
-                  <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="text-[10px] font-medium text-primary dark:text-primary">
                     Remote SSE Supported
                   </span>
                 </div>
@@ -570,7 +570,7 @@ export function MCPView() {
                   <button
                     type="button"
                     onClick={() => setServerType('sse')}
-                    className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-3 py-2 font-bold text-emerald-700 transition-all dark:text-emerald-300"
+                    className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/35 bg-primary/15 px-3 py-2 font-bold text-primary transition-all dark:text-primary"
                   >
                     <Globe className="size-3.5" />
                     <span>Remote SSE (Stream)</span>
@@ -625,7 +625,7 @@ export function MCPView() {
                   id="enabled"
                   checked={enabled}
                   onChange={(e) => setEnabled(e.target.checked)}
-                  className="border-border rounded text-emerald-500 focus:ring-emerald-500"
+                  className="border-border rounded text-primary focus:ring-primary"
                 />
                 <label
                   htmlFor="enabled"
@@ -646,7 +646,7 @@ export function MCPView() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="cursor-pointer rounded-xl bg-emerald-500 px-5 py-2 font-bold text-white shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-600 disabled:opacity-50 dark:text-black dark:hover:bg-emerald-400"
+                  className="cursor-pointer rounded-xl bg-primary px-5 py-2 font-bold text-white shadow-[0_0_12px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/80 disabled:opacity-50 dark:text-black dark:hover:bg-primary/90"
                 >
                   {isSubmitting ? 'Saving...' : editingServer ? 'Update Server' : 'Register Server'}
                 </button>

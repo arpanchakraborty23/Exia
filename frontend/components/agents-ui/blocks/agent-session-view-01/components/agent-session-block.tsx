@@ -48,7 +48,15 @@ const SHIMMER_MOTION: MotionProps = {
   exit: 'hidden',
 };
 
-export function Fade({ top = false, bottom = false, className }: { top?: boolean; bottom?: boolean; className?: string }) {
+export function Fade({
+  top = false,
+  bottom = false,
+  className,
+}: {
+  top?: boolean;
+  bottom?: boolean;
+  className?: string;
+}) {
   return (
     <div
       className={cn(
@@ -76,16 +84,16 @@ const STATE_CONFIG = {
     text: 'text-emerald-400',
   },
   thinking: {
-    color: '#22d3ee',
+    color: '#1fd5f9',
     label: 'Thinking',
-    dot: 'animate-spin bg-cyan-400',
-    text: 'text-cyan-400',
+    dot: 'animate-spin bg-primary',
+    text: 'text-primary',
   },
   speaking: {
-    color: '#8b5cf6',
+    color: '#1fd5f9',
     label: 'Speaking',
-    dot: 'animate-pulse bg-violet-400',
-    text: 'text-violet-400',
+    dot: 'animate-pulse bg-primary',
+    text: 'text-primary',
   },
 } as const;
 
@@ -147,7 +155,11 @@ export function AgentSessionView_01({
   };
 
   const handleDisconnect = () => {
-    try { onDisconnect?.(); } catch (e) { console.error(e); }
+    try {
+      onDisconnect?.();
+    } catch (e) {
+      console.error(e);
+    }
     session.end();
   };
 
@@ -190,7 +202,9 @@ export function AgentSessionView_01({
           ) : (
             <>
               <span className="size-1.5 rounded-full bg-white/20" />
-              <span className="font-mono text-xs capitalize text-white/40">{agentState || 'Ready'}</span>
+              <span className="font-mono text-xs text-white/40 capitalize">
+                {agentState || 'Ready'}
+              </span>
             </>
           )}
 
@@ -246,10 +260,7 @@ export function AgentSessionView_01({
       />
 
       {/* Bottom control area */}
-      <motion.div
-        {...BOTTOM_MOTION}
-        className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12"
-      >
+      <motion.div {...BOTTOM_MOTION} className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12">
         {/* Pre-connect message */}
         {isPreConnectBufferEnabled && (
           <AnimatePresence>

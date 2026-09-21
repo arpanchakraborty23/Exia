@@ -49,7 +49,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
   return (
     <div className="bg-background text-foreground bg-tactical-grid relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden p-4 transition-colors">
       {/* Background ambient lighting */}
-      <div className="pointer-events-none absolute top-1/4 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/4 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-3xl" />
 
       {/* Top right theme toggle */}
       <div className="absolute top-4 right-4 z-20">
@@ -60,12 +60,12 @@ export function LoginView({ onSuccess }: LoginViewProps) {
         {/* Branding & Avatar */}
         <div className="space-y-3 text-center">
           <div className="relative inline-block">
-            <div className="absolute -inset-2 animate-pulse rounded-3xl bg-gradient-to-tr from-emerald-500/40 via-teal-500/20 to-emerald-400/40 blur-xl" />
-            <div className="relative mx-auto size-24 overflow-hidden rounded-2xl border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/30">
+            <div className="absolute -inset-2 animate-pulse rounded-3xl bg-gradient-to-tr from-primary/25 via-primary/8 to-primary/20 blur-xl" />
+            <div className="relative mx-auto size-24 overflow-hidden rounded-2xl border-2 border-primary/50 shadow-2xl shadow-primary/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/exia-avatar.jpg"
-                alt="Exia GN-001"
+                alt="Exia "
                 className="size-full object-cover"
               />
             </div>
@@ -73,9 +73,9 @@ export function LoginView({ onSuccess }: LoginViewProps) {
           </div>
 
           <div>
-            <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
+            <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-primary uppercase">
               <Zap className="size-3" />
-              <span>GN-001 EXIA COMMAND SYSTEM</span>
+              <span> EXIA COMMAND SYSTEM</span>
             </div>
             <h1 className="text-foreground font-mono text-2xl font-extrabold tracking-tight">
               TACTICAL ACCESS
@@ -89,15 +89,14 @@ export function LoginView({ onSuccess }: LoginViewProps) {
         {/* Card */}
         <div className="bg-card/90 border-border relative space-y-6 overflow-hidden rounded-2xl border p-6 shadow-2xl backdrop-blur-2xl md:p-8">
           {/* Subtle top edge glow */}
-          <div className="absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
+          <div className="absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
 
           {/* Telemetry status ticker */}
           <div className="bg-muted/60 border-border text-muted-foreground flex items-center justify-between rounded-xl border p-2 font-mono text-[10px]">
-            <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
-              <span className="size-1.5 animate-ping rounded-full bg-emerald-400" />
-              GN LINK: SYNCHRONIZED
+            <span className="flex items-center gap-1 font-bold text-primary">
+              <span className="size-1.5 animate-ping rounded-full bg-primary" />
+              SYNCHRONIZED
             </span>
-            <span>REST: 8000</span>
           </div>
 
           {errorMessage && (
@@ -120,7 +119,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                   onChange={(e) => setEmailOrUsername(e.target.value)}
                   placeholder="admin@exia.local"
                   required
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border py-2.5 pr-3 pl-9 text-xs transition-all focus:border-emerald-500/60 focus:shadow-[0_0_12px_rgba(16,185,129,0.2)] focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border py-2.5 pr-3 pl-9 text-xs transition-all focus:border-primary/60 focus:shadow-[0_0_12px_rgba(31,213,249,0.15)] focus:outline-none"
                 />
               </div>
             </div>
@@ -137,7 +136,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border py-2.5 pr-3 pl-9 text-xs transition-all focus:border-emerald-500/60 focus:shadow-[0_0_12px_rgba(16,185,129,0.2)] focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border py-2.5 pr-3 pl-9 text-xs transition-all focus:border-primary/60 focus:shadow-[0_0_12px_rgba(31,213,249,0.15)] focus:outline-none"
                 />
               </div>
             </div>
@@ -145,10 +144,10 @@ export function LoginView({ onSuccess }: LoginViewProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 font-mono text-xs font-bold text-black shadow-[0_0_20px_rgba(16,185,129,0.35)] transition-all hover:bg-emerald-400 disabled:opacity-50"
+              className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-3 font-mono text-xs font-bold text-primary-foreground shadow-[0_0_20px_rgba(31,213,249,0.3)] transition-all hover:opacity-90 disabled:opacity-50"
             >
               {isLoading ? (
-                <Loader2 className="size-4 animate-spin text-black" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
                   <span>Engage Exia Terminal</span>
@@ -184,8 +183,8 @@ export function LoginView({ onSuccess }: LoginViewProps) {
 
         {/* Footer */}
         <div className="text-muted-foreground flex items-center justify-center gap-2 font-mono text-[11px]">
-          <ShieldCheck className="size-3.5 text-emerald-500" />
-          <span>FastAPI REST Endpoints • LiveKit RTC • GN-001 Core</span>
+          <ShieldCheck className="size-3.5 text-primary/60" />
+          <span>FastAPI REST Endpoints • LiveKit RTC •  Core</span>
         </div>
       </div>
     </div>

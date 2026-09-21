@@ -5,82 +5,128 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ═══════════════════════════════════════════════════
-   SINGLE ACCENT: LIVEKIT BLUE (#1D6EF7)
-   Status only: emerald=live, amber=thinking, red=error
+   LIVEKIT DOCS BLACK THEME
+   ─────────────────────────────────────────────────
+   Dark Mode Brand Colors  (livekit.io):
+     Background:  #070707   near-black
+     Accent Cyan: #1FD5F9   electric cyan (primary CTA)
+
+   Starter Template Surface Scale  (lk-dbg vars):
+     --lk-surface-1: #111111   elevated card
+     --lk-surface-2: #1a1a1a   panel / secondary card
+     --lk-surface-3: #242424   input / control bg
+     --lk-surface-4: #2e2e2e   hover / active state
+     --lk-surface-5: #383838   border highlight
+
+   Status colors  (functional, not brand):
+     Live:     emerald #10b981
+     Thinking: amber   #f59e0b
+     Error:    red     #ef4444
 ═══════════════════════════════════════════════════ */
 
-/* LIGHT MODE */
+/* ───────── LIGHT MODE ───────── */
 :root {
   --radius: 0.5rem;
-  --background: #f8fafc;
-  --foreground: #09090d;
+
+  --background: #fdfdfc;
+  --foreground: #0a0a0a;
   --card: #ffffff;
-  --card-foreground: #09090d;
+  --card-foreground: #0a0a0a;
   --popover: #ffffff;
-  --popover-foreground: #09090d;
-  --primary: #1d6ef7;
-  --primary-hover: #1558cc;
+  --popover-foreground: #0a0a0a;
+
+  /* LiveKit light-mode primary: #002CF2 */
+  --primary: #002cf2;
+  --primary-hover: #0022c4;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #09090d;
+
+  --secondary: #f4f4f5;
+  --secondary-foreground: #111111;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #0a0a0a;
+
   --destructive: #ef4444;
   --border: rgba(0, 0, 0, 0.1);
   --input: rgba(0, 0, 0, 0.1);
-  --ring: #1d6ef7;
-  --chart-1: #1d6ef7;
-  --chart-2: #06b6d4;
+  --ring: #002cf2;
+
+  --chart-1: #002cf2;
+  --chart-2: #1fd5f9;
   --chart-3: #10b981;
-  --chart-4: #ec4899;
-  --chart-5: #f59e0b;
+  --chart-4: #f59e0b;
+  --chart-5: #ec4899;
+
   --sidebar: #ffffff;
-  --sidebar-foreground: #09090d;
-  --sidebar-primary: #1d6ef7;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #002cf2;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #09090d;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #0a0a0a;
   --sidebar-border: rgba(0, 0, 0, 0.08);
-  --sidebar-ring: #1d6ef7;
+  --sidebar-ring: #002cf2;
+
+  /* Surface scale — light re-mapping */
+  --lk-surface-1: #f8f8f8;
+  --lk-surface-2: #f0f0f0;
+  --lk-surface-3: #e8e8e8;
+  --lk-surface-4: #dcdcdc;
+  --lk-surface-5: #d0d0d0;
 }
 
-/* DARK MODE */
+/* ───────── DARK MODE (LiveKit Docs Black) ───────── */
 .dark {
-  --background: #000000;
+  /* Surfaces — exact lk-dbg scale */
+  --background: #070707;
   --foreground: #ffffff;
-  --card: #080810;
+
+  --card: #111111;
   --card-foreground: #ffffff;
-  --popover: #0a0a14;
+
+  --popover: #1a1a1a;
   --popover-foreground: #ffffff;
-  --primary: #1d6ef7;
-  --primary-hover: #3a82f7;
-  --primary-foreground: #ffffff;
-  --secondary: #0d0d18;
-  --secondary-foreground: #ffffff;
-  --muted: #0d0d18;
-  --muted-foreground: #71717a;
-  --accent: #12121e;
+
+  /* LiveKit dark-mode primary: #1FD5F9 cyan */
+  --primary: #1fd5f9;
+  --primary-hover: #3dddfa;
+  --primary-foreground: #000000;
+
+  --secondary: #1a1a1a;
+  --secondary-foreground: #d6d6d6;
+  --muted: #1a1a1a;
+  --muted-foreground: #555555;
+  --accent: #242424;
   --accent-foreground: #ffffff;
+
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #1d6ef7;
-  --chart-1: #1d6ef7;
-  --chart-2: #06b6d4;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #1fd5f9;
+
+  --chart-1: #1fd5f9;
+  --chart-2: #002cf2;
   --chart-3: #10b981;
-  --chart-4: #ec4899;
-  --chart-5: #f59e0b;
-  --sidebar: #04040c;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #1d6ef7;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #0d0d18;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-ring: #1d6ef7;
+  --chart-4: #f59e0b;
+  --chart-5: #ec4899;
+
+  /* Sidebar — deepest black */
+  --sidebar: #040404;
+  --sidebar-foreground: #d4d4d4;
+  --sidebar-primary: #1fd5f9;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #d6d6d6;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #1fd5f9;
+
+  /* Surface scale — dark */
+  --lk-surface-1: #111111;
+  --lk-surface-2: #1a1a1a;
+  --lk-surface-3: #242424;
+  --lk-surface-4: #2e2e2e;
+  --lk-surface-5: #383838;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -88,11 +134,11 @@
 ═══════════════════════════════════════════════════ */
 @theme inline {
   --font-sans:
-    var(--font-public-sans), ui-sans-serif, system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    var(--font-public-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono:
-    var(--font-commit-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, 'Liberation Mono', 'Courier New', monospace;
+    var(--font-commit-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -125,6 +171,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* lk-surface scale exposed as Tailwind colors: bg-lk-1 … bg-lk-5 */
+  --color-lk-1: var(--lk-surface-1);
+  --color-lk-2: var(--lk-surface-2);
+  --color-lk-3: var(--lk-surface-3);
+  --color-lk-4: var(--lk-surface-4);
+  --color-lk-5: var(--lk-surface-5);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -143,16 +196,32 @@
    KEYFRAMES
 ═══════════════════════════════════════════════════ */
 @keyframes aurora {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
-  50%       { transform: translateY(-8px) scale(1.06); opacity: 0.65; }
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.06);
+    opacity: 0.65;
+  }
 }
 @keyframes shimmer-sweep {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 @keyframes float-orb {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -167,24 +236,46 @@
   border: 1px solid var(--border);
 }
 
-/* Glows — blue only */
+/* Cyan glow — LiveKit dark-mode primary */
+.glow-cyan {
+  box-shadow:
+    0 0 24px rgba(31, 213, 249, 0.35),
+    0 0 48px rgba(31, 213, 249, 0.12);
+}
+.glow-cyan-sm {
+  box-shadow: 0 0 12px rgba(31, 213, 249, 0.3);
+}
+
+/* Blue glow — LiveKit light-mode primary */
 .glow-blue {
-  box-shadow: 0 0 24px rgba(29, 110, 247, 0.35), 0 0 48px rgba(29, 110, 247, 0.12);
+  box-shadow:
+    0 0 24px rgba(0, 44, 242, 0.35),
+    0 0 48px rgba(0, 44, 242, 0.12);
 }
 .glow-blue-sm {
-  box-shadow: 0 0 12px rgba(29, 110, 247, 0.3);
+  box-shadow: 0 0 12px rgba(0, 44, 242, 0.3);
 }
 
 /* Status glows — keep distinct for functional readability */
-.glow-emerald    { box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); }
-.glow-amber      { box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); }
-.glow-red        { box-shadow: 0 0 16px rgba(239, 68, 68, 0.3); }
+.glow-emerald {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+.glow-amber {
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+.glow-red {
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+}
 
 /* Aurora animation */
-.aurora-orb { animation: aurora 4s ease-in-out infinite; }
-.float-orb  { animation: float-orb 3s ease-in-out infinite; }
+.aurora-orb {
+  animation: aurora 4s ease-in-out infinite;
+}
+.float-orb {
+  animation: float-orb 3s ease-in-out infinite;
+}
 
-/* Shimmer text sweep */
+/* White shimmer text */
 .shimmer-text {
   background: linear-gradient(
     90deg,
@@ -200,28 +291,57 @@
   animation: shimmer-sweep 2.5s linear infinite;
 }
 
+/* Cyan shimmer text — LiveKit accent variant */
+.shimmer-text-cyan {
+  background: linear-gradient(
+    90deg,
+    rgba(31, 213, 249, 0.3) 0%,
+    rgba(31, 213, 249, 0.9) 40%,
+    rgba(31, 213, 249, 0.3) 60%,
+    rgba(31, 213, 249, 0.1) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-sweep 2.5s linear infinite;
+}
+
 /* Dot grid background — theme-aware */
 .bg-tactical-grid {
   background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
-/* Main content area radial gradient */
+/* Main content radial gradient — subtle cyan bloom in dark mode */
 .bg-radial-gradient {
-  background: radial-gradient(
-    ellipse at 50% -10%,
-    rgba(29, 110, 247, 0.07) 0%,
-    transparent 60%
-  );
+  background: radial-gradient(ellipse at 50% -10%, rgba(31, 213, 249, 0.06) 0%, transparent 60%);
 }
 
-/* Scrollbars */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
+/* LiveKit starter template surface cards */
+.lk-card {
+  background: var(--lk-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.lk-card-elevated {
+  background: var(--lk-surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Scrollbars — matches LiveKit starter thin-scroll style */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--lk-surface-5, var(--border));
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(29, 110, 247, 0.4);
+  background: rgba(31, 213, 249, 0.4);
 }

@@ -62,28 +62,24 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
   return (
     <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border relative z-30 flex h-screen w-64 shrink-0 flex-col border-r backdrop-blur-2xl select-none">
       {/* Top blue accent line */}
-      <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-blue-500/40 to-transparent" />
+      <div className="absolute top-0 bottom-0 left-0 w-px bg-gradient-to-b from-transparent via-primary/40 to-transparent" />
 
       {/* Brand Header */}
       <div className="border-sidebar-border relative flex items-center justify-between overflow-hidden border-b px-4 py-4">
-        <div className="pointer-events-none absolute -top-6 -left-6 size-24 rounded-full bg-blue-500/8 blur-2xl" />
+        <div className="pointer-events-none absolute -top-6 -left-6 size-24 rounded-full bg-primary/8 blur-2xl" />
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="relative size-9 shrink-0 overflow-hidden rounded-xl border border-blue-500/30 shadow-lg">
+          <div className="relative size-9 shrink-0 overflow-hidden rounded-xl border border-primary/30 shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/exia-logo.jpg"
-              alt="Exia GN-001"
-              className="size-full object-cover"
-            />
+            <img src="/images/exia-logo.jpg" alt="Exia" className="size-full object-cover" />
             {/* Live indicator — emerald = connected status (functional) */}
-            <span className="absolute bottom-0 right-0 size-2 rounded-full border-2 border-sidebar bg-emerald-500 shadow-[0_0_5px_#10b981]" />
+            <span className="border-sidebar absolute right-0 bottom-0 size-2 rounded-full border-2 bg-emerald-500 shadow-[0_0_5px_#10b981]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm font-black tracking-[0.2em]">EXIA</span>
-              <span className="rounded border border-blue-500/25 bg-blue-500/10 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-blue-500 uppercase">
-                GN-001
+              <span className="rounded border border-primary/25 bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-primary uppercase">
+
               </span>
             </div>
             <div className="mt-0.5 flex items-center gap-1.5">
@@ -112,11 +108,13 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
       <div className="px-4 pt-3">
         <div className="border-sidebar-border bg-sidebar-accent flex items-center justify-between rounded-lg border px-3 py-2">
           <div className="flex items-center gap-1.5">
-            <Activity className="size-3 text-blue-500/60" />
+            <Activity className="size-3 text-primary/60" />
             <span className="text-sidebar-foreground/30 font-mono text-[10px]">GN DRIVE</span>
           </div>
           <div className="text-sidebar-foreground/30 flex items-center gap-2 font-mono text-[10px]">
-            <span>Sync: <span className="text-blue-500">100%</span></span>
+            <span>
+              Sync: <span className="text-primary">100%</span>
+            </span>
             <span className="text-sidebar-border opacity-60">·</span>
             <span>{'<'}180ms</span>
           </div>
@@ -143,24 +141,22 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`group relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150 ${
-                    isActive
-                      ? 'bg-blue-500/10 text-blue-500'
+                  className={`group relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150 ${isActive
+                      ? 'bg-primary/10 text-primary'
                       : 'text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                  }`}
+                    }`}
                 >
                   {/* Active left accent bar */}
                   {isActive && (
-                    <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-r bg-blue-500 shadow-[0_0_8px_rgba(29,110,247,0.6)]" />
+                    <span className="absolute top-1/2 left-0 h-4 w-[2px] -translate-y-1/2 rounded-r bg-primary shadow-[0_0_8px_rgba(31,213,249,0.5)]" />
                   )}
 
                   <div className="flex items-center gap-2.5">
                     <Icon
-                      className={`size-3.5 transition-colors ${
-                        isActive
-                          ? 'text-blue-500'
+                      className={`size-3.5 transition-colors ${isActive
+                          ? 'text-primary'
                           : 'text-sidebar-foreground/30 group-hover:text-sidebar-foreground/70'
-                      }`}
+                        }`}
                     />
                     <span className={isActive ? 'font-semibold' : ''}>{item.label}</span>
                   </div>
@@ -174,11 +170,10 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
                       </span>
                     ) : item.badge ? (
                       <span
-                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase ${
-                          isActive
-                            ? 'border border-blue-500/25 bg-blue-500/10 text-blue-500'
+                        className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase ${isActive
+                            ? 'border border-primary/25 bg-primary/10 text-primary'
                             : 'border-sidebar-border bg-sidebar-accent text-sidebar-foreground/30 border'
-                        }`}
+                          }`}
                       >
                         {item.badge}
                       </span>
@@ -199,9 +194,14 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
       <div className="border-sidebar-border border-t p-3">
         <div className="border-sidebar-border bg-sidebar-accent flex items-center justify-between rounded-lg border p-2.5 transition-colors">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 font-mono text-[11px] font-bold text-blue-500">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 font-mono text-[11px] font-bold text-primary">
               {user?.name ? (
-                user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                user.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
               ) : (
                 <UserIcon className="size-3.5" />
               )}

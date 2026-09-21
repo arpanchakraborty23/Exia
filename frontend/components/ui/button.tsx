@@ -19,7 +19,7 @@ const buttonVariants = cva(
         ghost:
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-white/[0.08] dark:text-zinc-300 dark:hover:text-white',
         link: 'text-primary underline-offset-4 hover:underline',
-        glow: 'bg-emerald-500 text-black font-semibold hover:bg-emerald-400 shadow-[0_0_20px_-3px_rgba(16,185,129,0.5)] active:scale-[0.98]',
+        glow: 'bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-[0_0_20px_-3px_rgba(31,213,249,0.4)] active:scale-[0.98]',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',

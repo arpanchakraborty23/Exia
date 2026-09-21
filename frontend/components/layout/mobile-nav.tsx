@@ -15,12 +15,12 @@ const MOBILE_ITEMS: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { id: 'session',  label: 'Voice',    icon: Mic         },
-  { id: 'history',  label: 'History',  icon: History     },
-  { id: 'mcp',      label: 'MCP',      icon: Cpu         },
-  { id: 'prompts',  label: 'Prompts',  icon: FileText    },
-  { id: 'models',   label: 'Models',   icon: Sliders     },
-  { id: 'settings', label: 'Settings', icon: SettingsIcon},
+  { id: 'session', label: 'Voice', icon: Mic },
+  { id: 'history', label: 'History', icon: History },
+  { id: 'mcp', label: 'MCP', icon: Cpu },
+  { id: 'prompts', label: 'Prompts', icon: FileText },
+  { id: 'models', label: 'Models', icon: Sliders },
+  { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ];
 
 export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavProps) {
@@ -37,13 +37,13 @@ export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavPr
               key={item.id}
               onClick={() => onSelectTab(item.id)}
               className={`relative flex cursor-pointer flex-col items-center justify-center rounded-xl px-2.5 py-1.5 transition-all duration-150 ${
-                isActive ? 'text-blue-500' : 'text-muted-foreground hover:text-foreground'
+                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="relative">
                 <Icon
                   className={`size-5 transition-colors ${
-                    isActive ? 'text-blue-500 drop-shadow-[0_0_8px_rgba(29,110,247,0.6)]' : ''
+                    isActive ? 'text-primary drop-shadow-[0_0_8px_rgba(31,213,249,0.55)]' : ''
                   }`}
                 />
                 {/* Session live dot — emerald = functional status */}
@@ -54,7 +54,7 @@ export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavPr
               <span className="mt-0.5 font-mono text-[9px] tracking-wide">{item.label}</span>
               {/* Active indicator dot */}
               {isActive && (
-                <span className="absolute -bottom-0.5 size-1 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(29,110,247,0.7)]" />
+                <span className="absolute -bottom-0.5 size-1 rounded-full bg-primary shadow-[0_0_5px_rgba(31,213,249,0.7)]" />
               )}
             </button>
           );

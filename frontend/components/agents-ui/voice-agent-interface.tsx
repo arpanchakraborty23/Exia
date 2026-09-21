@@ -124,7 +124,7 @@ export function VoiceAgentInterface({
               <motion.p
                 initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 0.85, y: 0 }}
-                className="text-muted-foreground bg-black/50 mt-2 line-clamp-1 max-w-[220px] rounded-full px-3 py-0.5 text-center font-mono text-[10px] tracking-tight italic backdrop-blur-xl"
+                className="text-muted-foreground mt-2 line-clamp-1 max-w-[220px] rounded-full bg-black/50 px-3 py-0.5 text-center font-mono text-[10px] tracking-tight italic backdrop-blur-xl"
               >
                 &ldquo;{expression}&rdquo;
               </motion.p>

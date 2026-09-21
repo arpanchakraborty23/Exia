@@ -24,7 +24,7 @@ interface SettingsViewProps {
 }
 
 const GN_THEME_ACCENTS = [
-  { id: 'emerald', name: 'GN-001 Emerald', color: '#10b981', desc: 'Default GN Particle Conduit' },
+  { id: 'emerald', name: ' Emerald', color: '#10b981', desc: 'Default GN Particle Conduit' },
   { id: 'crimson', name: 'Trans-Am Crimson', color: '#f43f5e', desc: 'Overload Performance Mode' },
   { id: 'cyan', name: 'Celestial Azure', color: '#06b6d4', desc: 'Quantum Burst High Bandwidth' },
   { id: 'stealth', name: 'Obsidian Stealth', color: '#a1a1aa', desc: 'Pure Monochromatic Minimal' },
@@ -55,7 +55,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
   const [autoGainControl, setAutoGainControl] = useState(true);
 
   // Theme Accent selection
-  const [selectedAccent, setSelectedAccent] = useState('emerald');
+  const [selectedAccent, setSelectedAccent] = useState('cyan');
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +109,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
           <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
             SETTINGS & SYSTEM CONFIGURATION
           </h1>
-          <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+          <span className="rounded border border-primary/25 bg-primary/15 px-2 py-0.5 font-mono text-[10px] text-primary dark:text-primary">
             SYSTEM CONTROL
           </span>
         </div>
@@ -123,7 +123,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
       <div className="bg-card/80 border-border space-y-5 rounded-2xl border p-6 shadow-xs backdrop-blur-xl">
         <div className="border-border flex items-center justify-between border-b pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <div className="flex size-10 items-center justify-center rounded-xl border border-primary/25 bg-primary/15 text-primary dark:text-primary">
               <User className="size-5" />
             </div>
             <div>
@@ -164,7 +164,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
             <span className="text-muted-foreground text-[10px] font-bold uppercase">
               Access Privilege
             </span>
-            <p className="mt-1 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+            <p className="mt-1 text-sm font-bold text-primary dark:text-primary">
               SUPERUSER (Level 5)
             </p>
           </div>
@@ -175,7 +175,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
       <div className="bg-card/80 border-border space-y-6 rounded-2xl border p-6 shadow-xs backdrop-blur-xl">
         <div className="border-border flex items-center justify-between border-b pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-teal-500/30 bg-teal-500/15 text-teal-600 dark:text-teal-400">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/12 text-primary dark:text-primary">
               <Volume2 className="size-4.5" />
             </div>
             <div>
@@ -199,16 +199,15 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               <button
                 key={v.id}
                 onClick={() => onChangeVisualizerType(v.id)}
-                className={`cursor-pointer rounded-xl border p-3.5 text-left transition-all duration-200 ${
-                  visualizerType === v.id
-                    ? 'text-foreground border-emerald-500/40 bg-emerald-500/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                className={`cursor-pointer rounded-xl border p-3.5 text-left transition-all duration-200 ${visualizerType === v.id
+                    ? 'text-foreground border-primary/35 bg-primary/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                     : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
+                  }`}
               >
                 <div className="mb-1 flex items-center justify-between">
                   <span className="text-foreground font-mono text-xs font-bold">{v.name}</span>
                   {visualizerType === v.id && (
-                    <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+                    <span className="size-2 rounded-full bg-primary shadow-[0_0_6px_#10b981]" />
                   )}
                 </div>
                 <p className="text-muted-foreground line-clamp-2 text-[10px]">{v.desc}</p>
@@ -232,11 +231,10 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               </div>
             </div>
             <span
-              className={`size-2.5 rounded-full ${
-                echoCancellation
-                  ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]'
+              className={`size-2.5 rounded-full ${echoCancellation
+                  ? 'bg-primary shadow-[0_0_6px_#10b981]'
                   : 'bg-muted-foreground/40'
-              }`}
+                }`}
             />
           </div>
 
@@ -253,11 +251,10 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               </div>
             </div>
             <span
-              className={`size-2.5 rounded-full ${
-                noiseSuppression
-                  ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]'
+              className={`size-2.5 rounded-full ${noiseSuppression
+                  ? 'bg-primary shadow-[0_0_6px_#10b981]'
                   : 'bg-muted-foreground/40'
-              }`}
+                }`}
             />
           </div>
 
@@ -272,11 +269,10 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               </div>
             </div>
             <span
-              className={`size-2.5 rounded-full ${
-                autoGainControl
-                  ? 'bg-emerald-500 shadow-[0_0_6px_#10b981]'
+              className={`size-2.5 rounded-full ${autoGainControl
+                  ? 'bg-primary shadow-[0_0_6px_#10b981]'
                   : 'bg-muted-foreground/40'
-              }`}
+                }`}
             />
           </div>
         </div>
@@ -285,7 +281,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
       {/* Interface Theme & Display Mode */}
       <div className="bg-card/80 border-border space-y-4 rounded-2xl border p-6 shadow-xs backdrop-blur-xl">
         <div className="border-border flex items-center gap-2.5 border-b pb-4">
-          <div className="flex size-9 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+          <div className="flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/15 text-primary dark:text-primary">
             <Sun className="size-4.5" />
           </div>
           <div>
@@ -302,18 +298,17 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
           <button
             type="button"
             onClick={() => setTheme('light')}
-            className={`cursor-pointer rounded-xl border p-4 text-left transition-all duration-200 ${
-              theme === 'light'
-                ? 'text-foreground border-emerald-500/40 bg-emerald-500/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+            className={`cursor-pointer rounded-xl border p-4 text-left transition-all duration-200 ${theme === 'light'
+                ? 'text-foreground border-primary/35 bg-primary/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                 : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted/50'
-            }`}
+              }`}
           >
             <div className="mb-2 flex items-center justify-between">
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/15 p-2 text-amber-500">
                 <Sun className="size-4" />
               </div>
               {theme === 'light' && (
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400" />
+                <Check className="size-4 text-primary dark:text-primary" />
               )}
             </div>
             <div className="text-foreground font-mono text-xs font-bold">Solar Light Mode</div>
@@ -325,18 +320,17 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
           <button
             type="button"
             onClick={() => setTheme('dark')}
-            className={`cursor-pointer rounded-xl border p-4 text-left transition-all duration-200 ${
-              theme === 'dark'
-                ? 'text-foreground border-emerald-500/40 bg-emerald-500/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+            className={`cursor-pointer rounded-xl border p-4 text-left transition-all duration-200 ${theme === 'dark'
+                ? 'text-foreground border-primary/35 bg-primary/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                 : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted/50'
-            }`}
+              }`}
           >
             <div className="mb-2 flex items-center justify-between">
-              <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/15 p-2 text-indigo-400">
+              <div className="rounded-lg border border-primary/25 bg-primary/12 p-2 text-primary">
                 <Moon className="size-4" />
               </div>
               {theme === 'dark' && (
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400" />
+                <Check className="size-4 text-primary dark:text-primary" />
               )}
             </div>
             <div className="text-foreground font-mono text-xs font-bold">GN Tactical Dark Mode</div>
@@ -348,18 +342,17 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
           <button
             type="button"
             onClick={() => setTheme('system')}
-            className={`cursor-pointer rounded-xl border p-4 text-left transition-all duration-200 ${
-              theme === 'system'
-                ? 'text-foreground border-emerald-500/40 bg-emerald-500/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+            className={`cursor-pointer rounded-xl border p-4 text-left transition-all duration-200 ${theme === 'system'
+                ? 'text-foreground border-primary/35 bg-primary/15 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                 : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted/50'
-            }`}
+              }`}
           >
             <div className="mb-2 flex items-center justify-between">
-              <div className="rounded-lg border border-teal-500/30 bg-teal-500/15 p-2 text-teal-400">
+              <div className="rounded-lg border border-primary/25 bg-primary/12 p-2 text-primary">
                 <Monitor className="size-4" />
               </div>
               {theme === 'system' && (
-                <Check className="size-4 text-emerald-600 dark:text-emerald-400" />
+                <Check className="size-4 text-primary dark:text-primary" />
               )}
             </div>
             <div className="text-foreground font-mono text-xs font-bold">OS Auto Sync</div>
@@ -373,7 +366,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
       {/* GN Drive Accent Color Customization */}
       <div className="bg-card/80 border-border space-y-4 rounded-2xl border p-6 shadow-xs backdrop-blur-xl">
         <div className="border-border flex items-center gap-2.5 border-b pb-4">
-          <div className="flex size-9 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+          <div className="flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/15 text-primary dark:text-primary">
             <Palette className="size-4.5" />
           </div>
           <div>
@@ -391,11 +384,10 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
             <div
               key={accent.id}
               onClick={() => setSelectedAccent(accent.id)}
-              className={`cursor-pointer rounded-xl border p-3.5 transition-all duration-200 ${
-                selectedAccent === accent.id
-                  ? 'bg-muted border-emerald-500/50 shadow-xs'
+              className={`cursor-pointer rounded-xl border p-3.5 transition-all duration-200 ${selectedAccent === accent.id
+                  ? 'bg-muted border-primary/40 shadow-xs'
                   : 'bg-card border-border hover:bg-muted/50'
-              }`}
+                }`}
             >
               <div className="mb-2 flex items-center justify-between">
                 <div
@@ -403,7 +395,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
                   style={{ backgroundColor: accent.color }}
                 />
                 {selectedAccent === accent.id && (
-                  <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <Check className="size-3.5 text-primary dark:text-primary" />
                 )}
               </div>
               <div className="text-foreground font-mono text-xs font-bold">{accent.name}</div>
@@ -418,7 +410,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
       {/* Password & Security Card */}
       <div className="bg-card/80 border-border space-y-5 rounded-2xl border p-6 shadow-xs backdrop-blur-xl">
         <div className="border-border flex items-center gap-2.5 border-b pb-4">
-          <div className="flex size-9 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+          <div className="flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/15 text-primary dark:text-primary">
             <Lock className="size-4.5" />
           </div>
           <div>
@@ -432,8 +424,8 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
         </div>
 
         {successMessage && (
-          <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/15 p-3.5 font-mono text-xs text-emerald-700 dark:text-emerald-300">
-            <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-primary/25 bg-primary/15 p-3.5 font-mono text-xs text-primary dark:text-primary">
+            <CheckCircle2 className="size-4 shrink-0 text-primary dark:text-primary" />
             <span>{successMessage}</span>
           </div>
         )}
@@ -453,7 +445,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               placeholder="••••••••"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-emerald-500/50 focus:outline-none"
+              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-primary/50 focus:outline-none"
               required
             />
           </div>
@@ -465,7 +457,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               placeholder="Minimum 8 characters"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-emerald-500/50 focus:outline-none"
+              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-primary/50 focus:outline-none"
               required
             />
 
@@ -474,15 +466,14 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               <div className="mt-2 space-y-1">
                 <div className="bg-muted h-1 w-full overflow-hidden rounded-full">
                   <div
-                    className={`h-full transition-all duration-300 ${
-                      strength <= 25
+                    className={`h-full transition-all duration-300 ${strength <= 25
                         ? 'w-1/4 bg-rose-500'
                         : strength <= 50
                           ? 'w-2/4 bg-amber-500'
                           : strength <= 75
-                            ? 'w-3/4 bg-teal-400'
-                            : 'w-full bg-emerald-500'
-                    }`}
+                            ? 'w-3/4 bg-primary'
+                            : 'w-full bg-primary'
+                      }`}
                   />
                 </div>
                 <div className="text-muted-foreground flex justify-between text-[10px]">
@@ -508,7 +499,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
               placeholder="Repeat new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-emerald-500/50 focus:outline-none"
+              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-primary/50 focus:outline-none"
               required
             />
           </div>
@@ -516,7 +507,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 font-bold text-black shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:bg-emerald-400 disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-bold text-black shadow-[0_0_15px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/90 disabled:opacity-50"
           >
             {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
             <span>{isSubmitting ? 'Updating...' : 'Update Password'}</span>

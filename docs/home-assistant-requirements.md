@@ -4,7 +4,8 @@
 
 ## 1. Executive Overview
 
-A self-hosted, personal AI home assistant delivered as a high-performance responsive web application. Users converse with an autonomous voice agent (**Exia GN-001**) via a bidirectional WebRTC audio interface powered by LiveKit and Google Gemini Live (or modular STT/LLM/TTS). The app also serves as a centralized mission control hub for managing conversational history, Model Context Protocol (MCP) server tools, reusable directives, speech pipeline parameters, and security credentials.
+A self-hosted, personal AI home assistant delivered as a high-performance responsive web application. Users converse with an autonomous voice agent (**Exia**) via a bidirectional WebRTC audio interface powered by LiveKit and Google Gemini Live (or modular STT/LLM/TTS). The app also serves as a centralized mission control hub for managing conversational history, Model Context Protocol (MCP) server tools, reusable directives, speech pipeline parameters, and security credentials.
+
 ```mermaid
 graph TD
     Client["Frontend Client (Next.js 15 + React 19)"] <-->|"WebRTC Audio (Opus 48kHz)"| LK["LiveKit Server"]
@@ -24,7 +25,7 @@ The frontend application has been fully structured, aesthetically enhanced, and 
 
 ### 2.1 Brand & Visual Identity
 
-- **Exia GN-001 Tactical Interface**: Mecha-inspired tactical aesthetic featuring signature GN Emerald (`#10b981`) conduits, clean telemetry indicators, and typography powered by **Public Sans** and **Commit Mono**.
+- **Exia  Tactical Interface**: Mecha-inspired tactical aesthetic featuring signature GN Emerald (`#10b981`) conduits, clean telemetry indicators, and typography powered by **Public Sans** and **Commit Mono**.
 - **Branded Assets**: High-resolution Exia avatar and logo assets in `public/images/`.
 - **Favicon & Turbopack Crash Fix**: Replaced the default LiveKit starter icon and resolved Next.js 15 Turbopack ICO RGBA format decoding crashes by placing a multi-resolution static favicon (`16x16`, `32x32`, `48x48`, `256x256`) at `public/favicon.ico` with high-res PNG touch icons and explicit `<link rel="icon">` declarations in `app/layout.tsx`.
 - **Repository Hygiene & Cleanup**: Removed unused starter template components (`components/ui/button-group.tsx`, `components/ui/separator.tsx`, `components/ui/tooltip.tsx`), obsolete starter SVGs (`lk-logo-dark.svg`, `lk-logo-light.svg`, `lk-wordmark.svg`), unused italic font binaries, and redundant root config files (`taskfile.yaml`, `renovate.json`, `.eslintrc.json`).
@@ -73,14 +74,17 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 
 - **Description**: Authenticates operator credentials using bcrypt/argon2 and issues JWT access and refresh tokens.
 - **Request Body**:
+
   ```json
   {
     "email": "commander@homeassistant.local",
     "password": "SecurePassword123!"
   }
   ```
+
   *(Accepts `email_or_username` or `username` as fallback fields)*
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -96,6 +100,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     "message": "Authentication successful"
   }
   ```
+
 - **Error Responses**: `400 Bad Request` (Malformed payload), `401 Unauthorized` (Invalid credentials).
 
 #### `POST /api/auth/logout`
@@ -103,6 +108,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Terminates active session, revoking or blacklisting the active token.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true,
@@ -115,6 +121,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Returns authenticated user profile and permissions.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "id": "usr_94b1c2fa",
@@ -124,6 +131,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     "created_at": "2026-09-19T00:00:00Z"
   }
   ```
+
 - **Error Response**: `401 Unauthorized`.
 
 #### `POST /api/auth/change-password`
@@ -131,19 +139,23 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Changes operator password after verifying current password.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Request Body**:
+
   ```json
   {
     "current_password": "OldPassword123!",
     "new_password": "NewSecurePassword456!"
   }
   ```
+
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true,
     "message": "Password successfully updated"
   }
   ```
+
 - **Error Responses**: `400 Bad Request` (Password does not meet complexity rules), `401 Unauthorized` (Current password incorrect).
 
 ---
@@ -155,12 +167,15 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Creates or binds a LiveKit room, generates an AccessToken with participant grants (join, publish audio, subscribe, data channels), and dispatches the voice worker agent.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Request Body** *(Optional)*:
+
   ```json
   {
     "room_name": "exia-room-sess-101"
   }
   ```
+
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "server_url": "wss://livekit.homeassistant.local",
@@ -169,6 +184,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     "room_name": "exia-room-sess-101"
   }
   ```
+
 - **Backend Mechanics**:
   1. Mint token using `livekit.api.AccessToken(api_key, api_secret)`.
   2. Embed participant grants: `VideoGrants(room_join=True, room=room_name, can_publish=True, can_subscribe=True, can_publish_data=True)`.
@@ -181,12 +197,15 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id` (Session UUID or ID string)
 - **Request Body** *(Optional)*:
+
   ```json
   {
     "session_id": "sess-a1f94082"
   }
   ```
+
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true,
@@ -209,6 +228,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
   - `search`: String (optional keyword search in preview or transcripts)
   - `model`: String (optional filter: `all`, `gemini_live`, `modular`)
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "total": 42,
@@ -238,6 +258,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "id": "sess-101",
@@ -281,6 +302,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     }
   }
   ```
+
 - **Error Response**: `404 Not Found`.
 
 #### `DELETE /api/sessions/{id}`
@@ -289,6 +311,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true,
@@ -305,6 +328,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Returns all registered local stdio and remote SSE MCP servers.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Success Response (`200 OK`)**:
+
   ```json
   [
     {
@@ -336,6 +360,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Registers a new MCP server.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Request Body**:
+
   ```json
   {
     "name": "SQLite Notes Database",
@@ -345,6 +370,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     "enabled": true
   }
   ```
+
 - **Success Response (`201 Created`)**: Returns newly created `MCPServer` object.
 
 #### `PUT /api/mcp/{id}`
@@ -353,11 +379,13 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Request Body**:
+
   ```json
   {
     "enabled": false
   }
   ```
+
 - **Success Response (`200 OK`)**: Returns updated `MCPServer` object.
 
 #### `DELETE /api/mcp/{id}`
@@ -366,6 +394,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true
@@ -378,6 +407,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "status": "connected",
@@ -390,7 +420,9 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     ]
   }
   ```
+
 - **Failure Response (`200 OK` or `502 Bad Gateway`)**:
+
   ```json
   {
     "status": "error",
@@ -407,13 +439,14 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Fetches all saved system persona directives and quick routine macros.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Success Response (`200 OK`)**:
+
   ```json
   [
     {
       "id": "pr-1",
       "title": "Tactical Guardian",
       "type": "system",
-      "prompt_text": "You are Exia GN-001, a tactical home intelligence system. Keep responses clipped, authoritative, and focused on home perimeter and device telemetry.",
+      "prompt_text": "You are Exia , a tactical home intelligence system. Keep responses clipped, authoritative, and focused on home perimeter and device telemetry.",
       "tags": ["tactical", "security"],
       "is_active": true,
       "created_at": "2026-09-17T00:00:00Z"
@@ -435,6 +468,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Creates a new custom directive or quick routine macro.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Request Body**:
+
   ```json
   {
     "title": "Minimalist Companion",
@@ -443,6 +477,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     "tags": ["minimal", "fast"]
   }
   ```
+
 - **Success Response (`201 Created`)**: Returns created `PromptItem`.
 
 #### `PUT /api/prompts/{id}`
@@ -451,12 +486,14 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Request Body**:
+
   ```json
   {
     "title": "Ultra-Minimalist Companion",
     "prompt_text": "Reply with 10 words or fewer."
   }
   ```
+
 - **Success Response (`200 OK`)**: Returns updated `PromptItem`.
 
 #### `DELETE /api/prompts/{id}`
@@ -465,6 +502,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true
@@ -477,6 +515,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Path Parameter**: `id`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "success": true,
@@ -494,6 +533,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Returns active speech pipeline parameters (Gemini Live speech-to-speech vs. Modular STT/LLM/TTS).
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Success Response (`200 OK`)**:
+
   ```json
   {
     "pipeline_mode": "gemini_live",
@@ -515,6 +555,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
 - **Description**: Modifies active pipeline mode, model, voice timbre, or inference hyperparameters.
 - **Headers**: `Authorization: Bearer <access_token>`
 - **Request Body**:
+
   ```json
   {
     "pipeline_mode": "gemini_live",
@@ -524,6 +565,7 @@ The backend must be built using **FastAPI** (Python 3.11+) with **MongoDB** via 
     "max_output_tokens": 1024
   }
   ```
+
 - **Success Response (`200 OK`)**: Returns updated `ModelConfig` object.
 
 ---
@@ -535,7 +577,9 @@ The backend utilizes **MongoDB** via **Motor** (asynchronous driver) or **Beanie
 ### 4.1 Collections & Document Schemas
 
 #### 1. `users` Collection
+
 Stores operator accounts, hashed credentials, and system roles.
+
 ```json
 {
   "_id": { "$oid": "66ebd12094b1c2fa00000001" },
@@ -550,7 +594,9 @@ Stores operator accounts, hashed credentials, and system roles.
 ```
 
 #### 2. `sessions` Collection
+
 Stores historical and active voice sessions with fully embedded conversational transcripts, latency benchmarks, and MCP tool execution logs.
+
 ```json
 {
   "_id": { "$oid": "66ebd12094b1c2fa00000002" },
@@ -596,7 +642,9 @@ Stores historical and active voice sessions with fully embedded conversational t
 ```
 
 #### 3. `mcp_servers` Collection
+
 Stores registered local `stdio` processes and remote `sse` tool endpoints.
+
 ```json
 {
   "_id": { "$oid": "66ebd12094b1c2fa00000003" },
@@ -613,14 +661,16 @@ Stores registered local `stdio` processes and remote `sse` tool endpoints.
 ```
 
 #### 4. `prompts` Collection
+
 Stores reusable system persona directives and quick command macros.
+
 ```json
 {
   "_id": { "$oid": "66ebd12094b1c2fa00000004" },
   "user_id": { "$oid": "66ebd12094b1c2fa00000001" },
   "title": "Tactical Guardian",
   "type": "system",
-  "prompt_text": "You are Exia GN-001, a tactical home intelligence system. Keep responses clipped, authoritative, and focused on home perimeter and device telemetry.",
+  "prompt_text": "You are Exia , a tactical home intelligence system. Keep responses clipped, authoritative, and focused on home perimeter and device telemetry.",
   "tags": ["tactical", "security"],
   "is_active": true,
   "created_at": { "$date": "2026-09-17T00:00:00.000Z" },
@@ -629,7 +679,9 @@ Stores reusable system persona directives and quick command macros.
 ```
 
 #### 5. `model_configs` Collection
+
 Stores speech pipeline mode and hyperparameters per operator.
+
 ```json
 {
   "_id": { "$oid": "66ebd12094b1c2fa00000005" },
@@ -764,7 +816,7 @@ The autonomous voice agent worker runs as a background Python service powered by
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              LiveKit Python Voice Worker (Exia GN-001)          │
+│              LiveKit Python Voice Worker (Exia )          │
 │                                                                 │
 │  1. Injects active directive prompt from MongoDB               │
 │  2. Connects enabled MCP servers (stdio & SSE)                  │

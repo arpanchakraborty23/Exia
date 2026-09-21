@@ -15,12 +15,12 @@ interface AppShellProps {
 }
 
 const TAB_TITLES: Record<NavTab, { title: string; code: string }> = {
-  session:  { title: 'Voice Stage',      code: 'STAGE-01'  },
-  history:  { title: 'Session History',  code: 'LOGS-02'   },
-  mcp:      { title: 'MCP Registry',     code: 'MCP-03'    },
-  prompts:  { title: 'Directive Library',code: 'PROMPT-04' },
-  models:   { title: 'Model Engine',     code: 'ENGINE-05' },
-  settings: { title: 'Configuration',    code: 'CONFIG-06' },
+  session: { title: 'Voice Stage' },
+  history: { title: 'Session History' },
+  mcp: { title: 'MCP Registry' },
+  prompts: { title: 'Directive Library' },
+  models: { title: 'Model Engine' },
+  settings: { title: 'Configuration' },
 };
 
 export function AppShell({ currentTab, onSelectTab, isCallActive, children }: AppShellProps) {
@@ -31,13 +31,19 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
     try {
       const saved = localStorage.getItem('exia_sidebar_open');
       if (saved !== null) setIsSidebarOpen(saved === 'true');
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => {
       const next = !prev;
-      try { localStorage.setItem('exia_sidebar_open', String(next)); } catch { /* ignore */ }
+      try {
+        localStorage.setItem('exia_sidebar_open', String(next));
+      } catch {
+        /* ignore */
+      }
       return next;
     });
   };
@@ -46,11 +52,20 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
         const shortcuts: Record<string, NavTab> = {
-          '1': 'session', '2': 'history', '3': 'mcp',
-          '4': 'prompts', '5': 'models',  '6': 'settings',
+          '1': 'session',
+          '2': 'history',
+          '3': 'mcp',
+          '4': 'prompts',
+          '5': 'models',
+          '6': 'settings',
         };
-        if (shortcuts[e.key]) { e.preventDefault(); onSelectTab(shortcuts[e.key]); }
-        else if (e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); }
+        if (shortcuts[e.key]) {
+          e.preventDefault();
+          onSelectTab(shortcuts[e.key]);
+        } else if (e.key.toLowerCase() === 'b') {
+          e.preventDefault();
+          toggleSidebar();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -82,7 +97,7 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
           onClick={toggleSidebar}
           title="Expand navigation (⌘B)"
         >
-          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-blue-500/60 to-transparent transition-all group-hover:w-[2px] group-hover:shadow-[0_0_8px_rgba(29,110,247,0.4)]" />
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-primary/60 to-transparent transition-all group-hover:w-[2px] group-hover:shadow-[0_0_8px_rgba(31,213,249,0.35)]" />
           <button
             type="button"
             className="border-border bg-card text-primary ml-1 flex cursor-pointer items-center gap-1.5 rounded-r-xl border-y border-r p-2 opacity-70 shadow-xl backdrop-blur-md transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
@@ -108,10 +123,11 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
               aria-label={isSidebarOpen ? 'Hide navigation' : 'Show navigation'}
               className="border-border bg-accent text-muted-foreground hover:text-foreground hidden size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-colors md:flex"
             >
-              {isSidebarOpen
-                ? <PanelLeftClose className="size-3.5" />
-                : <PanelLeftOpen className="text-primary size-3.5" />
-              }
+              {isSidebarOpen ? (
+                <PanelLeftClose className="size-3.5" />
+              ) : (
+                <PanelLeftOpen className="text-primary size-3.5" />
+              )}
             </button>
 
             {/* Mobile logo */}

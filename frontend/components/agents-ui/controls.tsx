@@ -87,7 +87,7 @@ function CreativeControlsInner({
           <span
             className={cn('size-2 rounded-full', {
               'animate-pulse bg-emerald-400': isSpeaking,
-              'bg-cyan-400': isListening,
+              'bg-primary': isListening,
               'animate-spin bg-amber-400': isThinking,
               'bg-muted-foreground/40': !isSpeaking && !isListening && !isThinking,
             })}
@@ -128,7 +128,7 @@ function CreativeControlsInner({
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-md transition-all duration-300',
             isCameraActive || isScreenSharing
-              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 shadow-sm shadow-emerald-500/20'
+              ? 'border-primary/35 bg-primary/10 text-primary shadow-sm shadow-primary/15'
               : 'bg-background/60 text-muted-foreground border-white/10'
           )}
         >
@@ -191,7 +191,7 @@ function CreativeControlsInner({
       {/* Glassmorphic Media Control Dock */}
       <div className="relative z-20 flex flex-col items-center justify-center">
         <div
-          className="bg-background/75 rounded-2xl border border-white/10 p-2 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-white/20 hover:shadow-cyan-500/10"
+          className="bg-background/75 rounded-2xl border border-white/10 p-2 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-white/20 hover:shadow-primary/10"
           style={{
             boxShadow: `0 12px 40px -10px ${activeColor}25, 0 0 20px -2px ${activeColor}15`,
           }}
