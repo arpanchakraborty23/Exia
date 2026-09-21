@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - img "Exia GN-001" [ref=e11]
+      - generic [ref=e13]:
+        - generic [ref=e14]: GN-001 EXIA COMMAND SYSTEM
+        - heading "TACTICAL ACCESS" [level=1] [ref=e18]
+        - paragraph [ref=e19]: LiveKit Voice link & FastAPI REST Autonomous Intelligence
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - generic [ref=e23]: "GN LINK: SYNCHRONIZED"
+        - generic [ref=e25]: "REST: 8000"
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - text: Operator Email / Username
+          - textbox "admin@exia.local" [ref=e32]
+        - generic [ref=e33]:
+          - generic [ref=e34]: Security Passkey
+          - textbox "••••••••••••" [ref=e40]: admin1234
+        - button "Engage Exia Terminal" [ref=e41] [cursor=pointer]
+      - generic [ref=e45]:
+        - generic [ref=e46]: "Quick Test Credentials:"
+        - generic [ref=e47]:
+          - button "Commander (Admin)" [ref=e48] [cursor=pointer]
+          - button "Guest Operator" [ref=e49] [cursor=pointer]
+    - generic [ref=e50]: FastAPI REST Endpoints • LiveKit RTC • GN-001 Core
+  - alert [ref=e55]

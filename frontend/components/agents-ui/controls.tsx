@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TokenSource } from 'livekit-client';
+import { type LocalAudioTrack, type RemoteAudioTrack, TokenSource } from 'livekit-client';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   useAgentExpression,
@@ -173,7 +173,12 @@ function CreativeControlsInner({
             <VoiceAgentInterface
               size="lg"
               state={state}
-              audioTrack={audioTrack}
+              audioTrack={
+                (audioTrack?.publication?.track ?? audioTrack) as
+                  | LocalAudioTrack
+                  | RemoteAudioTrack
+                  | undefined
+              }
               mood={mood}
               expression={expression}
               showMoodBadge={true}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { type VariantProps, cva } from 'class-variance-authority';
+import { Track } from 'livekit-client';
 import {
   type TrackReferenceOrPlaceholder,
   useMaybeRoomContext,

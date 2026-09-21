@@ -11,14 +11,9 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-// In-memory / localStorage fallback stores for seamless offline/demo support
 const STORAGE_KEYS = {
   TOKEN: 'ha_auth_token',
   USER: 'ha_auth_user',
-  MCP: 'ha_mcp_servers',
-  PROMPTS: 'ha_prompts',
-  MODELS: 'ha_models_config',
-  SESSIONS: 'ha_sessions',
 };
 
 export const getStoredToken = (): string | null => {
@@ -54,176 +49,6 @@ export const setStoredUser = (user: User | null) => {
   }
 };
 
-// Initial mock data
-const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  mode: 'gemini_live',
-  gemini_model: 'gemini-2.0-flash-realtime',
-  gemini_voice: 'Puck',
-  stt_provider: 'Deepgram',
-  stt_model: 'nova-2',
-  llm_provider: 'Google Gemini',
-  llm_model: 'gemini-2.5-flash',
-  tts_provider: 'Cartesia',
-  tts_model: 'sonic-english',
-  temperature: 0.7,
-};
-
-const DEFAULT_MCP_SERVERS: MCPServer[] = [
-  {
-    id: 'mcp-1',
-    name: 'Home Assistant IoT Core',
-    server_type: 'sse',
-    command_or_url: 'http://homeassistant.local:8123/api/mcp/sse',
-    enabled: true,
-    status: 'connected',
-    created_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
-  },
-  {
-    id: 'mcp-2',
-    name: 'Home Automation Cloud Gateway',
-    server_type: 'sse',
-    command_or_url: 'http://localhost:8123/api/mcp/sse',
-    auth_token: 'Bearer ha_secret_token_123',
-    enabled: true,
-    status: 'connected',
-    created_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
-  },
-  {
-    id: 'mcp-3',
-    name: 'Remote Telemetry & Weather SSE',
-    server_type: 'sse',
-    command_or_url: 'https://api.homeassistant.internal/mcp/sse',
-    enabled: false,
-    status: 'disconnected',
-    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-];
-
-const DEFAULT_PROMPTS: PromptItem[] = [
-  {
-    id: 'pr-1',
-    title: 'Default Home Companion',
-    type: 'system',
-    prompt_text:
-      'You are "Home Assistant", an empathetic, concise, and ultra-fast private voice assistant. You control smart home devices, manage calendar items, and search private notes. Answer conversationally in 1-2 sentences unless asked for details.',
-    tags: ['persona', 'system'],
-    created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
-  },
-  {
-    id: 'pr-2',
-    title: 'Good Morning Routine',
-    type: 'quick',
-    prompt_text:
-      "Trigger my morning routine: check today's weather forecast, give me my top 3 agenda items, and read unread reminders.",
-    tags: ['routine', 'daily'],
-    created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-  {
-    id: 'pr-3',
-    title: 'Coding Pair Programmer Mode',
-    type: 'system',
-    prompt_text:
-      'Adopt a senior software engineering persona. Provide precise, production-ready code snippets and architecture tradeoffs. Be direct and avoid boilerplate explanations.',
-    tags: ['coding', 'technical'],
-    created_at: new Date(Date.now() - 3600000 * 10).toISOString(),
-  },
-];
-
-const DEFAULT_SESSIONS: SessionDetail[] = [
-  {
-    id: 'sess-101',
-    user_id: 'usr_001',
-    room_name: 'room-morning-brief',
-    started_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    ended_at: new Date(Date.now() - 3600000 * 2 + 184000).toISOString(),
-    status: 'ended',
-    duration_seconds: 184,
-    model_used: 'Gemini Live (Puck)',
-    message_count: 6,
-    preview_text: 'Good morning! You have 3 tasks today, starting with Sprint Planning at 10 AM.',
-    transcript: [
-      {
-        id: 'msg-1',
-        role: 'user',
-        text: 'Good morning, what does my schedule look like today?',
-        timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-      },
-      {
-        id: 'msg-2',
-        role: 'assistant',
-        text: 'Good morning! You have 3 scheduled tasks today: Sprint Planning at 10:00 AM, a code review session at 2:00 PM, and buying groceries before 7:00 PM.',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 12000).toISOString(),
-      },
-      {
-        id: 'msg-3',
-        role: 'user',
-        text: 'Can you turn on the living room lights and set AC to 72 degrees?',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 45000).toISOString(),
-      },
-      {
-        id: 'msg-4',
-        role: 'assistant',
-        text: 'Done! Living room lights are turned on at 80% warm white, and the thermostat is set to 72°F.',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 55000).toISOString(),
-      },
-    ],
-    mcp_tools_invoked: [
-      {
-        id: 'tool-1',
-        name: 'home_assistant.get_calendar',
-        args: { date: 'today' },
-        result: 'Returned 3 calendar items',
-        status: 'success',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 8000).toISOString(),
-      },
-      {
-        id: 'tool-2',
-        name: 'home_assistant.set_device_state',
-        args: { entity_id: 'light.living_room', state: 'on', brightness: 80 },
-        result: 'OK',
-        status: 'success',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 50000).toISOString(),
-      },
-    ],
-  },
-  {
-    id: 'sess-102',
-    user_id: 'usr_001',
-    room_name: 'room-notes-query',
-    started_at: new Date(Date.now() - 3600000 * 26).toISOString(),
-    ended_at: new Date(Date.now() - 3600000 * 26 + 92000).toISOString(),
-    status: 'ended',
-    duration_seconds: 92,
-    model_used: 'Modular (Deepgram + Claude 3.5 + Cartesia)',
-    message_count: 4,
-    preview_text: 'I checked your notes for the WiFi password. It is HomeStudio2026!.',
-    transcript: [
-      {
-        id: 'msg-1',
-        role: 'user',
-        text: 'Where did I leave my passport notes?',
-        timestamp: new Date(Date.now() - 3600000 * 26).toISOString(),
-      },
-      {
-        id: 'msg-2',
-        role: 'assistant',
-        text: 'Your memo from August mentions you placed it in the fireproof safe in the master bedroom closet.',
-        timestamp: new Date(Date.now() - 3600000 * 26 + 10000).toISOString(),
-      },
-    ],
-    mcp_tools_invoked: [
-      {
-        id: 'tool-1',
-        name: 'filesystem.search_files',
-        args: { query: 'passport' },
-        result: 'Found 1 note in Documents/Personal',
-        status: 'success',
-        timestamp: new Date(Date.now() - 3600000 * 26 + 4000).toISOString(),
-      },
-    ],
-  },
-];
-
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getStoredToken();
   const headers: Record<string, string> = {
@@ -237,24 +62,19 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
-  try {
-    const res = await fetch(url, {
-      ...options,
-      headers,
-    });
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(
-        errorData.detail || errorData.message || `Request failed with status ${res.status}`
-      );
-    }
-
-    return await res.json();
-  } catch (err) {
-    // If backend is unreachable (Failed to fetch), throw so caller can handle or use fallback
-    throw err;
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail || errorData.message || `Request failed with status ${res.status}`
+    );
   }
+
+  return await res.json();
 }
 
 // Backend MCP shapes (POST /api/add, GET /api/list, GET /api/{name}/tools, ...)
@@ -305,7 +125,7 @@ async function fetchMCPToolNames(serverName: string): Promise<string[] | undefin
   }
 }
 
-// ---------------- API SERVICES ----------------
+// ---------------- LIVE BACKEND API SERVICES ----------------
 
 export const api = {
   // 1. Auth
@@ -321,6 +141,7 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ email: emailOrUsername, password }),
       });
+
       // Normalize backend user { user_id, ... } to frontend User { id, ... }
       const user: User | undefined = raw.user
         ? {
@@ -329,6 +150,7 @@ export const api = {
             name: raw.user.name,
           }
         : undefined;
+
       return {
         access_token: raw.access_token,
         refresh_token: raw.refresh_token,
@@ -341,22 +163,15 @@ export const api = {
       currentPassword: string,
       newPassword: string
     ): Promise<{ message: string }> {
-      try {
-        return await apiRequest<{ message: string }>('/auth/change-password', {
-          method: 'POST',
-          body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-        });
-      } catch (err) {
-        console.warn('Backend change-password unavailable, using simulated response:', err);
-        return { message: 'Password successfully updated' };
-      }
+      return await apiRequest<{ message: string }>('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      });
     },
 
     async logout(): Promise<void> {
       try {
         await apiRequest('/auth/logout', { method: 'POST' });
-      } catch {
-        // Ignore logout errors
       } finally {
         setStoredToken(null);
         setStoredUser(null);
@@ -368,28 +183,16 @@ export const api = {
   livekit: {
     async getToken(roomName?: string): Promise<LiveKitTokenResponse> {
       // Backend: POST /api/agent/token { room_name } -> { server_url, token, session_id, user_id }
-      try {
-        return await apiRequest<LiveKitTokenResponse>('/agent/token', {
-          method: 'POST',
-          body: JSON.stringify({ room_name: roomName }),
-        });
-      } catch (err) {
-        console.error('Failed to obtain token from FastAPI backend:', err);
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to fetch LiveKit token from backend server';
-        throw new Error(errorMessage);
-      }
+      return await apiRequest<LiveKitTokenResponse>('/agent/token', {
+        method: 'POST',
+        body: JSON.stringify({ room_name: roomName }),
+      });
     },
 
     async endSession(sessionId: string): Promise<{ message: string }> {
-      try {
-        return await apiRequest<{ message: string }>(`/sessions/${sessionId}/end`, {
-          method: 'POST',
-        });
-      } catch (err) {
-        console.warn('End session backend call simulated:', err);
-        return { message: 'Session closed' };
-      }
+      return await apiRequest<{ message: string }>(`/sessions/${sessionId}/end`, {
+        method: 'POST',
+      });
     },
   },
 
@@ -399,76 +202,28 @@ export const api = {
       page = 1,
       limit = 10
     ): Promise<{ sessions: SessionSummary[]; total: number }> {
-      try {
-        return await apiRequest<{ sessions: SessionSummary[]; total: number }>(
-          `/sessions?page=${page}&limit=${limit}`
-        );
-      } catch (err) {
-        console.warn('Backend GET /sessions failed, using mock data:', err);
-        if (typeof window !== 'undefined') {
-          const raw = localStorage.getItem(STORAGE_KEYS.SESSIONS);
-          if (raw) {
-            const stored: SessionDetail[] = JSON.parse(raw);
-            return { sessions: stored, total: stored.length };
-          }
-        }
-        return { sessions: DEFAULT_SESSIONS, total: DEFAULT_SESSIONS.length };
-      }
+      return await apiRequest<{ sessions: SessionSummary[]; total: number }>(
+        `/sessions?page=${page}&limit=${limit}`
+      );
     },
 
     async getSessionById(id: string): Promise<SessionDetail> {
-      try {
-        return await apiRequest<SessionDetail>(`/sessions/${id}`);
-      } catch (err) {
-        console.warn(`Backend GET /sessions/${id} failed, using mock item:`, err);
-        const match = DEFAULT_SESSIONS.find((s) => s.id === id);
-        if (match) return match;
-        return {
-          id,
-          user_id: 'usr_001',
-          room_name: 'room-archive',
-          started_at: new Date().toISOString(),
-          status: 'ended',
-          duration_seconds: 45,
-          model_used: 'Gemini Live',
-          message_count: 2,
-          preview_text: 'Archived session record',
-          transcript: [
-            { id: '1', role: 'user', text: 'Hello assistant', timestamp: new Date().toISOString() },
-            {
-              id: '2',
-              role: 'assistant',
-              text: 'Hello! How can I help you today?',
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        };
-      }
+      return await apiRequest<SessionDetail>(`/sessions/${id}`);
     },
   },
 
-  // 4. MCP Servers (backend: POST /api/add, GET /api/list, PUT/DELETE /api/{name}, ...)
+  // 4. MCP Servers (Backend: POST /api/add, GET /api/list, PUT/DELETE /api/{name})
   mcp: {
     async list(): Promise<MCPServer[]> {
-      try {
-        const data = await apiRequest<{ servers: BackendMCP[]; count: number }>('/list');
-        return await Promise.all(
-          (data.servers || []).map(async (s) =>
-            toMCPServer(s, await fetchMCPToolNames(s.server_name))
-          )
-        );
-      } catch (err) {
-        console.warn('Backend GET /list failed, using local storage/defaults:', err);
-        if (typeof window !== 'undefined') {
-          const raw = localStorage.getItem(STORAGE_KEYS.MCP);
-          if (raw) return JSON.parse(raw);
-        }
-        return DEFAULT_MCP_SERVERS;
-      }
+      const data = await apiRequest<{ servers: BackendMCP[]; count: number }>('/list');
+      return await Promise.all(
+        (data.servers || []).map(async (s) =>
+          toMCPServer(s, await fetchMCPToolNames(s.server_name))
+        )
+      );
     },
 
     async create(server: Omit<MCPServer, 'id' | 'created_at'>): Promise<MCPServer> {
-      // Backend: POST /api/add (always creates as active)
       const created = await apiRequest<BackendMCPUpsert>('/add', {
         method: 'POST',
         body: JSON.stringify({
@@ -507,7 +262,7 @@ export const api = {
           { method: 'PATCH', body: JSON.stringify({ status }) }
         );
         const enabled = res.status === 'active';
-        const current = await this.list().catch(() => [] as MCPServer[]);
+        const current = await this.list();
         const existing = current.find((s) => s.id === res.server_name);
         if (existing) {
           return { ...existing, enabled, status: enabled ? 'connected' : 'disconnected' };
@@ -551,25 +306,15 @@ export const api = {
     },
 
     async delete(id: string): Promise<{ success: boolean }> {
-      // Backend: DELETE /api/{server_name}
       await apiRequest(`/${encodeURIComponent(id)}`, { method: 'DELETE' });
       return { success: true };
     },
   },
 
-  // 5. Prompts
+  // 5. Prompts (Backend: POST /api/prompts, GET /api/prompts, PUT/DELETE /api/prompts/{id})
   prompts: {
     async list(): Promise<PromptItem[]> {
-      try {
-        return await apiRequest<PromptItem[]>('/prompts');
-      } catch (err) {
-        console.warn('Backend GET /prompts failed, using local storage/defaults:', err);
-        if (typeof window !== 'undefined') {
-          const raw = localStorage.getItem(STORAGE_KEYS.PROMPTS);
-          if (raw) return JSON.parse(raw);
-        }
-        return DEFAULT_PROMPTS;
-      }
+      return await apiRequest<PromptItem[]>('/prompts');
     },
 
     async getPrompts(): Promise<PromptItem[]> {
@@ -577,25 +322,10 @@ export const api = {
     },
 
     async create(prompt: Omit<PromptItem, 'id' | 'created_at'>): Promise<PromptItem> {
-      try {
-        return await apiRequest<PromptItem>('/prompts', {
-          method: 'POST',
-          body: JSON.stringify(prompt),
-        });
-      } catch (err) {
-        console.warn('Backend POST /prompts failed, updating local state:', err);
-        const newPrompt: PromptItem = {
-          ...prompt,
-          id: `pr-${Date.now()}`,
-          created_at: new Date().toISOString(),
-        };
-        const current = await this.list();
-        const updated = [newPrompt, ...current];
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.PROMPTS, JSON.stringify(updated));
-        }
-        return newPrompt;
-      }
+      return await apiRequest<PromptItem>('/prompts', {
+        method: 'POST',
+        body: JSON.stringify(prompt),
+      });
     },
 
     async createPrompt(prompt: Omit<PromptItem, 'id' | 'created_at'>): Promise<PromptItem> {
@@ -603,22 +333,10 @@ export const api = {
     },
 
     async update(id: string, prompt: Partial<PromptItem>): Promise<PromptItem> {
-      try {
-        return await apiRequest<PromptItem>(`/prompts/${id}`, {
-          method: 'PUT',
-          body: JSON.stringify(prompt),
-        });
-      } catch (err) {
-        console.warn(`Backend PUT /prompts/${id} failed, updating local state:`, err);
-        const current = await this.list();
-        const updated = current.map((p) =>
-          p.id === id ? { ...p, ...prompt, updated_at: new Date().toISOString() } : p
-        );
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.PROMPTS, JSON.stringify(updated));
-        }
-        return updated.find((p) => p.id === id)!;
-      }
+      return await apiRequest<PromptItem>(`/prompts/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(prompt),
+      });
     },
 
     async updatePrompt(id: string, prompt: Partial<PromptItem>): Promise<PromptItem> {
@@ -626,19 +344,10 @@ export const api = {
     },
 
     async delete(id: string): Promise<{ success: boolean }> {
-      try {
-        return await apiRequest<{ success: boolean }>(`/prompts/${id}`, {
-          method: 'DELETE',
-        });
-      } catch (err) {
-        console.warn(`Backend DELETE /prompts/${id} failed, updating local state:`, err);
-        const current = await this.list();
-        const updated = current.filter((p) => p.id !== id);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.PROMPTS, JSON.stringify(updated));
-        }
-        return { success: true };
-      }
+      await apiRequest<{ success: boolean }>(`/prompts/${id}`, {
+        method: 'DELETE',
+      });
+      return { success: true };
     },
 
     async deletePrompt(id: string): Promise<{ success: boolean }> {
@@ -646,40 +355,21 @@ export const api = {
     },
   },
 
-  // 6. Model Selection
+  // 6. Model Engine Config (Backend: GET /api/models/config, PUT /api/models/config)
   models: {
     async getConfig(): Promise<ModelConfig> {
-      try {
-        return await apiRequest<ModelConfig>('/models/config');
-      } catch (err) {
-        console.warn('Backend GET /models/config failed, using local defaults:', err);
-        if (typeof window !== 'undefined') {
-          const raw = localStorage.getItem(STORAGE_KEYS.MODELS);
-          if (raw) return JSON.parse(raw);
-        }
-        return DEFAULT_MODEL_CONFIG;
-      }
+      return await apiRequest<ModelConfig>('/models/config');
     },
 
     async updateConfig(config: Partial<ModelConfig>): Promise<ModelConfig> {
-      try {
-        return await apiRequest<ModelConfig>('/models/config', {
-          method: 'PUT',
-          body: JSON.stringify(config),
-        });
-      } catch (err) {
-        console.warn('Backend PUT /models/config failed, saving to local storage:', err);
-        const current = await this.getConfig();
-        const merged = { ...current, ...config };
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.MODELS, JSON.stringify(merged));
-        }
-        return merged;
-      }
+      return await apiRequest<ModelConfig>('/models/config', {
+        method: 'PUT',
+        body: JSON.stringify(config),
+      });
     },
   },
 
-  // Model alias (singular)
+  // Model alias
   model: {
     async getConfig(): Promise<ModelConfig> {
       return api.models.getConfig();

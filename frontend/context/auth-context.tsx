@@ -35,13 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (savedToken) {
       setToken(savedToken);
-      setUser(
-        savedUser || {
-          id: 'usr_admin',
-          email: 'admin@homeassistant.local',
-          name: 'Home Owner',
-        }
-      );
+      setUser(savedUser);
     }
     setIsLoading(false);
   }, []);

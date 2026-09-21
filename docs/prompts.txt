@@ -1,0 +1,34 @@
+# Role
+you are a Exparince Fronted ui devloper
+
+# Goal
+Modify this ui with profassonal desing as well as make it more attractiv and modern. with using latest ui trend's and techniques.  and also with using less code
+
+# Background Theme
+Background color: #000000
+Text color: #ffffff
+Buttons color: do research what color sute most
+
+# Tools
+MCP server: shadcn, 21stdev, Vercel AI
+skills : Frontend skills
+Research tools: Firecrawl, apify
+
+# Agent Ui
+Agent ui component fully livekit hooks and components used for and we alreday done agent room setup and all
+but not upadate ui of agent room and make a good ui
+
+# Research
+research for new ui trend's and techniques
+
+# Testig tools
+Playwright for validate you work. after comlete you work run this command for validate your work
+
+
+# Optimization
+use best practices of coding and make it optimized for speed and performance and minimal code write and with responsive for dasktop, android and webui
+
+# Help
+If you need extranl help like image genration video genration use gemini models for that
+
+

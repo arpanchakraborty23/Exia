@@ -1,0 +1,21 @@
+[    5396ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/8ab48_next_dist_compiled_react-dom_2d23c02f._.js:14537
+[    8479ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8000/api/agent/token:0
+[    8481ms] [WARNING] WARNING: Room.prepareConnection failed: TypeError: Failed to fetch
+    at apiRequest (http://localhost:3000/_next/static/chunks/_d3fd8d26._.js:97:23)
+    at Object.getToken (http://localhost:3000/_next/static/chunks/_d3fd8d26._.js:179:26)
+    at App.useMemo[tokenSource] [as customFn] (http://localhost:3000/_next/static/chunks/components_8df99f46._.js:1584:165)
+    at TokenSourceCustom.<anonymous> (http://localhost:3000/_next/static/chunks/b1da2_livekit-client_dist_livekit-client_esm_mjs_a2c412c0._.js:37474:45)
+    at Generator.next (<anonymous>)
+    at http://localhost:3000/_next/static/chunks/b1da2_livekit-client_dist_livekit-client_esm_mjs_a2c412c0._.js:9491:71
+    at new Promise (<anonymous>)
+    at __awaiter (http://localhost:3000/_next/static/chunks/b1da2_livekit-client_dist_livekit-client_esm_mjs_a2c412c0._.js:9473:12)
+    at TokenSourceCustom.update (http://localhost:3000/_next/static/chunks/b1da2_livekit-client_dist_livekit-client_esm_mjs_a2c412c0._.js:37473:16)
+    at TokenSourceCustom.<anonymous> (http://localhost:3000/_next/static/chunks/b1da2_livekit-client_dist_livekit-client_esm_mjs_a2c412c0._.js:37441:50)
+    at Generator.next (<anonymous>)
+    at fulfilled (http://localhost:3000/_next/static/chunks/b1da2_livekit-client_dist_livekit-client_esm_mjs_a2c412c0._.js:9476:32) @ http://localhost:3000/_next/static/chunks/4e605_%40livekit_components-react_dist_50061a3c._.js:7057
+[    8678ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/:0
+[    9278ms] [LOG] %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit @ https://va.vercel-scripts.com/v1/script.debug.js:0
+[    9279ms] [LOG] %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {route: /, path: /} @ https://va.vercel-scripts.com/v1/script.debug.js:0
+[    9282ms] [LOG] %c[Vercel Web Analytics]%c [view] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {o: http://localhost:3000/, sv: 0.1.3, sdkn: @vercel/analytics/next, sdkv: 2.0.1, ts: 1790012652969} /_vercel/insights/view @ https://va.vercel-scripts.com/v1/script.debug.js:0
+[    9361ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/8ab48_next_dist_client_c9f78ef4._.js:5956
+[    9963ms] [LOG] [Fast Refresh] done in 728ms @ http://localhost:3000/_next/static/chunks/8ab48_next_dist_client_c9f78ef4._.js:5816

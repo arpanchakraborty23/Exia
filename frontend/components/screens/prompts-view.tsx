@@ -109,29 +109,9 @@ export function PromptsView() {
     setError(null);
     try {
       const data = await api.prompts.getPrompts();
-      if (data && data.length > 0) {
-        setPrompts(data);
-      } else {
-        setPrompts(
-          CURATED_DIRECTIVES.map((d, index) => ({
-            id: `curated-${index}`,
-            title: d.title,
-            prompt_text: d.prompt_text,
-            type: d.type,
-            created_at: new Date().toISOString(),
-          }))
-        );
-      }
-    } catch {
-      setPrompts(
-        CURATED_DIRECTIVES.map((d, index) => ({
-          id: `curated-${index}`,
-          title: d.title,
-          prompt_text: d.prompt_text,
-          type: d.type,
-          created_at: new Date().toISOString(),
-        }))
-      );
+      setPrompts(data || []);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load prompts from backend endpoint');
     } finally {
       setIsLoading(false);
     }
