@@ -11,8 +11,8 @@ interface LoginViewProps {
 
 export function LoginView({ onSuccess }: LoginViewProps) {
   const { login, isLoading, error, clearError } = useAuth();
-  const [emailOrUsername, setEmailOrUsername] = useState('admin@exia.local');
-  const [password, setPassword] = useState('admin1234');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,16 +33,6 @@ export function LoginView({ onSuccess }: LoginViewProps) {
     }
   };
 
-  const fillDemo = (role: 'admin' | 'guest') => {
-    if (role === 'admin') {
-      setEmailOrUsername('admin@exia.local');
-      setPassword('admin1234');
-    } else {
-      setEmailOrUsername('guest@exia.local');
-      setPassword('guest1234');
-    }
-    setLocalError(null);
-  };
 
   const errorMessage = localError || error;
 
@@ -157,28 +147,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
             </button>
           </form>
 
-          {/* Quick Demo Fill Buttons */}
-          <div className="border-border space-y-2 border-t pt-2 font-mono">
-            <span className="text-muted-foreground block text-center text-[10px]">
-              Quick Test Credentials:
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemo('admin')}
-                className="bg-muted/50 hover:bg-muted border-border text-foreground cursor-pointer rounded-xl border px-3 py-1.5 text-[11px] transition-colors"
-              >
-                Commander (Admin)
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemo('guest')}
-                className="bg-muted/50 hover:bg-muted border-border text-muted-foreground hover:text-foreground cursor-pointer rounded-xl border px-3 py-1.5 text-[11px] transition-colors"
-              >
-                Guest Operator
-              </button>
-            </div>
-          </div>
+
         </div>
 
         {/* Footer */}

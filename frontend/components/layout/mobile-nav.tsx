@@ -37,7 +37,7 @@ export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavPr
               key={item.id}
               onClick={() => onSelectTab(item.id)}
               className={`relative flex cursor-pointer flex-col items-center justify-center rounded-xl px-2.5 py-1.5 transition-all duration-150 ${
-                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                isActive ? 'text-primary' : 'text-foreground/70 hover:text-foreground'
               }`}
             >
               <div className="relative">

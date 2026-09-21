@@ -15,12 +15,12 @@ interface AppShellProps {
 }
 
 const TAB_TITLES: Record<NavTab, { title: string; code: string }> = {
-  session: { title: 'Voice Stage' },
-  history: { title: 'Session History' },
-  mcp: { title: 'MCP Registry' },
-  prompts: { title: 'Directive Library' },
-  models: { title: 'Model Engine' },
-  settings: { title: 'Configuration' },
+  session: { title: 'Voice Stage', code: '01' },
+  history: { title: 'Session History', code: '02' },
+  mcp: { title: 'MCP Registry', code: '03' },
+  prompts: { title: 'Directive Library', code: '04' },
+  models: { title: 'Model Engine', code: '05' },
+  settings: { title: 'Configuration', code: '06' },
 };
 
 export function AppShell({ currentTab, onSelectTab, isCallActive, children }: AppShellProps) {

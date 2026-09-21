@@ -86,43 +86,52 @@ export function App({ agentName, isVideoInputSupported = true }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
-      <AppShell
-        currentTab={currentTab}
-        onSelectTab={setCurrentTab}
-        isCallActive={session.isConnected}
-      >
-        {/* Screen 2: Voice Session Stage */}
-        {currentTab === 'session' && (
-          <div className="relative h-full w-full">
-            <ViewController
-              isVideoInputSupported={isVideoInputSupported}
-              visualizerType={visualizerType}
-            />
-          </div>
-        )}
-
-        {/* Screen 3: Session History */}
-        {currentTab === 'history' && <HistoryView />}
-
-        {/* Screen 4: MCP Servers */}
-        {currentTab === 'mcp' && <MCPView />}
-
-        {/* Screen 5: Prompts Library */}
-        {currentTab === 'prompts' && <PromptsView />}
-
-        {/* Screen 6: Model Selection */}
-        {currentTab === 'models' && <ModelSelectionView />}
-
-        {/* Screen 7: Settings & Account */}
-        {currentTab === 'settings' && (
-          <SettingsView
+      {session.isConnected ? (
+        <div className="relative h-screen w-screen bg-background">
+          <ViewController
+            isVideoInputSupported={isVideoInputSupported}
             visualizerType={visualizerType}
-            onChangeVisualizerType={(type: string) =>
-              setVisualizerType(type as 'aura' | 'wave' | 'bar' | 'radial')
-            }
           />
-        )}
-      </AppShell>
+        </div>
+      ) : (
+        <AppShell
+          currentTab={currentTab}
+          onSelectTab={setCurrentTab}
+          isCallActive={session.isConnected}
+        >
+          {/* Screen 2: Voice Session Stage */}
+          {currentTab === 'session' && (
+            <div className="relative h-full w-full">
+              <ViewController
+                isVideoInputSupported={isVideoInputSupported}
+                visualizerType={visualizerType}
+              />
+            </div>
+          )}
+
+          {/* Screen 3: Session History */}
+          {currentTab === 'history' && <HistoryView />}
+
+          {/* Screen 4: MCP Servers */}
+          {currentTab === 'mcp' && <MCPView />}
+
+          {/* Screen 5: Prompts Library */}
+          {currentTab === 'prompts' && <PromptsView />}
+
+          {/* Screen 6: Model Selection */}
+          {currentTab === 'models' && <ModelSelectionView />}
+
+          {/* Screen 7: Settings & Account */}
+          {currentTab === 'settings' && (
+            <SettingsView
+              visualizerType={visualizerType}
+              onChangeVisualizerType={(type: string) =>
+                setVisualizerType(type as 'aura' | 'wave' | 'bar' | 'radial')
+              }
+            />
+          )}
+        </AppShell>
+      )}
       <StartAudioButton label="Start Audio" />
       <Toaster
         icons={{

@@ -22,49 +22,6 @@ import {
 import { api } from '@/lib/api';
 import { MCPServer } from '@/lib/types';
 
-// Curated 1-Click Remote MCP Presets
-const MCP_CATALOG_PRESETS = [
-  {
-    name: 'Home Assistant IoT Core',
-    server_type: 'sse' as const,
-    command_or_url: 'http://homeassistant.local:8123/api/mcp/sse',
-    description:
-      'Direct remote control over smart lights, HVAC thermostat, motion sensors, and security scenes via SSE.',
-    icon: Zap,
-    category: 'Home Automation (Remote)',
-    defaultTools: ['lights.toggle', 'climate.set_temp', 'scene.activate', 'sensors.query_status'],
-  },
-  {
-    name: 'Home Automation Cloud API',
-    server_type: 'sse' as const,
-    command_or_url: 'https://cloud.home-assistant.io/api/mcp/sse',
-    description:
-      'Remote cloud assistant integration for weather alerts, notifications, and device telemetry streams.',
-    icon: Globe,
-    category: 'Cloud Gateway (Remote)',
-    defaultTools: ['weather.current', 'notify.mobile', 'energy.analytics', 'devices.list'],
-  },
-  {
-    name: 'Remote Web Intelligence SSE',
-    server_type: 'sse' as const,
-    command_or_url: 'https://mcp.intelligence.internal/sse',
-    description:
-      'Remote real-time web search, traffic telemetry, weather forecasts, and online knowledge retrieval.',
-    icon: Search,
-    category: 'Web Research (Remote)',
-    defaultTools: ['web_search', 'news_query', 'fetch_page_content'],
-  },
-  {
-    name: 'Remote Sensor & Analytics Archive',
-    server_type: 'sse' as const,
-    command_or_url: 'https://metrics.homeassistant.internal/api/mcp/sse',
-    description:
-      'Remote telemetry queries, sensor trend analytics, and energy consumption historical reports.',
-    icon: Database,
-    category: 'Data Analytics (Remote)',
-    defaultTools: ['query_db', 'list_tables', 'describe_table'],
-  },
-];
 
 export function MCPView() {
   const [servers, setServers] = useState<MCPServer[]>([]);
@@ -102,17 +59,11 @@ export function MCPView() {
     fetchServers();
   }, []);
 
-  const handleOpenAdd = (preset?: (typeof MCP_CATALOG_PRESETS)[0]) => {
+  const handleOpenAdd = () => {
     setEditingServer(null);
-    if (preset) {
-      setName(preset.name);
-      setServerType(preset.server_type);
-      setCommandOrUrl(preset.command_or_url);
-    } else {
-      setName('');
-      setServerType('sse');
-      setCommandOrUrl('http://homeassistant.local:8123/api/mcp/sse');
-    }
+    setName('');
+    setServerType('sse');
+    setCommandOrUrl('');
     setAuthToken('');
     setEnabled(true);
     setModalError(null);
@@ -455,55 +406,6 @@ export function MCPView() {
         )}
       </div>
 
-      {/* 1-Click Preset Catalog */}
-      <div className="border-border space-y-4 border-t pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
-              <Zap className="size-3.5 text-primary dark:text-primary" />
-              <span>Recommended 1-Click MCP Presets</span>
-            </h2>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Click any verified preset below to auto-populate configuration and connect.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {MCP_CATALOG_PRESETS.map((preset, idx) => {
-            const Icon = preset.icon;
-            return (
-              <div
-                key={idx}
-                className="bg-card hover:bg-muted/50 border-border group flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200 hover:border-primary/25"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary transition-transform group-hover:scale-105 dark:text-primary">
-                      <Icon className="size-4" />
-                    </div>
-                    <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[10px]">
-                      {preset.category}
-                    </span>
-                  </div>
-                  <h3 className="text-foreground font-mono text-xs font-bold">{preset.name}</h3>
-                  <p className="text-muted-foreground line-clamp-2 text-[11px] leading-relaxed">
-                    {preset.description}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => handleOpenAdd(preset)}
-                  className="bg-card border-border text-foreground mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-primary/35 hover:bg-primary/10 hover:text-primary dark:hover:text-primary"
-                >
-                  <Plus className="size-3.5" />
-                  <span>Use Preset</span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Add / Edit Modal */}
       {isModalOpen && (

@@ -84,7 +84,7 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
             </div>
             <div className="mt-0.5 flex items-center gap-1.5">
               <span className="inline-block size-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]" />
-              <span className="text-sidebar-foreground/40 font-mono text-[10px] tracking-wide">
+              <span className="text-sidebar-foreground/70 font-mono text-[10px] tracking-wide">
                 Autonomous Voice AI
               </span>
             </div>
@@ -126,7 +126,7 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
         {NAV_SECTIONS.map((sec) => (
           <div key={sec.group} className="space-y-0.5">
             <div className="mb-1.5 flex items-center gap-2 px-3">
-              <span className="text-sidebar-foreground/25 font-mono text-[9px] font-semibold tracking-[0.18em] uppercase">
+              <span className="text-sidebar-foreground/50 font-mono text-[9px] font-semibold tracking-[0.18em] uppercase">
                 {sec.group}
               </span>
               <div className="border-sidebar-border h-px flex-1 border-t" />
@@ -143,7 +143,7 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
                   onClick={() => onSelectTab(item.id)}
                   className={`group relative flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-all duration-150 ${isActive
                       ? 'bg-primary/10 text-primary'
-                      : 'text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                     }`}
                 >
                   {/* Active left accent bar */}
@@ -155,7 +155,7 @@ export function Sidebar({ currentTab, onSelectTab, isCallActive, onToggleCollaps
                     <Icon
                       className={`size-3.5 transition-colors ${isActive
                           ? 'text-primary'
-                          : 'text-sidebar-foreground/30 group-hover:text-sidebar-foreground/70'
+                          : 'text-sidebar-foreground/60 group-hover:text-sidebar-foreground'
                         }`}
                     />
                     <span className={isActive ? 'font-semibold' : ''}>{item.label}</span>
