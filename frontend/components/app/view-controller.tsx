@@ -49,8 +49,10 @@ export function ViewController({
         <MotionWelcomeView
           key="welcome"
           {...VIEW_MOTION_PROPS}
-          startButtonText="Start Voice Session"
-          onStartCall={start}
+          startButtonText="Start call"
+          onStartCall={() => {
+            start();
+          }}
         />
       )}
       {/* Session view */}
@@ -59,9 +61,7 @@ export function ViewController({
           key="session-view"
           {...VIEW_MOTION_PROPS}
           preConnectMessage={
-            agent.isConnected
-              ? 'Agent is listening, ask it a question'
-              : 'Connecting to LiveKit room...'
+            agent.isConnected ? 'Agent is listening, ask it a question' : 'Connecting to LiveKit room...'
           }
           supportsChatInput={true}
           supportsVideoInput={isVideoInputSupported}
@@ -69,8 +69,7 @@ export function ViewController({
           isPreConnectBufferEnabled={true}
           audioVisualizerType={visualizerType}
           themeMode={resolvedTheme === 'dark' ? 'dark' : 'light'}
-          onDisconnect={onDisconnect}
-          className="absolute inset-0 z-10"
+          className="fixed inset-0"
         />
       )}
     </AnimatePresence>

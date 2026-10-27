@@ -229,7 +229,7 @@ const LLM_PROVIDERS = [
 ];
 
 // 4. MODULAR: TEXT-TO-SPEECH (TTS)
-export type TTSProvider = 'cartesia' | 'elevenlabs' | 'openai' | 'google';
+export type TTSProvider = 'cartesia' | 'elevenlabs' | 'openai' | 'speechmatics' | 'google';
 
 const TTS_PROVIDERS = [
   {
@@ -316,8 +316,6 @@ const TTS_PROVIDERS = [
     ],
   },
 ];
-
-export type TTSProvider = 'cartesia' | 'elevenlabs' | 'openai' | 'speechmatics' | 'google';
 
 export const DEFAULT_VOICE_USERS: VoiceUserProfile[] = [
   {

@@ -16,6 +16,7 @@ import { Toggle } from '@/components/ui/toggle';
 import {
   type UseInputControlsProps,
   useInputControls,
+  usePublishPermissions,
 } from '@/hooks/agents-ui/use-agent-control-bar';
 import { cn } from '@/lib/shadcn/utils';
 
@@ -34,10 +35,10 @@ const LK_TOGGLE_VARIANT_2 = [
   'data-[state=off]:border-border data-[state=off]:hover:border-foreground/12',
   'data-[state=off]:focus-visible:border-ring data-[state=off]:focus-visible:ring-foreground/12',
   'data-[state=off]:text-foreground data-[state=off]:hover:text-foreground data-[state=off]:focus:text-foreground',
-  'data-[state=on]:bg-primary/15 data-[state=on]:hover:bg-primary/25',
-  'data-[state=on]:border-primary/20 data-[state=on]:text-primary data-[state=on]:ring-ring/30',
-  'data-[state=on]:focus-visible:border-primary/50',
-  'dark:data-[state=on]:bg-primary/20 dark:data-[state=on]:text-primary',
+  'data-[state=on]:bg-blue-500/20 data-[state=on]:hover:bg-blue-500/30',
+  'data-[state=on]:border-blue-700/10 data-[state=on]:text-blue-700 data-[state=on]:ring-blue-700/30',
+  'data-[state=on]:focus-visible:border-blue-700/50',
+  'dark:data-[state=on]:bg-blue-500/20 dark:data-[state=on]:text-blue-300',
 ];
 
 const MOTION_PROPS: MotionProps = {
@@ -251,6 +252,7 @@ export function AgentControlBar({
   ...props
 }: AgentControlBarProps & ComponentProps<'div'>) {
   const { send } = useChat();
+  const publishPermissions = usePublishPermissions();
   const [isChatOpenUncontrolled, setIsChatOpenUncontrolled] = useState(isChatOpen);
   const {
     microphoneTrack,
@@ -269,10 +271,10 @@ export function AgentControlBar({
 
   const visibleControls = {
     leave: controls?.leave ?? true,
-    microphone: controls?.microphone ?? true,
-    screenShare: controls?.screenShare ?? true,
-    camera: controls?.camera ?? true,
-    chat: controls?.chat ?? true,
+    microphone: controls?.microphone ?? publishPermissions.microphone,
+    screenShare: controls?.screenShare ?? publishPermissions.screenShare,
+    camera: controls?.camera ?? publishPermissions.camera,
+    chat: controls?.chat ?? publishPermissions.data,
   };
 
   const isEmpty = Object.values(visibleControls).every((value) => !value);
@@ -286,10 +288,8 @@ export function AgentControlBar({
     <div
       aria-label="Voice assistant controls"
       className={cn(
-        'flex flex-col border p-3',
-        'dark:border-white/[0.08] dark:bg-black/80 dark:shadow-2xl dark:shadow-black/60 dark:backdrop-blur-2xl',
-        'border-black/8 bg-white/90 backdrop-blur-xl',
-        variant === 'livekit' ? 'rounded-[31px]' : 'rounded-xl',
+        'bg-background border-input/50 dark:border-muted flex flex-col border p-3 drop-shadow-md/3',
+        variant === 'livekit' ? 'rounded-[31px]' : 'rounded-lg',
         className
       )}
       {...props}
@@ -393,9 +393,7 @@ export function AgentControlBar({
             disabled={!isConnected}
             className={cn(
               variant === 'livekit' &&
-                'rounded-full font-mono text-xs font-bold tracking-wider transition-all duration-200',
-              variant === 'livekit' &&
-                'border border-red-500/20 bg-red-500/10 text-red-400 hover:border-red-500/35 hover:bg-red-500/20 hover:shadow-[0_0_16px_rgba(239,68,68,0.25)] focus-visible:ring-red-500/30'
+                'bg-destructive/10 dark:bg-destructive/10 text-destructive hover:bg-destructive/20 dark:hover:bg-destructive/20 focus:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/4 rounded-full font-mono text-xs font-bold tracking-wider'
             )}
           >
             <span className="hidden uppercase md:inline">End call</span>

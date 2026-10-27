@@ -1,177 +1,81 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ArrowUp, Cpu, Mic, Radio, Send, ShieldCheck, Sliders, Sparkles } from 'lucide-react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
+
+function WelcomeImage() {
+  return (
+    <svg
+      width="64"
+      height="64"
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="text-primary mb-4 size-16 drop-shadow-[0_0_16px_rgba(31,213,249,0.35)]"
+    >
+      <path
+        d="M15 24V40C15 40.7957 14.6839 41.5587 14.1213 42.1213C13.5587 42.6839 12.7956 43 12 43C11.2044 43 10.4413 42.6839 9.87868 42.1213C9.31607 41.5587 9 40.7957 9 40V24C9 23.2044 9.31607 22.4413 9.87868 21.8787C10.4413 21.3161 11.2044 21 12 21C12.7956 21 13.5587 21.3161 14.1213 21.8787C14.6839 22.4413 15 23.2044 15 24ZM22 5C21.2044 5 20.4413 5.31607 19.8787 5.87868C19.3161 6.44129 19 7.20435 19 8V56C19 56.7957 19.3161 57.5587 19.8787 58.1213C20.4413 58.6839 21.2044 59 22 59C22.7956 59 23.5587 58.6839 24.1213 58.1213C24.6839 57.5587 25 56.7957 25 56V8C25 7.20435 24.6839 6.44129 24.1213 5.87868C23.5587 5.31607 22.7956 5 22 5ZM32 13C31.2044 13 30.4413 13.3161 29.8787 13.8787C29.3161 14.4413 29 15.2044 29 16V48C29 48.7957 29.3161 49.5587 29.8787 50.1213C30.4413 50.6839 31.2044 51 32 51C32.7956 51 33.5587 50.6839 34.1213 50.1213C34.6839 49.5587 35 48.7957 35 48V16C35 15.2044 34.6839 14.4413 34.1213 13.8787C33.5587 13.3161 32.7956 13 32 13ZM42 21C41.2043 21 40.4413 21.3161 39.8787 21.8787C39.3161 22.4413 39 23.2044 39 24V40C39 40.7957 39.3161 41.5587 39.8787 42.1213C40.4413 42.6839 41.2043 43 42 43C42.7957 43 43.5587 42.6839 44.1213 42.1213C44.6839 41.5587 45 40.7957 45 40V24C45 23.2044 44.6839 22.4413 44.1213 21.8787C43.5587 21.3161 42.7957 21 42 21ZM52 17C51.2043 17 50.4413 17.3161 49.8787 17.8787C49.3161 18.4413 49 19.2044 49 20V44C49 44.7957 49.3161 45.5587 49.8787 46.1213C50.4413 46.6839 51.2043 47 52 47C52.7957 47 53.5587 46.6839 54.1213 46.1213C54.6839 45.5587 55 44.7957 55 44V20C55 19.2044 54.6839 18.4413 54.1213 17.8787C53.5587 17.3161 52.7957 17 52 17Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 interface WelcomeViewProps {
   startButtonText?: string;
   onStartCall: () => void;
 }
 
-const SUGGESTED_PROMPTS = [
-  { label: 'Check MCP registry tools', icon: Cpu, query: 'Show all registered MCP servers and available tools.' },
-  { label: 'Switch AI model pipeline', icon: Sliders, query: 'Which model engines are currently configured?' },
-  { label: 'Check smart home telemetry', icon: Radio, query: 'What is the current status of all home sensors?' },
-  { label: 'Start hands-free voice mode', icon: Mic, query: 'voice' },
-];
-
 export const WelcomeView = ({
-  startButtonText = 'Start Voice Session',
+  startButtonText = 'Start call',
   onStartCall,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  const [typedInput, setTypedInput] = useState('');
-
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    onStartCall();
-  };
-
-  const handleSelectPrompt = (prompt: (typeof SUGGESTED_PROMPTS)[0]) => {
-    if (prompt.query === 'voice') {
-      onStartCall();
-    } else {
-      setTypedInput(prompt.query);
-      onStartCall();
-    }
-  };
-
   return (
     <div
       ref={ref}
-      className="relative flex min-h-[82vh] w-full flex-col items-center justify-center overflow-hidden px-4 py-8 select-none"
+      className="relative flex min-h-[75vh] w-full flex-col items-center justify-center px-4 py-8 select-none"
     >
-      {/* Ambient background bloom */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Subtle ambient lighting */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
         <div
-          className="aurora-orb absolute top-1/3 left-1/2 size-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          className="aurora-orb absolute top-1/3 left-1/2 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-35"
           style={{
             background:
-              'radial-gradient(circle, rgba(31,213,249,0.06) 0%, rgba(0,44,242,0.03) 50%, transparent 70%)',
+              'radial-gradient(circle, rgba(31,213,249,0.15) 0%, rgba(0,44,242,0.05) 50%, transparent 70%)',
             filter: 'blur(70px)',
           }}
         />
       </div>
 
-      <div className="relative flex w-full max-w-2xl flex-col items-center gap-7 text-center">
-        {/* Status indicator */}
-        <div className="border-border bg-card/60 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs backdrop-blur-md">
-          <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-          <span className="text-muted-foreground font-medium">Exia Intelligence · Ready</span>
-        </div>
+      <section className="bg-background/40 flex flex-col items-center justify-center rounded-3xl border border-white/5 p-8 text-center backdrop-blur-sm md:p-12">
+        <WelcomeImage />
 
-        {/* Voice Orb */}
-        <div
-          className="group relative cursor-pointer"
+        <h1 className="text-foreground text-2xl font-semibold tracking-tight md:text-3xl">
+          Chat live with your voice AI agent
+        </h1>
+
+        <p className="text-muted-foreground mx-auto mt-2 max-w-sm text-xs leading-relaxed md:text-sm">
+          Sub-second conversational intelligence, real-time interruptions, and remote MCP tool execution.
+        </p>
+
+        <Button
+          size="lg"
           onClick={onStartCall}
-          title="Click to activate voice session"
+          className="bg-primary text-primary-foreground hover:bg-primary-hover shadow-primary/20 mt-8 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase shadow-xl transition-all hover:scale-105 active:scale-95"
         >
-          {/* Subtle breathing glow */}
-          <div
-            className="aurora-orb absolute -inset-6 rounded-full opacity-25 transition-opacity group-hover:opacity-40"
-            style={{
-              background:
-                'radial-gradient(circle, rgba(31,213,249,0.5) 0%, transparent 70%)',
-              filter: 'blur(20px)',
-            }}
-          />
+          {startButtonText}
+        </Button>
+      </section>
 
-          {/* Interactive Core Orb */}
-          <div className="float-orb relative flex size-20 items-center justify-center rounded-full transition-all duration-300 group-hover:scale-105 group-active:scale-95 md:size-24">
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: 'linear-gradient(135deg, #002CF2 0%, #0055ff 45%, #1FD5F9 100%)',
-                boxShadow:
-                  '0 0 36px rgba(31,213,249,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
-              }}
-            />
-            <div className="absolute inset-1.5 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
-            <Mic className="relative size-8 stroke-[1.75] text-white" />
-          </div>
-        </div>
-
-        {/* Header copy */}
-        <div className="space-y-2">
-          <h1 className="text-foreground text-2xl font-semibold tracking-tight md:text-3xl">
-            What can Exia do for you?
-          </h1>
-          <p className="text-muted-foreground mx-auto max-w-md text-sm leading-relaxed">
-            Sub-second conversational voice intelligence, multimodal vision, and remote MCP tool execution.
-          </p>
-        </div>
-
-        {/* TYPE UI — Interactive prompt input container */}
-        <form
-          onSubmit={handleSubmit}
-          className="border-border bg-card/80 focus-within:border-primary/40 focus-within:ring-primary/10 relative w-full rounded-2xl border p-2 shadow-xl backdrop-blur-xl transition-all focus-within:ring-4"
-        >
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={typedInput}
-              onChange={(e) => setTypedInput(e.target.value)}
-              placeholder="Ask anything, type a command, or click to start voice..."
-              className="placeholder:text-muted-foreground/50 text-foreground flex-1 bg-transparent px-3 py-2 text-sm outline-none"
-            />
-
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={onStartCall}
-                className="hover:bg-primary/10 text-primary flex size-9 items-center justify-center rounded-xl transition-colors"
-                title="Start Voice Session"
-              >
-                <Mic className="size-4.5" />
-              </button>
-
-              <button
-                type="submit"
-                className="bg-primary text-primary-foreground hover:bg-primary-hover flex size-9 items-center justify-center rounded-xl font-semibold shadow-md transition-all active:scale-95"
-                title="Send"
-              >
-                <ArrowUp className="size-4.5 stroke-[2.5]" />
-              </button>
-            </div>
-          </div>
-        </form>
-
-        {/* Suggested Prompt Chips */}
-        <div className="flex w-full flex-wrap items-center justify-center gap-2">
-          {SUGGESTED_PROMPTS.map((p, idx) => {
-            const Icon = p.icon;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleSelectPrompt(p)}
-                className="border-border bg-card/60 hover:bg-muted text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition-all hover:border-primary/30"
-              >
-                <Icon className="text-primary size-3.5" />
-                <span>{p.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Feature badges */}
-        <div className="text-muted-foreground/60 flex flex-wrap items-center justify-center gap-4 text-xs">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="size-3.5 text-emerald-500" />
-            End-to-End Encrypted
-          </span>
+      <div className="fixed bottom-6 left-0 flex w-full items-center justify-center">
+        <p className="text-muted-foreground/60 flex items-center gap-2 font-mono text-[11px]">
+          <span>LiveKit Agents WebRTC</span>
           <span>·</span>
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-primary" />
-            Real-time Interruption
-          </span>
+          <span>Opus 48kHz</span>
           <span>·</span>
-          <span className="flex items-center gap-1.5">
-            <Cpu className="size-3.5 text-primary" />
-            LiveKit WebRTC
-          </span>
-        </div>
+          <span className="text-emerald-400">Low-latency Multimodal</span>
+        </p>
       </div>
     </div>
   );

@@ -69,8 +69,8 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          'relative z-30 hidden shrink-0 overflow-hidden transition-all duration-300 ease-in-out md:block',
-          isSidebarOpen ? 'w-64 opacity-100' : 'pointer-events-none w-0 opacity-0'
+          'relative z-30 hidden shrink-0 transition-[width] duration-300 ease-in-out md:block',
+          isSidebarOpen ? 'w-64' : 'w-16'
         )}
       >
         <Sidebar
@@ -81,23 +81,6 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
           onToggleCollapse={toggleSidebar}
         />
       </div>
-
-      {/* Hover edge trigger when sidebar hidden */}
-      {!isSidebarOpen && (
-        <div
-          className="group fixed top-0 bottom-0 left-0 z-40 hidden w-4 cursor-pointer items-center justify-start transition-all duration-200 hover:w-14 md:flex"
-          onClick={toggleSidebar}
-          title="Show navigation (⌘B)"
-        >
-          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/8 to-transparent" />
-          <button
-            type="button"
-            className="border-border bg-card/90 text-muted-foreground ml-0.5 flex cursor-pointer items-center gap-1 rounded-r-xl border-y border-r p-2 opacity-60 shadow-xl backdrop-blur-xl transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
-          >
-            <ChevronRight className="size-3.5" />
-          </button>
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="bg-ambient-bloom flex h-screen min-w-0 flex-1 flex-col overflow-hidden">

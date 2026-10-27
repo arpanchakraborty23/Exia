@@ -10,6 +10,7 @@ import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
 import { AppShell } from '@/components/layout/app-shell';
 import { NavTab } from '@/components/layout/sidebar';
+import { AnalyticsView } from '@/components/screens/analytics-view';
 import { HistoryView } from '@/components/screens/history-view';
 import { LoginView } from '@/components/screens/login-view';
 import { MCPView } from '@/components/screens/mcp-view';
@@ -110,7 +111,12 @@ export function App({ agentName, isVideoInputSupported = true }: AppProps) {
           )}
 
           {/* Screen 3: Session History */}
-          {currentTab === 'history' && <HistoryView />}
+          {currentTab === 'history' && (
+            <HistoryView onNavigateToAnalytics={() => setCurrentTab('analytics')} />
+          )}
+
+          {/* Screen 3.5: Observability & Analytics */}
+          {currentTab === 'analytics' && <AnalyticsView />}
 
           {/* Screen 4: MCP Servers */}
           {currentTab === 'mcp' && <MCPView />}
