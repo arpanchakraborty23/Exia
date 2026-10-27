@@ -2,6 +2,7 @@ import { Public_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next';
 import { ThemeProvider } from '@/components/app/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/context/auth-context';
 import { cn } from '@/lib/shadcn/utils';
 import '@/styles/globals.css';
@@ -65,7 +66,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className="bg-background text-foreground overflow-x-hidden">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
         <Analytics />
       </body>

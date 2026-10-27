@@ -23,6 +23,8 @@ class MCPServices:
     async def add_mcp(self, user_id: str, mcp_data: MCPServerAddRequest) -> dict:
         """
         Add new MCP server to the database.
+        Gracefully handles offline/unreachable servers — saves them as 'inactive'
+        instead of rejecting with 502.
         Return: dict matching MCPServerAddResponse
         """
         try:
@@ -46,15 +48,31 @@ class MCPServices:
                     detail=f"MCP server '{server_name}' already exists",
                 )
 
-            # Test mcp connection
-            connection = await self.connect_mcp(url=server_url, key=server_key)
+            # Attempt live connection (gracefully handle offline/unreachable servers)
+            tools_list = []
+            tools_count = 0
+            server_status = "active"
+            result_message = "MCP server added successfully"
 
-            if connection["status"] != "success":
-                logger.error("MCP server connection failed: %s", connection)
-                raise HTTPException(
-                    status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail=connection.get("message", "Failed to connect to MCP server"),
-                )
+            if transport == "stdio":
+                # stdio servers cannot be probed via HTTP — save directly
+                logger.info("Stdio MCP server '%s' saved (no HTTP probe)", server_name)
+            else:
+                try:
+                    connection = await self.connect_mcp(url=server_url, key=server_key)
+                    if connection["status"] == "success":
+                        tools_list = connection["tools"]
+                        tools_count = connection["tools_count"]
+                        result_message = "MCP server connected successfully"
+                        logger.info("MCP server validated successfully: %s", server_url)
+                    else:
+                        server_status = "inactive"
+                        result_message = f"MCP server '{server_name}' saved (currently unreachable: {connection.get('message', 'connection failed')})"
+                        logger.warning("MCP server '%s' unreachable, saved as inactive: %s", server_name, connection.get("message"))
+                except Exception as conn_err:
+                    server_status = "inactive"
+                    result_message = f"MCP server '{server_name}' saved (currently offline)"
+                    logger.warning("MCP server '%s' connection error, saved as inactive: %s", server_name, conn_err)
 
             new_mcp_data = MCPServerModel(
                 user_id=user_id,
@@ -62,21 +80,18 @@ class MCPServices:
                 server_url=server_url,
                 server_key=server_key,
                 transport=transport,
-                mcp_tools_list=connection["tools"],
-                mcp_tool_count=connection["tools_count"],
-                status="active",
+                mcp_tools_list=tools_list,
+                mcp_tool_count=tools_count,
+                status=server_status,
             )
-            # Store only after successful validation
             self.db.insert_one(new_mcp_data.model_dump())
-
-            logger.info("MCP server validated successfully: %s", new_mcp_data.server_url)
 
             return {
                 "server_name": new_mcp_data.server_name,
                 "transport": new_mcp_data.transport,
                 "server_url": new_mcp_data.server_url,
                 "server_status": new_mcp_data.status,
-                "message": "MCP server connected successfully",
+                "message": result_message,
             }
 
         except HTTPException:
@@ -277,7 +292,7 @@ class MCPServices:
     async def edit_mcp(
         self, user_id: str, server_name: str, patch: MCPServerEditRequest
     ) -> dict:
-        """Generic edit: rename / url / key / transport. Re-validates live if connection fields change."""
+        """Generic edit: rename / url / key / transport. Gracefully handles offline servers."""
         try:
             data = patch.model_dump(by_alias=False, exclude_unset=True)
             data.pop("trasport", None)  # legacy safety, field alias already normalizes
@@ -307,19 +322,33 @@ class MCPServices:
             if url_changed or key_changed:
                 effective_url = data.get("server_url", doc.get("server_url"))
                 effective_key = data.get("server_key", doc.get("server_key"))
+                effective_transport = data.get("transport", doc.get("transport", "remote"))
                 if not effective_url:
                     raise HTTPException(
                         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                         detail="server_url is required",
                     )
-                connection = await self.connect_mcp(url=effective_url, key=effective_key)
-                if connection["status"] != "success":
-                    raise HTTPException(
-                        status_code=status.HTTP_502_BAD_GATEWAY,
-                        detail=connection.get("message", "Failed to connect to MCP server"),
-                    )
-                data["mcp_tools_list"] = connection["tools"]
-                data["mcp_tool_count"] = connection["tools_count"]
+                # Graceful re-validation: save even if server is offline
+                if effective_transport == "stdio":
+                    data["mcp_tools_list"] = []
+                    data["mcp_tool_count"] = 0
+                else:
+                    try:
+                        connection = await self.connect_mcp(url=effective_url, key=effective_key)
+                        if connection["status"] == "success":
+                            data["mcp_tools_list"] = connection["tools"]
+                            data["mcp_tool_count"] = connection["tools_count"]
+                            data["status"] = "active"
+                        else:
+                            data["mcp_tools_list"] = []
+                            data["mcp_tool_count"] = 0
+                            data["status"] = "inactive"
+                            logger.warning("MCP edit: server '%s' unreachable, saved as inactive", server_name)
+                    except Exception as conn_err:
+                        data["mcp_tools_list"] = []
+                        data["mcp_tool_count"] = 0
+                        data["status"] = "inactive"
+                        logger.warning("MCP edit: server '%s' connection error, saved as inactive: %s", server_name, conn_err)
 
             if new_name and new_name != server_name:
                 data["server_name"] = new_name
@@ -354,4 +383,3 @@ class MCPServices:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update MCP server",
             )
-        

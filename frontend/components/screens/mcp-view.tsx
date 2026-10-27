@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { MCPServer } from '@/lib/types';
+import { toast } from 'sonner';
 
 
 export function MCPView() {
@@ -88,8 +89,10 @@ export function MCPView() {
     );
     try {
       await api.mcp.update(server.id, { enabled: updatedStatus });
+      toast.info(`MCP server '${server.name}' ${updatedStatus ? 'activated' : 'deactivated'}`);
     } catch (err) {
       console.error('Failed to update enabled status:', err);
+      toast.error('Failed to update server status');
       setServers((prev) =>
         prev.map((s) => (s.id === server.id ? { ...s, enabled: server.enabled } : s))
       );
@@ -100,6 +103,7 @@ export function MCPView() {
     setTestingId(id);
     setTimeout(() => {
       setTestingId(null);
+      toast.success(`Ping response received for server '${id}'`);
     }, 1200);
   };
 
@@ -108,16 +112,19 @@ export function MCPView() {
     try {
       await api.mcp.delete(id);
       setServers((prev) => prev.filter((s) => s.id !== id));
+      toast.success(`MCP server '${id}' deleted from registry`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to delete MCP server';
-      alert(msg);
+      toast.error(msg);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !commandOrUrl.trim()) {
-      setModalError('Server Name and Command/URL are required');
+      const msg = 'Server Name and Command/URL are required';
+      setModalError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -134,6 +141,7 @@ export function MCPView() {
           enabled,
         });
         setServers((prev) => prev.map((s) => (s.id === editingServer.id ? updated : s)));
+        toast.success(`MCP server '${name}' updated successfully`);
       } else {
         const created = await api.mcp.create({
           name,
@@ -143,10 +151,17 @@ export function MCPView() {
           enabled,
         });
         setServers((prev) => [...prev, created]);
+        if (created.status === 'connected') {
+          toast.success(`MCP server '${name}' connected successfully!`);
+        } else {
+          toast.warning(`MCP server '${name}' added (standby/unreachable)`);
+        }
       }
       setIsModalOpen(false);
     } catch (err) {
-      setModalError(err instanceof Error ? err.message : 'Failed to save server');
+      const msg = err instanceof Error ? err.message : 'Failed to save server';
+      setModalError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }

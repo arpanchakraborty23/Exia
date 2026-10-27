@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { ThemeToggle } from '@/components/app/theme-toggle';
+import { BackendStatus } from '@/components/app/backend-status';
 import { cn } from '@/lib/shadcn/utils';
 import { MobileNav } from './mobile-nav';
 import { NavTab, Sidebar } from './sidebar';
@@ -120,11 +121,8 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
           </div>
 
           {/* Right */}
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="text-muted-foreground hidden items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] lg:flex">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              <span>Connected</span>
-            </div>
+          <div className="flex shrink-0 items-center gap-2.5">
+            <BackendStatus />
             <ThemeToggle />
           </div>
         </header>

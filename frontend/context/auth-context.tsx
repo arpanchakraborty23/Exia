@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (emailOrUsername: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
   changePassword: (
@@ -62,24 +63,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError('Authentication failed: no access token received.');
       return false;
     } catch (err: any) {
-      // Allow fallback test login when backend is unreachable or when using test/dummy credentials
+      // Allow fallback test login when using predefined operator test credentials
       const isTestCredential =
         password === 'admin1234' ||
         password === 'password123' ||
         password === 'admin' ||
         password === 'exia1234';
 
-      const isNetworkOrConnectionError =
-        !err?.status &&
-        (err?.message?.includes('Failed to fetch') ||
-          err?.message?.includes('NetworkError') ||
-          err?.message?.includes('Load failed') ||
-          err?.message?.includes('status 404') ||
-          err?.message?.includes('status 502') ||
-          err?.message?.includes('status 503') ||
-          err?.message?.includes('Failed to connect'));
-
-      if (isTestCredential || isNetworkOrConnectionError) {
+      if (isTestCredential) {
         const dummyToken = 'dev_dummy_token_' + Math.random().toString(36).substring(2);
         setToken(dummyToken);
         setStoredToken(dummyToken);
@@ -95,6 +86,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const message = err?.message || 'Authentication sequence failed.';
       console.error('Login error:', err);
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await api.auth.register(name, email, password);
+      if (res.access_token) {
+        setToken(res.access_token);
+        setStoredToken(res.access_token);
+        const resolvedUser: User = res.user || {
+          id: 'usr_' + Math.random().toString(36).substring(2, 7),
+          email,
+          name,
+        };
+        setUser(resolvedUser);
+        setStoredUser(resolvedUser);
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      const message = err?.message || 'Account registration failed.';
+      console.error('Registration error:', err);
       setError(message);
       throw err;
     } finally {
@@ -133,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         error,
         login,
+        register,
         logout,
         clearError,
         changePassword,

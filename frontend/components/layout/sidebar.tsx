@@ -13,6 +13,7 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
+import { BackendStatus } from '@/components/app/backend-status';
 import { cn } from '@/lib/shadcn/utils';
 
 export type NavTab = 'session' | 'history' | 'analytics' | 'mcp' | 'prompts' | 'models' | 'settings';
@@ -238,7 +239,15 @@ export function Sidebar({
       </div>
 
       {/* User Footer */}
-      <div className={cn('border-sidebar-border border-t', isCollapsed ? 'p-2' : 'p-3')}>
+      <div className={cn('border-sidebar-border border-t flex flex-col gap-2', isCollapsed ? 'p-2 items-center' : 'p-3')}>
+        {!isCollapsed && (
+          <div className="pb-1">
+            <BackendStatus />
+          </div>
+        )}
+        {isCollapsed && (
+          <BackendStatus variant="minimal" />
+        )}
         {isCollapsed ? (
           <div className="flex flex-col items-center gap-2">
             <div

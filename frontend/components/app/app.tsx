@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { TokenSource } from 'livekit-client';
 import { Loader2 } from 'lucide-react';
 import { useSession } from '@livekit/components-react';
-import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
@@ -17,7 +16,6 @@ import { MCPView } from '@/components/screens/mcp-view';
 import { ModelSelectionView } from '@/components/screens/model-selection-view';
 import { PromptsView } from '@/components/screens/prompts-view';
 import { SettingsView } from '@/components/screens/settings-view';
-import { Toaster } from '@/components/ui/sonner';
 import { useAuth } from '@/context/auth-context';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -139,20 +137,6 @@ export function App({ agentName, isVideoInputSupported = true }: AppProps) {
         </AppShell>
       )}
       <StartAudioButton label="Start Audio" />
-      <Toaster
-        icons={{
-          warning: <WarningIcon weight="bold" />,
-        }}
-        position="top-center"
-        className="toaster group"
-        style={
-          {
-            '--normal-bg': 'var(--popover)',
-            '--normal-text': 'var(--popover-foreground)',
-            '--normal-border': 'var(--border)',
-          } as React.CSSProperties
-        }
-      />
     </AgentSessionProvider>
   );
 }

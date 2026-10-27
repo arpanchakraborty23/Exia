@@ -11,8 +11,11 @@ import {
 
 export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined' && window.location?.origin) {
-    // When running inside the browser or desktop WebView, always use the current window's origin
-    // This completely eliminates Cross-Origin (CORS) errors on any port (12568, 8000, 3000, etc.)
+    // When running inside Next.js dev server on port 3000, target the FastAPI backend port
+    if (window.location.port === '3000') {
+      return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:12568/api';
+    }
+    // When running inside the desktop WebView or Vercel, use current window origin
     return `${window.location.origin}/api`;
   }
   return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:12568/api';
@@ -191,6 +194,36 @@ export const api = {
         access_token: raw.access_token,
         refresh_token: raw.refresh_token,
         message: raw.message,
+        user,
+      };
+    },
+
+    async register(name: string, email: string, password: string): Promise<LoginResponse> {
+      // Backend: POST /api/auth/create-account { name, email, password }
+      const raw = await apiRequest<{
+        user_id?: string;
+        name?: string;
+        email?: string;
+        access_token?: string;
+        refresh_token?: string;
+        message?: string;
+      }>('/auth/create-account', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const user: User | undefined = raw.user_id
+        ? {
+            id: raw.user_id,
+            email: raw.email || email,
+            name: raw.name || name,
+          }
+        : undefined;
+
+      return {
+        access_token: raw.access_token || '',
+        refresh_token: raw.refresh_token,
+        message: raw.message || 'Account created successfully',
         user,
       };
     },

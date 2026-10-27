@@ -65,10 +65,19 @@ async def lifespan(application: FastAPI):
 app = FastAPI(
     title="Exia Desktop",
     version="1.0.0",
-    docs_url=None,  # Disabled in production desktop mode
-    redoc_url=None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     lifespan=lifespan,
 )
+
+@app.get("/api/docs", include_in_schema=False)
+def api_docs_redirect():
+    return RedirectResponse(url="/docs")
+
+@app.get("/api/openapi.json", include_in_schema=False)
+def api_openapi_redirect():
+    return RedirectResponse(url="/openapi.json")
 
 # CORS Configuration
 app.add_middleware(
@@ -301,8 +310,14 @@ def get_cached_static_file(file_path_str: str, mtime: float) -> tuple[bytes, str
 
 @app.get("/{full_path:path}", include_in_schema=False)
 async def serve_desktop_ui(request: Request, full_path: str):
-    # Allow API endpoints to pass through
-    if full_path.startswith("api"):
+    # Allow API endpoints, docs, and schema to pass through to FastAPI native handlers
+    clean_strip = full_path.lstrip("/")
+    if (
+        clean_strip.startswith("api")
+        or clean_strip.startswith("docs")
+        or clean_strip.startswith("redoc")
+        or clean_strip.startswith("openapi")
+    ):
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not Found"})
 
     # If system is not configured yet, present the setup pre-flight page
@@ -356,6 +371,18 @@ async def serve_desktop_ui(request: Request, full_path: str):
 DESKTOP_PORT = 12568
 
 
+def find_available_port(preferred_port: int = 12568, max_tries: int = 10) -> int:
+    import socket
+    for p in range(preferred_port, preferred_port + max_tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", p))
+                return p
+            except OSError:
+                continue
+    return preferred_port
+
+
 def _start_uvicorn(port: int = DESKTOP_PORT):
     """Runs Uvicorn server in a background daemon thread."""
     import uvicorn
@@ -364,14 +391,14 @@ def _start_uvicorn(port: int = DESKTOP_PORT):
         app=app,
         host="127.0.0.1",
         port=port,
-        log_level="warning",
+        log_level="info",
         workers=1,
     )
     server = uvicorn.Server(config)
     server.run()
 
 
-def _wait_for_server(url: str = f"http://127.0.0.1:{DESKTOP_PORT}/api/health", timeout: float = 8.0) -> bool:
+def _wait_for_server(url: str, timeout: float = 10.0) -> bool:
     """Waits for local server to report healthy status."""
     start = time.time()
     while time.time() - start < timeout:
@@ -386,6 +413,11 @@ def _wait_for_server(url: str = f"http://127.0.0.1:{DESKTOP_PORT}/api/health", t
 
 def main():
     """Desktop Application Entrypoint."""
+    global DESKTOP_PORT
+
+    # Determine available port
+    DESKTOP_PORT = find_available_port(12568)
+
     # Set Windows AppUserModelID so taskbar groups properly with its own icon
     if sys.platform == "win32":
         try:
@@ -394,12 +426,18 @@ def main():
         except Exception:
             pass
 
+    print(f"\n==================================================")
+    print(f"🚀 Exia Desktop Server: http://127.0.0.1:{DESKTOP_PORT}")
+    print(f"📖 Swagger API Docs:    http://127.0.0.1:{DESKTOP_PORT}/docs")
+    print(f"==================================================\n")
+
     # 1. Start local ASGI server on specified port
-    server_thread = threading.Thread(target=_start_uvicorn, daemon=True)
+    server_thread = threading.Thread(target=_start_uvicorn, args=(DESKTOP_PORT,), daemon=True)
     server_thread.start()
 
     # 2. Wait until healthy
-    server_ready = _wait_for_server()
+    health_url = f"http://127.0.0.1:{DESKTOP_PORT}/api/health"
+    server_ready = _wait_for_server(health_url)
     if not server_ready:
         logger.error("Failed to start local background server within timeout.")
 

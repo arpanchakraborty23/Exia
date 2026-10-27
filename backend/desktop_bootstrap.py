@@ -352,3 +352,43 @@ def confirm_and_save_env(
         "user_email": clean_email,
     }
 
+
+def update_env_variable(key: str, value: str) -> None:
+    """Updates an environment variable in os.environ and persists it to all candidate .env files."""
+    os.environ[key] = value
+    try:
+        from src.constants.config import get_candidate_env_files
+        candidate_files = get_candidate_env_files()
+    except Exception:
+        candidate_files = [get_appdata_dir() / ".env"]
+
+    target_files = [f for f in candidate_files if f.exists()]
+    if not target_files:
+        target_files = [get_appdata_dir() / ".env"]
+
+    for target in target_files:
+        try:
+            content = target.read_text(encoding="utf-8") if target.exists() else ""
+            lines = content.splitlines()
+            found = False
+            new_lines = []
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith(f"{key}=") or stripped.startswith(f"{key} ="):
+                    new_lines.append(f"{key}={value}")
+                    found = True
+                else:
+                    new_lines.append(line)
+            if not found:
+                new_lines.append(f"{key}={value}")
+            target.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+            logger.info("Updated %s in %s", key, target)
+        except Exception as e:
+            logger.warning("Failed to write %s to %s: %s", key, target, e)
+
+    try:
+        from src.constants.config import get_settings
+        get_settings.cache_clear()
+    except Exception:
+        pass
+

@@ -7,7 +7,7 @@ from datetime import datetime
 class CreateNewUserModel(BaseModel):
     __table__="users"
 
-    user_id : str = Field(..., min_length=7, max_length=7)
+    user_id : str = Field(..., min_length=1, max_length=128, description="unique user id")
     name: str = Field(..., min_length=3, max_length=100)
     email: str = Field(..., pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
     hash_password: str
@@ -37,7 +37,7 @@ class AgentSessionModel(BaseModel):
 class MCPServerModel(BaseModel):
     __table__="mcp"
 
-    user_id : str = Field(...,max_length=7)
+    user_id : str = Field(..., description="owner user id")
     server_name: str = Field(...,description="mcp server name")
     server_url: str = Field(...,description="mcp server url")
     server_key : Optional[str] = Field(None,description="mcp server key")

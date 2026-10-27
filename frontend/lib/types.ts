@@ -175,12 +175,27 @@ export interface ModelConfig {
   cartesia_api_key?: string;
   elevenlabs_api_key?: string;
   speechmatics_api_key?: string;
+  groq_api_key?: string;
+  deepseek_api_key?: string;
   ollama_base_url?: string;
+
+  // Fallback Model Options (LiveKit Inference or multi-provider routing)
+  fallback_enabled?: boolean;
+  fallback_provider?: 'livekit' | 'anthropic' | 'openai' | 'google' | 'ollama' | string;
+  fallback_model?: string;
+  fallback_temperature?: number;
+  fallback_api_key?: string;
 
   // LiveKit Voice Agent Orchestrator Credentials (as referenced in cortana_companion)
   livekit_url?: string;
   livekit_api_key?: string;
   livekit_api_secret?: string;
+  livekit?: {
+    url?: string;
+    apiKey?: string;
+    apiSecret?: string;
+    roomName?: string;
+  };
 
   // Speechmatics Voice Recognition & STT Parameters
   speechmatics_model?: 'linden-1' | 'enhanced' | 'standard' | string;

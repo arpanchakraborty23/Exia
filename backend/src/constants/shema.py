@@ -210,8 +210,30 @@ class ModelConfigSchema(BaseModel):
     realtime_search_models: Optional[List[str]] = None
     # LiveKit custom credentials
     livekit: Optional[Dict[str, Any]] = None
+    livekit_url: Optional[str] = None
+    livekit_api_key: Optional[str] = None
+    livekit_api_secret: Optional[str] = None
     vad_threshold: Optional[float] = None
     allow_interruptions: Optional[bool] = None
+
+    # Model Provider API Keys & Endpoints (persisted in DB and synced to .env)
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    deepgram_api_key: Optional[str] = None
+    cartesia_api_key: Optional[str] = None
+    elevenlabs_api_key: Optional[str] = None
+    speechmatics_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
+    deepseek_api_key: Optional[str] = None
+    ollama_base_url: Optional[str] = None
+
+    # Fallback Model Options (LiveKit Inference or multi-provider routing)
+    fallback_enabled: Optional[bool] = False
+    fallback_provider: Optional[str] = None
+    fallback_model: Optional[str] = None
+    fallback_temperature: Optional[float] = None
+    fallback_api_key: Optional[str] = None
 
 
 # settings-view password change (frontend posts current + new password)

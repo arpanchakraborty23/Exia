@@ -41,17 +41,46 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { ModelConfig, VoiceUserProfile } from '@/lib/types';
 
 // ─────────────────────────────────────────────────────────────
-// VERIFIED UP-TO-DATE MODEL REGISTRIES (Validated via Web Search)
+// VERIFIED UP-TO-DATE MODEL REGISTRIES (Validated via LiveKit Docs & Web)
 // ─────────────────────────────────────────────────────────────
 
 // 1. REALTIME S2S (Speech-to-Speech WebSockets)
-export type RealtimeProvider = 'google' | 'openai';
+export type RealtimeProvider = 'livekit' | 'google' | 'openai';
 
 const REALTIME_PROVIDERS = [
+  {
+    id: 'livekit' as RealtimeProvider,
+    name: 'LiveKit Inference (Realtime Voice S2S)',
+    badge: 'ZERO RETENTION S2S',
+    latency: '~130ms',
+    keyPlaceholder: 'Managed by LiveKit Project Credentials',
+    keyHelp: 'docs.livekit.io/agents/models/realtime',
+    isLiveKitInference: true,
+    models: [
+      { id: 'google/gemini-3.8-live', name: 'Gemini 3.8 Live (Turn-based Direct S2S)' },
+      { id: 'google/gemini-3.8-live-extended-thinking', name: 'Gemini 3.8 Live (Extended Thinking S2S)' },
+      { id: 'openai/gpt-realtime-2.1', name: 'OpenAI GPT Realtime 2.1 (Low Latency S2S)' },
+      { id: 'openai/gpt-realtime-2.1-mini', name: 'OpenAI GPT Realtime 2.1 Mini (Fast & Cost Efficient)' },
+      { id: 'openai/gpt-live-1', name: 'OpenAI GPT-Live 1 (Full-Duplex Speech)' },
+      { id: 'xai/grok-voice-3.0', name: 'Grok Voice 3.0 (xAI Realtime Conversational)' },
+    ],
+    voices: [
+      { id: 'Charon', name: 'Charon (Deep & Measured — Exia Default)', hz: 180 },
+      { id: 'Puck', name: 'Puck (Natural & Expressive)', hz: 260 },
+      { id: 'Kore', name: 'Kore (Warm & Conversational)', hz: 320 },
+      { id: 'Fenrir', name: 'Fenrir (Direct Military Brevity)', hz: 160 },
+      { id: 'Aoede', name: 'Aoede (Articulate & Radiant)', hz: 300 },
+      { id: 'alloy', name: 'Alloy (Balanced Studio)', hz: 220 },
+      { id: 'echo', name: 'Echo (Warm & Grounded)', hz: 190 },
+      { id: 'shimmer', name: 'Shimmer (Bright & Articulate)', hz: 310 },
+      { id: 'marin', name: 'Marin (Conversational Natural)', hz: 240 },
+    ],
+  },
   {
     id: 'google' as RealtimeProvider,
     name: 'Google Gemini Live',
@@ -169,9 +198,39 @@ const STT_PROVIDERS = [
 ];
 
 // 3. MODULAR: LANGUAGE MODEL (LLM)
-export type LLMProvider = 'anthropic' | 'openai' | 'google' | 'ollama';
+export type LLMProvider = 'livekit' | 'anthropic' | 'openai' | 'google' | 'ollama';
 
 const LLM_PROVIDERS = [
+  {
+    id: 'livekit' as LLMProvider,
+    name: 'LiveKit Inference (Cloud Voice LLM)',
+    badge: 'ZERO RETENTION (ZDR)',
+    keyPlaceholder: 'Auto (Uses LiveKit Project credentials — no API key needed)',
+    keyHelp: 'docs.livekit.io/agents/models/inference',
+    latency: 110,
+    isLiveKitInference: true,
+    models: [
+      { id: 'google/gemma-4-31b-it', name: 'Gemma 4 31B (Recommended Default — Latency-Optimized Voice LLM)' },
+      { id: 'google/gemini-3.8-flash', name: 'Gemini 3.8 Flash (High-Speed Multimodal Intelligence)' },
+      { id: 'google/gemini-3.5-flash', name: 'Gemini 3.5 Flash (Production Balanced)' },
+      { id: 'google/gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite (Ultra-Low Latency, EU Endpoint)' },
+      { id: 'google/gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash-Lite (EU Compliant, ~90ms)' },
+      { id: 'google/gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro (Deep Complex Reasoning)' },
+      { id: 'openai/gpt-4.1-mini', name: 'GPT-4.1 Mini (OpenAI Next-Gen Fast)' },
+      { id: 'openai/gpt-4.1', name: 'GPT-4.1 (Flagship Reasoning & Tools)' },
+      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (Cost-Effective Conversational)' },
+      { id: 'openai/gpt-4o', name: 'GPT-4o (Omni Multimodal Intelligence)' },
+      { id: 'openai/gpt-5.4-mini', name: 'GPT-5.4 Mini (Advanced Voice Agent Model)' },
+      { id: 'openai/gpt-5.4', name: 'GPT-5.4 (Flagship Frontier Model)' },
+      { id: 'openai/gpt-6-sol', name: 'GPT-6 Sol (Frontier Latency-Tuned)' },
+      { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (Open-Weight Latency-Tuned)' },
+      { id: 'deepseek-ai/deepseek-v4-pro', name: 'DeepSeek-V4 Pro (High-Performance Reasoning)' },
+      { id: 'deepseek-ai/deepseek-v4.1-flash', name: 'DeepSeek-V4.1 Flash (Instant Response)' },
+      { id: 'xai/grok-4.20-0309-non-reasoning', name: 'Grok 4.20 (Non-Reasoning Direct Chat)' },
+      { id: 'xai/grok-4.3', name: 'Grok 4.3 (xAI Frontier Intelligence)' },
+      { id: 'moonshotai/kimi-k2.6', name: 'Kimi K2.6 (Moonshot Long-Context)' },
+    ],
+  },
   {
     id: 'anthropic' as LLMProvider,
     name: 'Anthropic Claude',

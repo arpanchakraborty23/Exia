@@ -26,11 +26,47 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
     Agent Token request
     """
     try:
+        # decode jwt token payload
+        payload = token_details if isinstance(token_details, dict) else auth_services.decode_token(token_details)
+        user_info = (payload or {}).get("user") or {}
+        participant_identity = user_info.get("user_id") or "usr_admin"
+        participant_name = user_info.get("name") or "Operator"
+
         # Read fresh settings per-request (module-level values go stale after .env changes)
         current = get_settings()
-        livekit_api_key = request.livekit_api_key or current.livekit_api_key
-        livekit_secret_key = request.livekit_api_secret or current.livekit_api_secret
-        livekit_url = request.livekit_url or current.livekit_api_host
+
+        # Check MongoDB model_config for user-customized keys
+        user_cfg = None
+        try:
+            cfg_service = MongoServices(
+                url=current.mongodb_uri,
+                db=current.mongodb_database,
+                collection=current.mongodb_model_collection or "model_config",
+            )
+            user_cfg = cfg_service.find_one({"user_id": participant_identity}) or {}
+        except Exception:
+            pass
+
+        stored_lk = ((user_cfg or {}).get("config") or {}).get("livekit") or {}
+
+        livekit_api_key = (
+            request.livekit_api_key
+            or stored_lk.get("apiKey")
+            or user_cfg.get("livekit_api_key")
+            or current.livekit_api_key
+        )
+        livekit_secret_key = (
+            request.livekit_api_secret
+            or stored_lk.get("apiSecret")
+            or user_cfg.get("livekit_api_secret")
+            or current.livekit_api_secret
+        )
+        livekit_url = (
+            request.livekit_url
+            or stored_lk.get("url")
+            or user_cfg.get("livekit_url")
+            or current.livekit_api_host
+        )
 
         if not all([livekit_api_key, livekit_secret_key, livekit_url]):
             raise HTTPException(
@@ -38,13 +74,8 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
                 detail="Server configuration error: LiveKit credentials missing",
             )
 
-        # decode jwt token payload
-        payload = token_details if isinstance(token_details, dict) else auth_services.decode_token(token_details)
-
         room_name = (request.room_name or "unlisted")
         session_id = f"room-{str(uuid.uuid4())[:6]}"
-        participant_identity = payload['user']['user_id']
-        participant_name = payload['user']['name']
 
         livekit_token = (
             api.AccessToken(livekit_api_key, livekit_secret_key)
