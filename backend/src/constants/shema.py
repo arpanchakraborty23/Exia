@@ -38,6 +38,9 @@ class NewPasswordResponse(BaseModel):
 # livekit Session token
 class AgentTokenRequest(BaseModel):
     room_name: Optional[str] = None
+    livekit_url: Optional[str] = None
+    livekit_api_key: Optional[str] = None
+    livekit_api_secret: Optional[str] = None
 
 
 class AgentTokenResponse(BaseModel):
@@ -135,15 +138,17 @@ class MCPServerDeleteResponse(BaseModel):
 class PromptCreateRequest(BaseModel):
     title: str
     prompt_text: str
-    type: Literal["system", "quick"] = "system"
+    type: Literal["system", "quick", "skill", "base"] = "system"
     tags: Optional[List[str]] = None
+    is_default: Optional[bool] = False
 
 
 class PromptUpdateRequest(BaseModel):
     title: Optional[str] = None
     prompt_text: Optional[str] = None
-    type: Optional[Literal["system", "quick"]] = None
+    type: Optional[Literal["system", "quick", "skill", "base"]] = None
     tags: Optional[List[str]] = None
+    is_default: Optional[bool] = None
 
 
 class PromptResponse(BaseModel):
@@ -151,8 +156,9 @@ class PromptResponse(BaseModel):
     user_id: Optional[str] = None
     title: Optional[str] = None
     prompt_text: Optional[str] = None
-    type: Optional[Literal["system", "quick"]] = None
+    type: Optional[Literal["system", "quick", "skill", "base"]] = None
     tags: List[str] = Field(default_factory=list)
+    is_default: Optional[bool] = False
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -187,6 +193,23 @@ class ModelConfigSchema(BaseModel):
     tts_model: Optional[str] = None
     temperature: Optional[float] = None
     max_output_tokens: Optional[int] = None
+    # Base prompt & skills support from UI studio
+    base_system_prompt: Optional[str] = None
+    system_prompt_override: Optional[str] = None
+    skills: Optional[List[Dict[str, Any]]] = None
+    # Speechmatics STT & voice recognition
+    speechmatics_voice_id: Optional[str] = None
+    speechmatics_language: Optional[str] = None
+    speechmatics_model: Optional[str] = None
+    # Gemini advanced & Web search
+    thinking_budget: Optional[int] = None
+    search_grounding: Optional[bool] = None
+    web_search: Optional[bool] = None
+    realtime_search_models: Optional[List[str]] = None
+    # LiveKit custom credentials
+    livekit: Optional[Dict[str, Any]] = None
+    vad_threshold: Optional[float] = None
+    allow_interruptions: Optional[bool] = None
 
 
 # settings-view password change (frontend posts current + new password)
@@ -220,6 +243,10 @@ class SessionSummarySchema(BaseModel):
     model_used: Optional[str] = None
     message_count: Optional[int] = None
     preview_text: Optional[str] = None
+    total_tokens: Optional[int] = None
+    avg_latency_ms: Optional[float] = None
+    turns_count: Optional[int] = None
+    tool_calls_count: Optional[int] = None
 
 
 class SessionMessageSchema(BaseModel):
@@ -232,6 +259,8 @@ class SessionMessageSchema(BaseModel):
 class SessionDetailSchema(SessionSummarySchema):
     transcript: List[SessionMessageSchema] = Field(default_factory=list)
     mcp_tools_invoked: List[Dict] = Field(default_factory=list)
+    turns: List[Dict] = Field(default_factory=list)
+    analytics: Optional[Dict[str, Any]] = None
 
 
 class SessionListResponse(BaseModel):
@@ -241,6 +270,51 @@ class SessionListResponse(BaseModel):
 
 class EndSessionResponse(BaseModel):
     message: Optional[str] = None
+
+
+# Analytics & Telemetry for Observability View
+class AnalyticsMetricsResponse(BaseModel):
+    total_sessions: int = 0
+    completed_sessions: int = 0
+    total_duration_seconds: int = 0
+    formatted_duration: str = "0m"
+    total_turns: int = 0
+    total_tool_calls: int = 0
+    total_tokens: Dict[str, int] = Field(default_factory=lambda: {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+    })
+    avg_latency: Dict[str, float] = Field(default_factory=lambda: {
+        "stt_ms": 0.0,
+        "llm_ttft_ms": 0.0,
+        "tts_ms": 0.0,
+        "e2e_ms": 0.0,
+    })
+    model_breakdown: List[Dict[str, Any]] = Field(default_factory=list)
+    recent_activity: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+# User Voice Recognition / Speaker Diarization Profiles
+class VoiceProfileSchema(BaseModel):
+    profile_id: str
+    user_id: str
+    speaker_name: str
+    voice_signature: Optional[str] = None
+    enrolled_at: str
+    sample_count: int = 1
+    notes: Optional[str] = None
+
+
+class VoiceProfileCreateRequest(BaseModel):
+    speaker_name: str
+    voice_signature: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class VoiceProfileListResponse(BaseModel):
+    profiles: List[VoiceProfileSchema] = Field(default_factory=list)
+    total: int = 0
 
 
 # mcp generic edit (frontend edit modal) — all fields optional

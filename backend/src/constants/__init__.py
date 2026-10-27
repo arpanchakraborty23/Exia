@@ -38,8 +38,12 @@ __all__ = [
     "SessionDetailSchema",
     "SessionListResponse",
     "EndSessionResponse",
+    "AnalyticsMetricsResponse",
+    "VoiceProfileSchema",
+    "VoiceProfileCreateRequest",
+    "VoiceProfileListResponse",
     "MCPServerEditRequest",
     "PromptModel",
-    "ModelConfigModel"
-
+    "ModelConfigModel",
+    "VoiceProfileModel",
 ]

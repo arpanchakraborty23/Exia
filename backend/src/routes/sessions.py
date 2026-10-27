@@ -3,7 +3,12 @@ import logging
 from fastapi import APIRouter, status, HTTPException, Depends, Query
 
 from src.services import AccessTokenBearer, SessionServices
-from src.constants import SessionListResponse, SessionDetailSchema, EndSessionResponse
+from src.constants import (
+    SessionListResponse,
+    SessionDetailSchema,
+    EndSessionResponse,
+    AnalyticsMetricsResponse,
+)
 
 
 # Initialize Services
@@ -25,6 +30,22 @@ def _get_user_id(token_data: dict) -> str:
             detail="Invalid Token"
         )
     return user_id
+
+
+@session_route.get("/analytics", response_model=AnalyticsMetricsResponse, status_code=status.HTTP_200_OK)
+async def get_analytics(token_data: dict = Depends(access_token_bearer)):
+    """Aggregated voice session metrics and telemetry for analytics view."""
+    try:
+        user_id = _get_user_id(token_data)
+        return await session_services.get_analytics(user_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to get analytics: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get analytics",
+        )
 
 
 @session_route.get("/sessions", response_model=SessionListResponse, status_code=status.HTTP_200_OK)

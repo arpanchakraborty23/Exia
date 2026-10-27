@@ -28,9 +28,9 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
     try:
         # Read fresh settings per-request (module-level values go stale after .env changes)
         current = get_settings()
-        livekit_api_key = current.livekit_api_key
-        livekit_secret_key = current.livekit_api_secret
-        livekit_url = current.livekit_api_host
+        livekit_api_key = request.livekit_api_key or current.livekit_api_key
+        livekit_secret_key = request.livekit_api_secret or current.livekit_api_secret
+        livekit_url = request.livekit_url or current.livekit_api_host
 
         if not all([livekit_api_key, livekit_secret_key, livekit_url]):
             raise HTTPException(

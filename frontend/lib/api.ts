@@ -245,6 +245,13 @@ export const api = {
     },
   },
 
+  // 3.5. Analytics & Observability
+  analytics: {
+    async getMetrics(): Promise<any> {
+      return await apiRequest('/analytics');
+    },
+  },
+
   // 4. MCP Servers (Backend: POST /api/add, GET /api/list, PUT/DELETE /api/{name})
   mcp: {
     async list(): Promise<MCPServer[]> {

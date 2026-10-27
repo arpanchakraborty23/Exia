@@ -35,6 +35,7 @@ class PromptServices:
             "prompt_text": doc.get("prompt_text"),
             "type": doc.get("type"),
             "tags": doc.get("tags") or [],
+            "is_default": bool(doc.get("is_default", False)),
             "created_at": doc.get("created_at"),
             "updated_at": doc.get("updated_at"),
         }
@@ -49,6 +50,14 @@ class PromptServices:
                     detail="title and prompt_text are required",
                 )
 
+            is_default = bool(data.is_default)
+            if is_default:
+                # If setting as default, clear any prior default for this user
+                self.db.update_many(
+                    {"user_id": user_id, "is_default": True},
+                    {"$set": {"is_default": False}},
+                )
+
             new_prompt = PromptModel(
                 user_id=user_id,
                 prompt_id=f"pr_{uuid.uuid4().hex[:8]}",
@@ -56,6 +65,7 @@ class PromptServices:
                 prompt_text=prompt_text,
                 type=data.type or "system",
                 tags=list(data.tags or []),
+                is_default=is_default,
                 created_at=_now_iso(),
                 updated_at=None,
             )
@@ -130,6 +140,13 @@ class PromptServices:
                 updates["type"] = patch.type
             if patch.tags is not None:
                 updates["tags"] = list(patch.tags)
+            if patch.is_default is not None:
+                updates["is_default"] = bool(patch.is_default)
+                if patch.is_default:
+                    self.db.update_many(
+                        {"user_id": user_id, "prompt_id": {"$ne": prompt_id}, "is_default": True},
+                        {"$set": {"is_default": False}},
+                    )
 
             if not updates:
                 raise HTTPException(
