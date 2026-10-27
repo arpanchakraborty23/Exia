@@ -235,6 +235,19 @@ class ModelConfigSchema(BaseModel):
     fallback_temperature: Optional[float] = None
     fallback_api_key: Optional[str] = None
 
+    # Fallback Speech-to-Text (STT) Options
+    fallback_stt_enabled: Optional[bool] = False
+    fallback_stt_provider: Optional[str] = None
+    fallback_stt_model: Optional[str] = None
+    fallback_stt_api_key: Optional[str] = None
+
+    # Fallback Text-to-Speech (TTS) Options
+    fallback_tts_enabled: Optional[bool] = False
+    fallback_tts_provider: Optional[str] = None
+    fallback_tts_model: Optional[str] = None
+    fallback_tts_voice: Optional[str] = None
+    fallback_tts_api_key: Optional[str] = None
+
 
 # settings-view password change (frontend posts current + new password)
 class ChangePasswordRequest(BaseModel):
@@ -328,12 +341,20 @@ class VoiceProfileSchema(BaseModel):
     enrolled_at: str
     sample_count: int = 1
     notes: Optional[str] = None
+    role: Optional[str] = "user"
+    confidence_threshold: Optional[float] = 0.82
+    pitch_hz: Optional[int] = 200
+    sample_status: Optional[str] = "enrolled"
 
 
 class VoiceProfileCreateRequest(BaseModel):
     speaker_name: str
     voice_signature: Optional[str] = None
     notes: Optional[str] = None
+    role: Optional[str] = "user"
+    confidence_threshold: Optional[float] = 0.82
+    pitch_hz: Optional[int] = 200
+    sample_status: Optional[str] = "enrolled"
 
 
 class VoiceProfileListResponse(BaseModel):

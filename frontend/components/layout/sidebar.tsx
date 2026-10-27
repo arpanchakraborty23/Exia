@@ -49,7 +49,7 @@ const NAV_SECTIONS: NavSection[] = [
       { id: 'analytics', label: 'Analytics', shortcut: '⌘3', icon: BarChart3 },
       { id: 'mcp', label: 'MCP Registry', shortcut: '⌘4', icon: Cpu },
       { id: 'prompts', label: 'Prompts', shortcut: '⌘5', icon: FileText },
-      { id: 'models', label: 'Model Engine', shortcut: '⌘6', icon: Sliders },
+      { id: 'models', label: 'Models', shortcut: '⌘6', icon: Sliders },
     ],
   },
   {

@@ -6,7 +6,8 @@ from pathlib import Path
 
 block_cipher = None
 
-backend_dir = Path(__file__).resolve().parent
+# In PyInstaller .spec files, SPECPATH points to the directory containing this spec file
+backend_dir = Path(SPECPATH).resolve() if "SPECPATH" in globals() else Path.cwd().resolve()
 dist_dir = backend_dir / "dist"
 static_dir = backend_dir / "static"
 icon_path = backend_dir / "exia-icon.ico"
@@ -45,7 +46,7 @@ hiddenimports = [
 ]
 
 a = Analysis(
-    ['main_desktop.py'],
+    [str(backend_dir / 'main_desktop.py')],
     pathex=[str(backend_dir)],
     binaries=[],
     datas=datas,

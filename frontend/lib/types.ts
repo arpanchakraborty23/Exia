@@ -186,6 +186,18 @@ export interface ModelConfig {
   fallback_temperature?: number;
   fallback_api_key?: string;
 
+  // Fallback STT & TTS Options
+  fallback_stt_enabled?: boolean;
+  fallback_stt_provider?: 'livekit' | 'speechmatics' | 'deepgram' | 'openai' | 'google' | string;
+  fallback_stt_model?: string;
+  fallback_stt_api_key?: string;
+
+  fallback_tts_enabled?: boolean;
+  fallback_tts_provider?: 'livekit' | 'cartesia' | 'elevenlabs' | 'openai' | 'speechmatics' | 'google' | string;
+  fallback_tts_model?: string;
+  fallback_tts_voice?: string;
+  fallback_tts_api_key?: string;
+
   // LiveKit Voice Agent Orchestrator Credentials (as referenced in cortana_companion)
   livekit_url?: string;
   livekit_api_key?: string;

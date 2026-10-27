@@ -128,7 +128,7 @@ const REALTIME_PROVIDERS = [
 ];
 
 // 2. MODULAR: SPEECH-TO-TEXT (STT)
-export type STTProvider = 'speechmatics' | 'deepgram' | 'openai' | 'google';
+export type STTProvider = 'livekit' | 'speechmatics' | 'deepgram' | 'openai' | 'google';
 
 export const SPEECHMATICS_LANGUAGES = [
   { code: 'en', name: 'English (US, UK, AU, IN, Scottish Accents)' },
@@ -146,6 +146,26 @@ export const SPEECHMATICS_LANGUAGES = [
 ];
 
 const STT_PROVIDERS = [
+  {
+    id: 'livekit' as STTProvider,
+    name: 'LiveKit Inference STT (Zero-Config Speech-to-Text)',
+    badge: 'ZERO RETENTION (ZDR)',
+    keyPlaceholder: 'Auto (Uses LiveKit Project credentials — no API key needed)',
+    keyHelp: 'docs.livekit.io/agents/models/stt',
+    latency: 80,
+    isLiveKitInference: true,
+    models: [
+      { id: 'deepgram/flux-general-en', name: 'Deepgram Flux (Ultra-Low Latency ~80ms)' },
+      { id: 'deepgram/nova-3', name: 'Deepgram Nova-3 (State-of-the-Art Accuracy)' },
+      { id: 'deepgram/nova-2', name: 'Deepgram Nova-2 (General Conversational)' },
+      { id: 'assemblyai/universal-3-6-pro', name: 'AssemblyAI Universal-3.6 Pro (Multi-Accent Leader)' },
+      { id: 'cartesia/ink-2', name: 'Cartesia Ink 2 (Fast Natural Transcription)' },
+      { id: 'google/gemini-3.5-transcribe-live', name: 'Gemini 3.5 Transcribe Live (Multilingual Stream)' },
+      { id: 'speechmatics/linden-1', name: 'Speechmatics Linden-1 (Real-time Flow STT)' },
+      { id: 'openai/gpt-live-transcribe', name: 'OpenAI GPT-Live Transcribe' },
+      { id: 'xai/stt-1', name: 'xAI STT-1 (Grok Speech-to-Text)' },
+    ],
+  },
   {
     id: 'speechmatics' as STTProvider,
     name: 'Speechmatics (Ursa & Linden-1)',
@@ -288,9 +308,37 @@ const LLM_PROVIDERS = [
 ];
 
 // 4. MODULAR: TEXT-TO-SPEECH (TTS)
-export type TTSProvider = 'cartesia' | 'elevenlabs' | 'openai' | 'speechmatics' | 'google';
+export type TTSProvider = 'livekit' | 'cartesia' | 'elevenlabs' | 'openai' | 'speechmatics' | 'google';
 
 const TTS_PROVIDERS = [
+  {
+    id: 'livekit' as TTSProvider,
+    name: 'LiveKit Inference TTS (Zero-Config Text-to-Speech)',
+    badge: 'ZERO RETENTION (ZDR)',
+    keyPlaceholder: 'Auto (Uses LiveKit Project credentials — no API key needed)',
+    keyHelp: 'docs.livekit.io/agents/models/tts',
+    latency: 80,
+    isLiveKitInference: true,
+    models: [
+      { id: 'cartesia/sonic-3.6', name: 'Cartesia Sonic 3.6 (Current Production Flagship, ~80ms, 44 Languages)' },
+      { id: 'cartesia/sonic-3.5', name: 'Cartesia Sonic 3.5 (Conversational Natural)' },
+      { id: 'deepgram/aura-2', name: 'Deepgram Aura-2 (Low-Latency Neural Speech)' },
+      { id: 'deepgram/flux-tts', name: 'Deepgram Flux TTS (Instant Streaming Audio)' },
+      { id: 'fishaudio/s2.1-pro', name: 'Fish Audio S2.1 Pro (Ultra-Realistic Expressive)' },
+      { id: 'google/gemini-3.8-flash-tts', name: 'Gemini 3.8 Flash TTS (Multilingual Expressive)' },
+      { id: 'inworld/inworld-tts-2', name: 'Inworld Realtime TTS 2.0 (Gaming & Persona Voice)' },
+      { id: 'rime/coda', name: 'Rime Coda (High-Fidelity Conversational Voice)' },
+      { id: 'xai/tts-1', name: 'xAI TTS-1 (Grok Neural Voice)' },
+    ],
+    voices: [
+      { id: 'baritone-us', name: 'Baritone Professional (US English)', hz: 175 },
+      { id: 'calm-conversational', name: 'Conversational Calm', hz: 235 },
+      { id: 'confident-female', name: 'Confident British Female', hz: 290 },
+      { id: 'deepgram-thalia', name: 'Thalia (Deepgram Warm Female)', hz: 240 },
+      { id: 'deepgram-orion', name: 'Orion (Deepgram Authoritative Male)', hz: 170 },
+      { id: 'fish-expressive', name: 'Fish Expressive Natural', hz: 220 },
+    ],
+  },
   {
     id: 'cartesia' as TTSProvider,
     name: 'Cartesia Sonic',
@@ -459,6 +507,22 @@ interface FullModelConfig {
     model: string;
     voice: string;
   };
+  fallback: {
+    enabled: boolean;
+    provider: LLMProvider;
+    model: string;
+    apiKey?: string;
+    temperature?: number;
+    sttEnabled: boolean;
+    sttProvider: STTProvider;
+    sttModel: string;
+    sttApiKey?: string;
+    ttsEnabled: boolean;
+    ttsProvider: TTSProvider;
+    ttsModel: string;
+    ttsVoice?: string;
+    ttsApiKey?: string;
+  };
   params: {
     temperature: number;
     topP: number;
@@ -513,6 +577,22 @@ const DEFAULT_FULL_CONFIG: FullModelConfig = {
     model: 'sonic-3.6',
     voice: 'baritone-us',
   },
+  fallback: {
+    enabled: false,
+    provider: 'livekit',
+    model: 'google/gemma-4-31b-it',
+    apiKey: '',
+    temperature: 0.7,
+    sttEnabled: false,
+    sttProvider: 'livekit',
+    sttModel: 'deepgram/nova-3',
+    sttApiKey: '',
+    ttsEnabled: false,
+    ttsProvider: 'livekit',
+    ttsModel: 'cartesia/sonic-3.6',
+    ttsVoice: 'baritone-us',
+    ttsApiKey: '',
+  },
   params: {
     temperature: 0.7,
     topP: 0.95,
@@ -522,7 +602,7 @@ const DEFAULT_FULL_CONFIG: FullModelConfig = {
 };
 
 const STORAGE_KEY = 'exia_unified_model_config';
-const USERS_JSON_STORAGE_KEY = 'exia_voice_users_json';
+const VOICE_CACHE_KEY = 'exia_voice_profiles_cache';
 
 export function ModelSelectionView() {
   const [config, setConfig] = useState<FullModelConfig>(DEFAULT_FULL_CONFIG);
@@ -531,20 +611,47 @@ export function ModelSelectionView() {
   const [auditioningVoice, setAuditioningVoice] = useState<string | null>(null);
   const [newKeyword, setNewKeyword] = useState('');
 
-  // Modals for users.json viewer & add voice user
-  const [isUsersJsonModalOpen, setIsUsersJsonModalOpen] = useState(false);
+  // Voice Profile Enrollment Modal
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isAddingUser, setIsAddingUser] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserRole, setNewUserRole] = useState<'admin' | 'user' | 'guest'>('user');
   const [newUserThreshold, setNewUserThreshold] = useState(0.82);
   const [newUserNotes, setNewUserNotes] = useState('');
-  const [copiedJson, setCopiedJson] = useState(false);
 
-  // Load from localStorage on mount
+  // Load Voice Profiles from MongoDB
+  const loadVoiceProfilesFromDb = () => {
+    api.voiceProfiles
+      .list()
+      .then((res: any) => {
+        if (res && Array.isArray(res.profiles) && res.profiles.length > 0) {
+          const mapped: VoiceUserProfile[] = res.profiles.map((p: any) => ({
+            id: p.profile_id || p.id || `vp_${Math.random().toString(36).substring(7)}`,
+            name: p.speaker_name || p.name || 'Speaker',
+            role: (p.role as 'admin' | 'user' | 'guest') || 'user',
+            voice_signature_id: p.voice_signature || p.voice_signature_id || 'vs_ursa_live',
+            enrolled_at: p.enrolled_at ? p.enrolled_at.split('T')[0] : new Date().toISOString().split('T')[0],
+            confidence_threshold: typeof p.confidence_threshold === 'number' ? p.confidence_threshold : 0.82,
+            pitch_hz: p.pitch_hz || 200,
+            sample_status: p.sample_status || 'enrolled',
+            notes: p.notes || '',
+          }));
+          setConfig((prev) => ({ ...prev, voiceUsers: mapped }));
+          try {
+            localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(mapped));
+          } catch {}
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load voice profiles from MongoDB:', err);
+      });
+  };
+
+  // Load from localStorage & MongoDB on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      const rawUsers = localStorage.getItem(USERS_JSON_STORAGE_KEY);
+      const rawUsers = localStorage.getItem(VOICE_CACHE_KEY);
       let parsedUsers: VoiceUserProfile[] = DEFAULT_VOICE_USERS;
       if (rawUsers) {
         try {
@@ -573,40 +680,87 @@ export function ModelSelectionView() {
       console.warn('Failed to parse saved config:', e);
     }
 
+    // Always fetch fresh profiles from MongoDB
+    loadVoiceProfilesFromDb();
+
     // Fetch and merge backend configuration
     api.models
       .getConfig()
       .then((serverCfg: any) => {
         if (serverCfg) {
-          setConfig((prev) => ({
-            ...prev,
-            livekit: {
-              ...prev.livekit,
-              url: serverCfg.livekit?.url || serverCfg.livekit_url || prev.livekit.url,
-              apiKey: serverCfg.livekit?.apiKey || serverCfg.livekit_api_key || prev.livekit.apiKey,
-              apiSecret: serverCfg.livekit?.apiSecret || serverCfg.livekit_api_secret || prev.livekit.apiSecret,
-            },
-            realtime: {
-              ...prev.realtime,
-              model: serverCfg.gemini_model || prev.realtime.model,
-              voice: serverCfg.gemini_voice || prev.realtime.voice,
-            },
-            stt: {
-              ...prev.stt,
-              provider: (serverCfg.stt_provider || prev.stt.provider).toLowerCase(),
-              model: serverCfg.stt_model || prev.stt.model,
-            },
-            llm: {
-              ...prev.llm,
-              provider: (serverCfg.llm_provider || prev.llm.provider).toLowerCase(),
-              model: serverCfg.llm_model || prev.llm.model,
-            },
-            tts: {
-              ...prev.tts,
-              provider: (serverCfg.tts_provider || prev.tts.provider).toLowerCase(),
-              model: serverCfg.tts_model || prev.tts.model,
-            },
-          }));
+          setConfig((prev) => {
+            const livekitUrl = serverCfg.livekit?.url || serverCfg.livekit_url || prev.livekit.url;
+            const livekitApiKey = serverCfg.livekit?.apiKey || serverCfg.livekit_api_key || prev.livekit.apiKey;
+            const livekitApiSecret = serverCfg.livekit?.apiSecret || serverCfg.livekit_api_secret || prev.livekit.apiSecret;
+
+            const geminiKey = serverCfg.gemini_api_key || '';
+            const openaiKey = serverCfg.openai_api_key || '';
+            const anthropicKey = serverCfg.anthropic_api_key || '';
+            const deepgramKey = serverCfg.deepgram_api_key || '';
+            const cartesiaKey = serverCfg.cartesia_api_key || '';
+            const speechmaticsKey = serverCfg.speechmatics_api_key || '';
+
+            // Map active realtime key
+            let realtimeKey = prev.realtime.apiKey;
+            if (prev.realtime.provider === 'google' && geminiKey) realtimeKey = geminiKey;
+            if (prev.realtime.provider === 'openai' && openaiKey) realtimeKey = openaiKey;
+
+            // Map active LLM key
+            let llmKey = prev.llm.apiKey;
+            if (prev.llm.provider === 'anthropic' && anthropicKey) llmKey = anthropicKey;
+            if (prev.llm.provider === 'openai' && openaiKey) llmKey = openaiKey;
+            if (prev.llm.provider === 'google' && geminiKey) llmKey = geminiKey;
+
+            return {
+              ...prev,
+              livekit: {
+                ...prev.livekit,
+                url: livekitUrl,
+                apiKey: livekitApiKey,
+                apiSecret: livekitApiSecret,
+              },
+              realtime: {
+                ...prev.realtime,
+                apiKey: realtimeKey,
+                model: serverCfg.gemini_model || prev.realtime.model,
+                voice: serverCfg.gemini_voice || prev.realtime.voice,
+              },
+              stt: {
+                ...prev.stt,
+                apiKey: (serverCfg.stt_provider === 'deepgram' && deepgramKey) ? deepgramKey : (speechmaticsKey || prev.stt.apiKey),
+                provider: (serverCfg.stt_provider || prev.stt.provider).toLowerCase(),
+                model: serverCfg.stt_model || prev.stt.model,
+              },
+              llm: {
+                ...prev.llm,
+                apiKey: llmKey,
+                provider: (serverCfg.llm_provider || prev.llm.provider).toLowerCase(),
+                model: serverCfg.llm_model || prev.llm.model,
+              },
+              tts: {
+                ...prev.tts,
+                apiKey: (serverCfg.tts_provider === 'cartesia' && cartesiaKey) ? cartesiaKey : prev.tts.apiKey,
+                provider: (serverCfg.tts_provider || prev.tts.provider).toLowerCase(),
+                model: serverCfg.tts_model || prev.tts.model,
+              },
+              fallback: {
+                enabled: serverCfg.fallback_enabled ?? prev.fallback?.enabled ?? false,
+                provider: (serverCfg.fallback_provider || prev.fallback?.provider || 'livekit') as LLMProvider,
+                model: serverCfg.fallback_model || prev.fallback?.model || 'google/gemma-4-31b-it',
+                apiKey: serverCfg.fallback_api_key || prev.fallback?.apiKey || '',
+                temperature: serverCfg.fallback_temperature ?? prev.fallback?.temperature ?? 0.7,
+                sttEnabled: serverCfg.fallback_stt_enabled ?? prev.fallback?.sttEnabled ?? false,
+                sttProvider: (serverCfg.fallback_stt_provider || prev.fallback?.sttProvider || 'livekit') as STTProvider,
+                sttModel: serverCfg.fallback_stt_model || prev.fallback?.sttModel || 'deepgram/nova-3',
+                sttApiKey: serverCfg.fallback_stt_api_key || prev.fallback?.sttApiKey || '',
+                ttsEnabled: serverCfg.fallback_tts_enabled ?? prev.fallback?.ttsEnabled ?? false,
+                ttsProvider: (serverCfg.fallback_tts_provider || prev.fallback?.ttsProvider || 'livekit') as TTSProvider,
+                ttsModel: serverCfg.fallback_tts_model || prev.fallback?.ttsModel || 'cartesia/sonic-3.6',
+                ttsVoice: serverCfg.fallback_tts_voice || prev.fallback?.ttsVoice || 'baritone-us',
+                ttsApiKey: serverCfg.fallback_tts_api_key || prev.fallback?.ttsApiKey || '',
+              },
+            };
+          });
         }
       })
       .catch(() => {});
@@ -641,82 +795,99 @@ export function ModelSelectionView() {
     }));
   };
 
-  const handleAddVoiceUser = () => {
+  const handleAddVoiceUser = async () => {
     if (!newUserName.trim()) return;
-    const newUser: VoiceUserProfile = {
-      id: `usr_${Date.now().toString(36)}`,
-      name: newUserName.trim(),
+    setIsAddingUser(true);
+    const newProfilePayload = {
+      speaker_name: newUserName.trim(),
       role: newUserRole,
-      voice_signature_id: `vs_ursa_${Math.floor(1000 + Math.random() * 9000)}`,
-      enrolled_at: new Date().toISOString().split('T')[0],
       confidence_threshold: newUserThreshold,
+      notes: newUserNotes.trim() || 'Acoustic voiceprint enrolled in MongoDB',
       pitch_hz: Math.floor(160 + Math.random() * 120),
-      sample_status: 'calibrated',
-      notes: newUserNotes.trim() || 'Custom enrolled voice profile',
+      sample_status: 'calibrated' as const,
     };
-    setConfig((prev) => {
-      const updatedUsers = [...prev.voiceUsers, newUser];
-      try {
-        localStorage.setItem(USERS_JSON_STORAGE_KEY, JSON.stringify(updatedUsers));
-      } catch {}
-      return { ...prev, voiceUsers: updatedUsers };
-    });
-    setNewUserName('');
-    setNewUserNotes('');
-    setIsAddUserModalOpen(false);
+
+    try {
+      const saved = await api.voiceProfiles.create(newProfilePayload);
+      const userProfile: VoiceUserProfile = {
+        id: saved.profile_id || `vp_${Date.now().toString(36)}`,
+        name: saved.speaker_name || newUserName.trim(),
+        role: (saved.role as 'admin' | 'user' | 'guest') || newUserRole,
+        voice_signature_id: saved.voice_signature || `vs_ursa_${Math.floor(1000 + Math.random() * 9000)}`,
+        enrolled_at: (saved.enrolled_at || new Date().toISOString()).split('T')[0],
+        confidence_threshold: saved.confidence_threshold || newUserThreshold,
+        pitch_hz: saved.pitch_hz || 200,
+        sample_status: (saved.sample_status as any) || 'calibrated',
+        notes: saved.notes || newProfilePayload.notes,
+      };
+
+      setConfig((prev) => {
+        const updated = [...prev.voiceUsers, userProfile];
+        try {
+          localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(updated));
+        } catch {}
+        return { ...prev, voiceUsers: updated };
+      });
+      toast.success(`Voice profile '${userProfile.name}' enrolled into database`);
+      setNewUserName('');
+      setNewUserNotes('');
+      setIsAddUserModalOpen(false);
+    } catch (e: any) {
+      toast.error(`Failed to enroll voice profile: ${e.message || 'Database error'}`);
+    } finally {
+      setIsAddingUser(false);
+    }
   };
 
-  const handleDeleteVoiceUser = (id: string) => {
-    setConfig((prev) => {
-      const updatedUsers = prev.voiceUsers.filter((u) => u.id !== id);
-      try {
-        localStorage.setItem(USERS_JSON_STORAGE_KEY, JSON.stringify(updatedUsers));
-      } catch {}
-      return { ...prev, voiceUsers: updatedUsers };
-    });
-  };
-
-  const handleCopyUsersJson = () => {
-    const jsonStr = JSON.stringify(
-      {
-        version: '1.0.0',
-        orchestrator: 'LiveKit',
-        recognition_engine: 'Speechmatics Ursa / Linden-1',
-        users: config.voiceUsers,
-      },
-      null,
-      2
-    );
-    navigator.clipboard.writeText(jsonStr);
-    setCopiedJson(true);
-    setTimeout(() => setCopiedJson(false), 2000);
-  };
-
-  const handleDownloadUsersJson = () => {
-    const jsonStr = JSON.stringify(
-      {
-        version: '1.0.0',
-        orchestrator: 'LiveKit',
-        recognition_engine: 'Speechmatics Ursa / Linden-1',
-        users: config.voiceUsers,
-      },
-      null,
-      2
-    );
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'users.json';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDeleteVoiceUser = async (id: string) => {
+    try {
+      await api.voiceProfiles.delete(id);
+      setConfig((prev) => {
+        const updated = prev.voiceUsers.filter((u) => u.id !== id);
+        try {
+          localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(updated));
+        } catch {}
+        return { ...prev, voiceUsers: updated };
+      });
+      toast.success('Voice profile removed from database');
+    } catch (e: any) {
+      setConfig((prev) => {
+        const updated = prev.voiceUsers.filter((u) => u.id !== id);
+        try {
+          localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(updated));
+        } catch {}
+        return { ...prev, voiceUsers: updated };
+      });
+      toast.error(`Database notice: ${e.message || 'Removed from local state'}`);
+    }
   };
 
   const handleSave = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-      localStorage.setItem(USERS_JSON_STORAGE_KEY, JSON.stringify(config.voiceUsers));
+      localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(config.voiceUsers));
       localStorage.setItem('exia_livekit_config', JSON.stringify(config.livekit));
+
+      // Extract model API keys from provider forms to persist to MongoDB and .env
+      let geminiKey = '';
+      let openaiKey = '';
+      let anthropicKey = '';
+      let deepgramKey = '';
+      let cartesiaKey = '';
+      const speechmaticsKey =
+        config.speechmatics.apiKey ||
+        (config.stt.provider === 'speechmatics' ? config.stt.apiKey : '');
+
+      if (config.realtime.provider === 'google' && config.realtime.apiKey) geminiKey = config.realtime.apiKey;
+      if (config.realtime.provider === 'openai' && config.realtime.apiKey) openaiKey = config.realtime.apiKey;
+
+      if (config.llm.provider === 'google' && config.llm.apiKey) geminiKey = config.llm.apiKey;
+      if (config.llm.provider === 'openai' && config.llm.apiKey) openaiKey = config.llm.apiKey;
+      if (config.llm.provider === 'anthropic' && config.llm.apiKey) anthropicKey = config.llm.apiKey;
+
+      if (config.stt.provider === 'deepgram' && config.stt.apiKey) deepgramKey = config.stt.apiKey;
+      if (config.tts.provider === 'cartesia' && config.tts.apiKey) cartesiaKey = config.tts.apiKey;
+      if (config.tts.provider === 'openai' && config.tts.apiKey && !openaiKey) openaiKey = config.tts.apiKey;
 
       const payload: Partial<ModelConfig> = {
         mode: config.architecture === 'realtime' ? 'gemini_live' : 'modular',
@@ -735,9 +906,29 @@ export function ModelSelectionView() {
         temperature: config.params.temperature,
         top_p: config.params.topP,
         max_output_tokens: config.params.maxTokens,
-        speechmatics_api_key:
-          config.speechmatics.apiKey ||
-          (config.stt.provider === 'speechmatics' ? config.stt.apiKey : ''),
+        // Model API keys synced directly to MongoDB and persistent .env
+        gemini_api_key: geminiKey || undefined,
+        openai_api_key: openaiKey || undefined,
+        anthropic_api_key: anthropicKey || undefined,
+        deepgram_api_key: deepgramKey || undefined,
+        cartesia_api_key: cartesiaKey || undefined,
+        speechmatics_api_key: speechmaticsKey || undefined,
+        // Secondary / Fallback Model Engine Options (LLM, STT, TTS)
+        fallback_enabled: config.fallback?.enabled ?? false,
+        fallback_provider: config.fallback?.provider,
+        fallback_model: config.fallback?.model,
+        fallback_temperature: config.fallback?.temperature,
+        fallback_api_key: config.fallback?.apiKey || undefined,
+        fallback_stt_enabled: config.fallback?.sttEnabled ?? false,
+        fallback_stt_provider: config.fallback?.sttProvider,
+        fallback_stt_model: config.fallback?.sttModel,
+        fallback_stt_api_key: config.fallback?.sttApiKey || undefined,
+        fallback_tts_enabled: config.fallback?.ttsEnabled ?? false,
+        fallback_tts_provider: config.fallback?.ttsProvider,
+        fallback_tts_model: config.fallback?.ttsModel,
+        fallback_tts_voice: config.fallback?.ttsVoice,
+        fallback_tts_api_key: config.fallback?.ttsApiKey || undefined,
+        // Speechmatics
         speechmatics_model: config.speechmatics.model,
         speechmatics_language: config.speechmatics.language,
         speechmatics_turn_detection: config.speechmatics.turnDetection,
@@ -751,14 +942,20 @@ export function ModelSelectionView() {
         voice_users: config.voiceUsers,
       };
 
-      try {
-        api.models.updateConfig(payload).catch(() => {});
-      } catch {}
+      api.models.updateConfig(payload)
+        .then(() => {
+          toast.success('Configuration, LiveKit credentials & model API keys saved to database and .env');
+        })
+        .catch((err) => {
+          console.warn('Backend save notice:', err);
+          toast.warning('Settings cached locally; backend update queued');
+        });
 
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2500);
     } catch (e) {
       console.error('Error saving config:', e);
+      toast.error('Failed to save configuration');
     }
   };
 
@@ -819,7 +1016,7 @@ export function ModelSelectionView() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-foreground text-xl font-semibold tracking-tight">
-            Model Engine & Provider Credentials
+            Models & Provider Credentials
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Verified production models for Realtime S2S, Modular STT, LLM reasoning, and Neural TTS voices.
@@ -1141,38 +1338,47 @@ export function ModelSelectionView() {
             </div>
           </div>
 
-          {/* Realtime Provider API Key */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-foreground flex items-center gap-1.5 text-xs font-medium">
-                <Key className="text-primary size-3.5" />
-                <span>{activeRealtimeProvider.name} API Key</span>
-              </label>
-              <span className="text-muted-foreground text-[11px]">{activeRealtimeProvider.keyHelp}</span>
+          {/* Realtime Provider API Key or LiveKit Inference Info */}
+          {config.realtime.provider === 'livekit' ? (
+            <div className="flex items-center gap-2.5 rounded-xl border border-cyan-500/25 bg-cyan-500/10 p-3.5 text-xs text-cyan-400">
+              <Sparkles className="size-4 shrink-0 text-cyan-400" />
+              <span>
+                LiveKit Inference routes directly through your configured LiveKit Project credentials above with Zero Data Retention (ZDR). No external API key required!
+              </span>
             </div>
+          ) : (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-foreground flex items-center gap-1.5 text-xs font-medium">
+                  <Key className="text-primary size-3.5" />
+                  <span>{activeRealtimeProvider.name} API Key</span>
+                </label>
+                <span className="text-muted-foreground text-[11px]">{activeRealtimeProvider.keyHelp}</span>
+              </div>
 
-            <div className="relative">
-              <input
-                type={showKeys['realtime'] ? 'text' : 'password'}
-                placeholder={activeRealtimeProvider.keyPlaceholder}
-                value={config.realtime.apiKey}
-                onChange={(e) =>
-                  setConfig((prev) => ({
-                    ...prev,
-                    realtime: { ...prev.realtime, apiKey: e.target.value },
-                  }))
-                }
-                className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2.5 pr-10 text-xs transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => toggleKey('realtime')}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 p-0.5"
-              >
-                {showKeys['realtime'] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
+              <div className="relative">
+                <input
+                  type={showKeys['realtime'] ? 'text' : 'password'}
+                  placeholder={activeRealtimeProvider.keyPlaceholder}
+                  value={config.realtime.apiKey}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      realtime: { ...prev.realtime, apiKey: e.target.value },
+                    }))
+                  }
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2.5 pr-10 text-xs transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => toggleKey('realtime')}
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 p-0.5"
+                >
+                  {showKeys['realtime'] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Voice Persona Dropdown & Tone Audition */}
           <div className="border-border space-y-3 border-t pt-4">
@@ -1255,9 +1461,11 @@ export function ModelSelectionView() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {/* STEP 1: SPEECH TO TEXT */}
-            <div className="border-border bg-card space-y-4 rounded-2xl border p-5 shadow-sm">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 items-start">
+            {/* COLUMN 1: SPEECH-TO-TEXT (PRIMARY + FAILOVER) */}
+            <div className="space-y-4">
+              {/* STEP 1: SPEECH TO TEXT */}
+              <div className="border-border bg-card space-y-4 rounded-2xl border p-5 shadow-sm">
               <div className="flex items-center gap-2.5">
                 <div className="border-border bg-muted/60 flex size-8 items-center justify-center rounded-xl border text-primary">
                   <Mic className="size-4" />
@@ -1321,39 +1529,48 @@ export function ModelSelectionView() {
                 </select>
               </div>
 
-              {/* API Key */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-foreground text-[11px] font-medium">{activeSTTProvider.name} Key</label>
-                  <span className="text-muted-foreground text-[9px]">{activeSTTProvider.keyHelp}</span>
+              {/* API Key or LiveKit Inference Notice */}
+              {config.stt.provider === 'livekit' ? (
+                <div className="flex items-center gap-2 rounded-xl border border-cyan-500/25 bg-cyan-500/10 p-2.5 text-[11px] text-cyan-400">
+                  <Sparkles className="size-3.5 shrink-0" />
+                  <span>
+                    LiveKit Inference STT routes through your LiveKit Project credentials with Zero Data Retention (ZDR). No external STT key required.
+                  </span>
                 </div>
-                <div className="relative">
-                  <input
-                    type={showKeys['stt'] ? 'text' : 'password'}
-                    placeholder={activeSTTProvider.keyPlaceholder}
-                    value={config.stt.apiKey}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setConfig((prev) => ({
-                        ...prev,
-                        stt: { ...prev.stt, apiKey: val },
-                        speechmatics:
-                          prev.stt.provider === 'speechmatics'
-                            ? { ...prev.speechmatics, apiKey: val }
-                            : prev.speechmatics,
-                      }));
-                    }}
-                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => toggleKey('stt')}
-                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
-                  >
-                    {showKeys['stt'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                  </button>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-foreground text-[11px] font-medium">{activeSTTProvider.name} Key</label>
+                    <span className="text-muted-foreground text-[9px]">{activeSTTProvider.keyHelp}</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showKeys['stt'] ? 'text' : 'password'}
+                      placeholder={activeSTTProvider.keyPlaceholder}
+                      value={config.stt.apiKey}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setConfig((prev) => ({
+                          ...prev,
+                          stt: { ...prev.stt, apiKey: val },
+                          speechmatics:
+                            prev.stt.provider === 'speechmatics'
+                              ? { ...prev.speechmatics, apiKey: val }
+                              : prev.speechmatics,
+                        }));
+                      }}
+                      className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => toggleKey('stt')}
+                      className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
+                    >
+                      {showKeys['stt'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Speechmatics Status / Quick Switch Pill */}
               {config.stt.provider === 'speechmatics' ? (
@@ -1388,6 +1605,129 @@ export function ModelSelectionView() {
               )}
             </div>
 
+            {/* STT FAILOVER ENGINE (Directly follows Primary STT) */}
+            <div className="rounded-2xl border border-border/70 bg-card/60 p-4 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-3.5 text-cyan-400" />
+                  <span className="text-xs font-semibold text-foreground">STT Failover Engine</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      fallback: {
+                        ...prev.fallback,
+                        sttEnabled: !prev.fallback?.sttEnabled,
+                      },
+                    }))
+                  }
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    config.fallback?.sttEnabled ? 'bg-primary' : 'bg-muted/80'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block size-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      config.fallback?.sttEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {config.fallback?.sttEnabled ? (
+                <div className="space-y-3 pt-1 border-t border-border/30 mt-2">
+                  <div className="space-y-1">
+                    <label className="text-foreground text-[10px] font-medium">Failover STT Provider</label>
+                    <select
+                      value={config.fallback.sttProvider || 'livekit'}
+                      onChange={(e) => {
+                        const prov = e.target.value as STTProvider;
+                        const found = STT_PROVIDERS.find((s) => s.id === prov)!;
+                        setConfig((prev) => ({
+                          ...prev,
+                          fallback: {
+                            ...prev.fallback,
+                            sttProvider: prov,
+                            sttModel: found.models[0].id,
+                          },
+                        }));
+                      }}
+                      className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-2.5 py-1.5 text-xs"
+                    >
+                      {STT_PROVIDERS.map((s) => (
+                        <option key={s.id} value={s.id} className="bg-card text-foreground">
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-foreground text-[10px] font-medium">Failover STT Model</label>
+                    <select
+                      value={config.fallback.sttModel || 'deepgram/nova-3'}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          fallback: { ...prev.fallback, sttModel: e.target.value },
+                        }))
+                      }
+                      className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-2.5 py-1.5 text-xs"
+                    >
+                      {(
+                        STT_PROVIDERS.find((s) => s.id === (config.fallback?.sttProvider || 'livekit')) || STT_PROVIDERS[0]
+                      ).models.map((m) => (
+                        <option key={m.id} value={m.id} className="bg-card text-foreground">
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {config.fallback.sttProvider === 'livekit' ? (
+                    <div className="flex items-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-2 text-[10px] text-cyan-400">
+                      <Sparkles className="size-3 shrink-0" />
+                      <span>LiveKit Inference routes via Project credentials with Zero Data Retention.</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-foreground text-[10px] font-medium">Failover STT Key</label>
+                        <span className="text-muted-foreground text-[9px]">Optional</span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showKeys['fallback_stt'] ? 'text' : 'password'}
+                          placeholder="Optional STT key..."
+                          value={config.fallback.sttApiKey || ''}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              fallback: { ...prev.fallback, sttApiKey: e.target.value },
+                            }))
+                          }
+                          className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => toggleKey('fallback_stt')}
+                          className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
+                        >
+                          {showKeys['fallback_stt'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-[10px] text-muted-foreground">Failover STT disabled. Primary stream disruption will halt transcription.</p>
+              )}
+            </div>
+          </div>
+
+          {/* COLUMN 2: BRAIN / LLM (PRIMARY + FAILOVER) */}
+          <div className="space-y-4">
             {/* STEP 2: BRAIN / LLM */}
             <div className="border-border bg-card space-y-4 rounded-2xl border p-5 shadow-sm">
               <div className="flex items-center gap-2.5">
@@ -1465,6 +1805,13 @@ export function ModelSelectionView() {
                     className="bg-muted/40 border-border text-foreground input-focus w-full rounded-xl border px-2.5 py-1.5 text-xs"
                   />
                 </div>
+              ) : config.llm.provider === 'livekit' ? (
+                <div className="flex items-center gap-2 rounded-xl border border-cyan-500/25 bg-cyan-500/10 p-2.5 text-[11px] text-cyan-400">
+                  <Sparkles className="size-3.5 shrink-0" />
+                  <span>
+                    LiveKit Inference routes through your LiveKit Project credentials with Zero Data Retention (ZDR). No API key needed.
+                  </span>
+                </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
@@ -1496,6 +1843,132 @@ export function ModelSelectionView() {
               )}
             </div>
 
+            {/* LLM FAILOVER ENGINE (Directly follows Primary LLM) */}
+            <div className="rounded-2xl border border-border/70 bg-card/60 p-4 space-y-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="size-3.5 text-primary" />
+                    <span className="text-xs font-semibold text-foreground">LLM Reasoning Failover</span>
+                    <span className="text-[10px] text-muted-foreground">(Handles HTTP 429 & token timeouts)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        fallback: {
+                          ...prev.fallback,
+                          enabled: !prev.fallback?.enabled,
+                        },
+                      }))
+                    }
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      config.fallback?.enabled ? 'bg-primary' : 'bg-muted/80'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block size-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                        config.fallback?.enabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {config.fallback?.enabled ? (
+                  <div className="space-y-3 pt-1">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="space-y-1">
+                        <label className="text-foreground text-[11px] font-medium">Fallback LLM Provider</label>
+                        <select
+                          value={config.fallback.provider}
+                          onChange={(e) => {
+                            const prov = e.target.value as LLMProvider;
+                            const found = LLM_PROVIDERS.find((l) => l.id === prov)!;
+                            setConfig((prev) => ({
+                              ...prev,
+                              fallback: {
+                                ...prev.fallback,
+                                provider: prov,
+                                model: found.models[0].id,
+                              },
+                            }));
+                          }}
+                          className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-1.5 text-xs"
+                        >
+                          {LLM_PROVIDERS.map((l) => (
+                            <option key={l.id} value={l.id} className="bg-card text-foreground">
+                              {l.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-foreground text-[11px] font-medium">Fallback LLM Model</label>
+                        <select
+                          value={config.fallback.model}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              fallback: { ...prev.fallback, model: e.target.value },
+                            }))
+                          }
+                          className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-1.5 text-xs"
+                        >
+                          {(
+                            LLM_PROVIDERS.find((l) => l.id === config.fallback.provider) || LLM_PROVIDERS[0]
+                          ).models.map((m) => (
+                            <option key={m.id} value={m.id} className="bg-card text-foreground">
+                              {m.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {config.fallback.provider === 'livekit' ? (
+                      <div className="flex items-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-2.5 text-[11px] text-cyan-400">
+                        <Sparkles className="size-3.5 shrink-0" />
+                        <span>LiveKit Inference LLM routes via project credentials with Zero Data Retention.</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-foreground text-[11px] font-medium">Fallback LLM API Key</label>
+                          <span className="text-muted-foreground text-[9px]">Optional if key exists in env</span>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type={showKeys['fallback_llm'] ? 'text' : 'password'}
+                            placeholder="Provider API key..."
+                            value={config.fallback.apiKey || ''}
+                            onChange={(e) =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                fallback: { ...prev.fallback, apiKey: e.target.value },
+                              }))
+                            }
+                            className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs font-mono"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleKey('fallback_llm')}
+                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
+                          >
+                            {showKeys['fallback_llm'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground">Disabled. Primary LLM rate-limits will halt conversation turns.</p>
+                )}
+              </div>
+            </div>
+
+          {/* COLUMN 3: TEXT TO SPEECH (PRIMARY + FAILOVER) */}
+          <div className="space-y-4">
             {/* STEP 3: TEXT TO SPEECH (TTS) */}
             <div className="border-border bg-card space-y-4 rounded-2xl border p-5 shadow-sm">
               <div className="flex items-center gap-2.5">
@@ -1569,40 +2042,195 @@ export function ModelSelectionView() {
                 </select>
               </div>
 
-              {/* API Key */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-foreground text-[11px] font-medium">{activeTTSProvider.name} Key</label>
-                  <span className="text-muted-foreground text-[9px]">{activeTTSProvider.keyHelp}</span>
+              {/* API Key or LiveKit Inference Notice */}
+              {config.tts.provider === 'livekit' ? (
+                <div className="flex items-center gap-2 rounded-xl border border-cyan-500/25 bg-cyan-500/10 p-2.5 text-[11px] text-cyan-400">
+                  <Sparkles className="size-3.5 shrink-0" />
+                  <span>
+                    LiveKit Inference TTS routes through your LiveKit Project credentials with Zero Data Retention (ZDR). No external TTS key required.
+                  </span>
                 </div>
-                <div className="relative">
-                  <input
-                    type={showKeys['tts'] ? 'text' : 'password'}
-                    placeholder={activeTTSProvider.keyPlaceholder}
-                    value={config.tts.apiKey}
-                    onChange={(e) =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        tts: { ...prev.tts, apiKey: e.target.value },
-                      }))
-                    }
-                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => toggleKey('tts')}
-                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
-                  >
-                    {showKeys['tts'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                  </button>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-foreground text-[11px] font-medium">{activeTTSProvider.name} Key</label>
+                    <span className="text-muted-foreground text-[9px]">{activeTTSProvider.keyHelp}</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showKeys['tts'] ? 'text' : 'password'}
+                      placeholder={activeTTSProvider.keyPlaceholder}
+                      value={config.tts.apiKey}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          tts: { ...prev.tts, apiKey: e.target.value },
+                        }))
+                      }
+                      className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => toggleKey('tts')}
+                      className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
+                    >
+                      {showKeys['tts'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
+
+            {/* TTS FAILOVER ENGINE (Directly follows Primary TTS) */}
+            <div className="rounded-2xl border border-border/70 bg-card/60 p-4 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-3.5 text-emerald-400" />
+                  <span className="text-xs font-semibold text-foreground">TTS Failover Engine</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      fallback: {
+                        ...prev.fallback,
+                        ttsEnabled: !prev.fallback?.ttsEnabled,
+                      },
+                    }))
+                  }
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    config.fallback?.ttsEnabled ? 'bg-primary' : 'bg-muted/80'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block size-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      config.fallback?.ttsEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {config.fallback?.ttsEnabled ? (
+                <div className="space-y-3 pt-1 border-t border-border/30 mt-2">
+                  <div className="space-y-1">
+                    <label className="text-foreground text-[10px] font-medium">Failover TTS Provider</label>
+                    <select
+                      value={config.fallback.ttsProvider || 'livekit'}
+                      onChange={(e) => {
+                        const prov = e.target.value as TTSProvider;
+                        const found = TTS_PROVIDERS.find((t) => t.id === prov)!;
+                        setConfig((prev) => ({
+                          ...prev,
+                          fallback: {
+                            ...prev.fallback,
+                            ttsProvider: prov,
+                            ttsModel: found.models[0].id,
+                            ttsVoice: found.voices[0]?.id || '',
+                          },
+                        }));
+                      }}
+                      className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-2.5 py-1.5 text-xs"
+                    >
+                      {TTS_PROVIDERS.map((t) => (
+                        <option key={t.id} value={t.id} className="bg-card text-foreground">
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-foreground text-[10px] font-medium">Failover TTS Model</label>
+                    <select
+                      value={config.fallback.ttsModel || 'cartesia/sonic-3.6'}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          fallback: { ...prev.fallback, ttsModel: e.target.value },
+                        }))
+                      }
+                      className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-2.5 py-1.5 text-xs"
+                    >
+                      {(
+                        TTS_PROVIDERS.find((t) => t.id === (config.fallback?.ttsProvider || 'livekit')) || TTS_PROVIDERS[0]
+                      ).models.map((m) => (
+                        <option key={m.id} value={m.id} className="bg-card text-foreground">
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-foreground text-[10px] font-medium">Failover Voice Tone</label>
+                    <select
+                      value={config.fallback.ttsVoice || ''}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          fallback: { ...prev.fallback, ttsVoice: e.target.value },
+                        }))
+                      }
+                      className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-2.5 py-1.5 text-xs"
+                    >
+                      {(
+                        TTS_PROVIDERS.find((t) => t.id === (config.fallback?.ttsProvider || 'livekit')) || TTS_PROVIDERS[0]
+                      ).voices.map((v) => (
+                        <option key={v.id} value={v.id} className="bg-card text-foreground">
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {config.fallback.ttsProvider === 'livekit' ? (
+                    <div className="flex items-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-2 text-[10px] text-cyan-400">
+                      <Sparkles className="size-3 shrink-0" />
+                      <span>LiveKit Inference TTS routes smoothly with Zero Data Retention.</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-foreground text-[10px] font-medium">Failover TTS Key</label>
+                        <span className="text-muted-foreground text-[9px]">Optional</span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showKeys['fallback_tts'] ? 'text' : 'password'}
+                          placeholder="TTS API key..."
+                          value={config.fallback.ttsApiKey || ''}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              fallback: { ...prev.fallback, ttsApiKey: e.target.value },
+                            }))
+                          }
+                          className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => toggleKey('fallback_tts')}
+                          className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
+                        >
+                          {showKeys['fallback_tts'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-[10px] text-muted-foreground">Failover TTS disabled. TTS voice provider failure will cause silence.</p>
+              )}
+            </div>
+          </div>
+        
           </div>
 
           {/* ─────────────────────────────────────────────────────────────
-              SPEECHMATICS VOICE RECOGNITION & AGENT STT SUITE
+              SPEECHMATICS VOICE RECOGNITION & AGENT STT SUITE (Conditional on Speechmatics STT)
              ───────────────────────────────────────────────────────────── */}
+          {config.stt.provider === 'speechmatics' ? (
           <section className="border-border bg-card relative space-y-6 overflow-hidden rounded-2xl border p-6 shadow-sm">
             {/* Ambient Background Glow */}
             <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-primary/5 blur-3xl" />
@@ -2057,7 +2685,7 @@ export function ModelSelectionView() {
               </div>
             </div>
 
-            {/* 5. ENROLLED VOICE USERS & SPEAKER RECOGNITION REGISTRY (users.json) */}
+            {/* 5. ACTIVE VOICE PROFILES & SPEAKER RECOGNITION (MongoDB Database) */}
             <div className="border-border border-t pt-5 space-y-4">
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
@@ -2066,13 +2694,13 @@ export function ModelSelectionView() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-foreground text-sm font-semibold">Enrolled Voice Users Registry (`users.json`)</h4>
+                      <h4 className="text-foreground text-sm font-semibold">Active Voice Profiles (MongoDB Database)</h4>
                       <span className="rounded-full border border-primary/30 bg-primary/15 px-2 py-0.5 text-[9px] font-bold text-primary uppercase">
-                        {config.voiceUsers.length} Profiles
+                        {config.voiceUsers.length} Enrolled Profiles
                       </span>
                     </div>
                     <p className="text-muted-foreground text-xs">
-                      Speech recognition speaker identification and persistent voice signatures matching `cortana_companion`.
+                      Acoustic speaker voiceprints automatically fetched from MongoDB (<code className="text-foreground font-mono">voice_profiles</code>). The agent identifies callers in real-time without uploading JSON files.
                     </p>
                   </div>
                 </div>
@@ -2080,11 +2708,12 @@ export function ModelSelectionView() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setIsUsersJsonModalOpen(true)}
+                    onClick={loadVoiceProfilesFromDb}
                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors"
+                    title="Refresh voice profiles from MongoDB"
                   >
-                    <Code className="size-3.5 text-muted-foreground" />
-                    <span>View users.json</span>
+                    <RotateCcw className="size-3.5 text-muted-foreground" />
+                    <span>Sync DB</span>
                   </button>
 
                   <button
@@ -2205,6 +2834,42 @@ export function ModelSelectionView() {
               </div>
             </div>
           </section>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-border/80 bg-muted/15 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-muted/40 text-muted-foreground">
+                  <Waves className="size-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-foreground text-sm font-semibold">Speechmatics Real-time Voice Recognition & Speaker Diarization</h4>
+                    <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">Inactive</span>
+                  </div>
+                  <p className="text-muted-foreground text-xs mt-0.5">
+                    Acoustic voiceprint speaker identification and MongoDB profile enrollment require Speechmatics STT.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    stt: {
+                      ...prev.stt,
+                      provider: 'speechmatics',
+                      model: prev.speechmatics.model || 'linden-1',
+                      apiKey: prev.speechmatics.apiKey || prev.stt.apiKey,
+                    },
+                  }))
+                }
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 px-4 py-2 text-xs font-semibold text-primary transition-all shrink-0"
+              >
+                <Check className="size-3.5" />
+                <span>Select Speechmatics STT to Enable</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -2321,81 +2986,6 @@ export function ModelSelectionView() {
           </p>
         </div>
       </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          MODAL: VIEW / EXPORT USERS.JSON (cortana_companion reference)
-         ───────────────────────────────────────────────────────────── */}
-      {isUsersJsonModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="border-border bg-card relative w-full max-w-2xl rounded-2xl border p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
-                  <Code className="size-4" />
-                </div>
-                <div>
-                  <h3 className="text-foreground text-sm font-semibold">Voice User Registry (`users.json`)</h3>
-                  <p className="text-muted-foreground text-xs">
-                    Persistent voice signatures and speaker profiles schema.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsUsersJsonModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            {/* Code Block */}
-            <div className="relative">
-              <pre className="bg-muted/50 border border-border rounded-xl p-4 font-mono text-xs text-foreground overflow-x-auto max-h-96">
-                {JSON.stringify(
-                  {
-                    version: '1.0.0',
-                    orchestrator: 'LiveKit',
-                    recognition_engine: 'Speechmatics Ursa / Linden-1',
-                    users: config.voiceUsers,
-                  },
-                  null,
-                  2
-                )}
-              </pre>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between border-t border-border pt-3">
-              <span className="text-[11px] text-muted-foreground font-mono">
-                {config.voiceUsers.length} enrolled profiles
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyUsersJson}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors"
-                >
-                  {copiedJson ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
-                  <span>{copiedJson ? 'Copied!' : 'Copy JSON'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadUsersJson}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary hover:bg-primary-hover px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all"
-                >
-                  <Download className="size-3.5" />
-                  <span>Download users.json</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ─────────────────────────────────────────────────────────────
           MODAL: ENROLL NEW VOICE USER PROFILE
          ───────────────────────────────────────────────────────────── */}
@@ -2493,10 +3083,11 @@ export function ModelSelectionView() {
               <button
                 type="button"
                 onClick={handleAddVoiceUser}
-                disabled={!newUserName.trim()}
-                className="cursor-pointer rounded-xl bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover disabled:opacity-50"
+                disabled={!newUserName.trim() || isAddingUser}
+                className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover disabled:opacity-50"
               >
-                Save & Enroll Voice User
+                {isAddingUser ? <Loader2 className="size-3.5 animate-spin" /> : <UserCheck className="size-3.5" />}
+                <span>{isAddingUser ? 'Enrolling to Database...' : 'Enroll to Database'}</span>
               </button>
             </div>
           </div>

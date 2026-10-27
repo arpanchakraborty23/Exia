@@ -171,3 +171,56 @@ def seed_database_if_empty():
             logger.info("✅ Default MCP servers seeded.")
     except Exception as e:
         logger.warning("Could not auto-seed MCP servers: %s", e)
+
+    # 5. Seed Default Voice Profiles (Speechmatics Speaker Diarization / Voice Recognition)
+    try:
+        voice_coll = getattr(settings, "mongodb_voice_profiles_collection", "voice_profiles") or "voice_profiles"
+        voice_db = MongoServices(settings.mongodb_uri, settings.mongodb_database, voice_coll)
+        existing_voices = voice_db.find_many({}, limit=1)
+        if not existing_voices:
+            logger.info("🌱 Seeding default Voice Profiles into MongoDB...")
+            default_voices = [
+                {
+                    "user_id": "usr_admin",
+                    "profile_id": "vp_cmd_01",
+                    "speaker_name": "Primary Commander",
+                    "voice_signature": "vs_ursa_9201",
+                    "enrolled_at": now_iso,
+                    "sample_count": 3,
+                    "notes": "Primary voice signature for system control & executive directives",
+                    "role": "admin",
+                    "confidence_threshold": 0.85,
+                    "pitch_hz": 180,
+                    "sample_status": "calibrated",
+                },
+                {
+                    "user_id": "usr_admin",
+                    "profile_id": "vp_user_02",
+                    "speaker_name": "Sarah (Research Lead)",
+                    "voice_signature": "vs_ursa_4102",
+                    "enrolled_at": now_iso,
+                    "sample_count": 2,
+                    "notes": "Authorized speaker with memory context retention & tool execution",
+                    "role": "user",
+                    "confidence_threshold": 0.82,
+                    "pitch_hz": 250,
+                    "sample_status": "enrolled",
+                },
+                {
+                    "user_id": "usr_admin",
+                    "profile_id": "vp_guest_03",
+                    "speaker_name": "Guest Speaker",
+                    "voice_signature": "vs_ursa_1190",
+                    "enrolled_at": now_iso,
+                    "sample_count": 1,
+                    "notes": "Standard conversational privileges, read-only tools",
+                    "role": "guest",
+                    "confidence_threshold": 0.75,
+                    "pitch_hz": 210,
+                    "sample_status": "pending",
+                },
+            ]
+            voice_db.insert_many(default_voices)
+            logger.info("✅ Default Voice Profiles seeded into MongoDB.")
+    except Exception as e:
+        logger.warning("Could not auto-seed voice profiles: %s", e)

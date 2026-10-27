@@ -21,7 +21,7 @@ const TAB_TITLES: Record<NavTab, string> = {
   analytics: 'Analytics & Observability',
   mcp:       'MCP Registry',
   prompts:   'Prompts',
-  models:    'Model Engine',
+  models:    'Models',
   settings:  'Settings',
 };
 

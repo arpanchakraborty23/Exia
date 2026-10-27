@@ -25,11 +25,17 @@ DEFAULT_MODEL_CONFIG: dict = {
     "tts_model": "sonic-english",
     "temperature": 0.7,
     "max_output_tokens": 1024,
-    # Fallback model defaults
+    # Fallback model defaults (LLM, STT, TTS)
     "fallback_enabled": False,
     "fallback_provider": "livekit",
     "fallback_model": "google/gemma-4-31b-it",
     "fallback_temperature": 0.7,
+    "fallback_stt_enabled": False,
+    "fallback_stt_provider": "livekit",
+    "fallback_stt_model": "deepgram/nova-3",
+    "fallback_tts_enabled": False,
+    "fallback_tts_provider": "livekit",
+    "fallback_tts_model": "cartesia/sonic-3.6",
 }
 
 # Mapping of ModelConfig key attributes to standard Environment variable names
@@ -110,7 +116,7 @@ class ModelConfigServices:
                 if env_val and not stored.get(model_attr):
                     merged[model_attr] = env_val
 
-            # Fallback model attributes guaranteed with defaults
+            # Fallback model attributes guaranteed with defaults (LLM, STT, TTS)
             if "fallback_enabled" not in merged:
                 merged["fallback_enabled"] = False
             if "fallback_provider" not in merged:
@@ -119,6 +125,20 @@ class ModelConfigServices:
                 merged["fallback_model"] = "google/gemma-4-31b-it"
             if "fallback_temperature" not in merged:
                 merged["fallback_temperature"] = 0.7
+
+            if "fallback_stt_enabled" not in merged:
+                merged["fallback_stt_enabled"] = False
+            if "fallback_stt_provider" not in merged:
+                merged["fallback_stt_provider"] = "livekit"
+            if "fallback_stt_model" not in merged:
+                merged["fallback_stt_model"] = "deepgram/nova-3"
+
+            if "fallback_tts_enabled" not in merged:
+                merged["fallback_tts_enabled"] = False
+            if "fallback_tts_provider" not in merged:
+                merged["fallback_tts_provider"] = "livekit"
+            if "fallback_tts_model" not in merged:
+                merged["fallback_tts_model"] = "cartesia/sonic-3.6"
 
             # Mirror for model-selection-view which reads `pipeline_mode`
             merged["pipeline_mode"] = merged.get("mode")
