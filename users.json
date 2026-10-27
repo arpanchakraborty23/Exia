@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "orchestrator": "LiveKit",
+  "recognition_engine": "Speechmatics Ursa / Linden-1",
+  "users": [
+    {
+      "id": "usr_01_cmd",
+      "name": "Primary Commander",
+      "role": "admin",
+      "voice_signature_id": "vs_ursa_9201",
+      "enrolled_at": "2026-10-25",
+      "confidence_threshold": 0.85,
+      "pitch_hz": 180,
+      "sample_status": "calibrated",
+      "notes": "Primary voice signature for system control & executive directives"
+    },
+    {
+      "id": "usr_02_user",
+      "name": "Sarah (Research Lead)",
+      "role": "user",
+      "voice_signature_id": "vs_ursa_4102",
+      "enrolled_at": "2026-10-26",
+      "confidence_threshold": 0.82,
+      "pitch_hz": 250,
+      "sample_status": "enrolled",
+      "notes": "Authorized speaker with memory context retention & tool execution"
+    },
+    {
+      "id": "usr_03_guest",
+      "name": "Guest Speaker",
+      "role": "guest",
+      "voice_signature_id": "vs_ursa_1190",
+      "enrolled_at": "2026-10-27",
+      "confidence_threshold": 0.75,
+      "pitch_hz": 210,
+      "sample_status": "pending",
+      "notes": "Standard conversational privileges, read-only tools"
+    }
+  ]
+}

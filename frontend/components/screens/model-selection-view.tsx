@@ -8,7 +8,10 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Code,
+  Copy,
   Cpu,
+  Download,
   ExternalLink,
   Eye,
   EyeOff,
@@ -30,13 +33,16 @@ import {
   ShieldCheck,
   Sliders,
   Sparkles,
+  Trash2,
+  UserCheck,
+  Users,
   Volume2,
   Waves,
   X,
   Zap,
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import { ModelConfig } from '@/lib/types';
+import { ModelConfig, VoiceUserProfile } from '@/lib/types';
 
 // ─────────────────────────────────────────────────────────────
 // VERIFIED UP-TO-DATE MODEL REGISTRIES (Validated via Web Search)
@@ -313,8 +319,51 @@ const TTS_PROVIDERS = [
 
 export type TTSProvider = 'cartesia' | 'elevenlabs' | 'openai' | 'speechmatics' | 'google';
 
+export const DEFAULT_VOICE_USERS: VoiceUserProfile[] = [
+  {
+    id: 'usr_01_cmd',
+    name: 'Primary Commander',
+    role: 'admin',
+    voice_signature_id: 'vs_ursa_9201',
+    enrolled_at: '2026-10-25',
+    confidence_threshold: 0.85,
+    pitch_hz: 180,
+    sample_status: 'calibrated',
+    notes: 'Primary voice signature for system control & executive directives',
+  },
+  {
+    id: 'usr_02_user',
+    name: 'Sarah (Research Lead)',
+    role: 'user',
+    voice_signature_id: 'vs_ursa_4102',
+    enrolled_at: '2026-10-26',
+    confidence_threshold: 0.82,
+    pitch_hz: 250,
+    sample_status: 'enrolled',
+    notes: 'Authorized speaker with memory context retention & tool execution',
+  },
+  {
+    id: 'usr_03_guest',
+    name: 'Guest Speaker',
+    role: 'guest',
+    voice_signature_id: 'vs_ursa_1190',
+    enrolled_at: '2026-10-27',
+    confidence_threshold: 0.75,
+    pitch_hz: 210,
+    sample_status: 'pending',
+    notes: 'Standard conversational privileges, read-only tools',
+  },
+];
+
 interface FullModelConfig {
   architecture: 'realtime' | 'modular';
+  // LiveKit Voice Agent Orchestrator (as in cortana_companion)
+  livekit: {
+    url: string;
+    apiKey: string;
+    apiSecret: string;
+    roomName: string;
+  };
   realtime: {
     provider: RealtimeProvider;
     apiKey: string;
@@ -335,7 +384,11 @@ interface FullModelConfig {
     language: string;
     customDictionary: string[];
     diarization: boolean;
+    speakerIdentification: boolean;
+    voiceProfileName: string;
+    speakerThreshold: number;
   };
+  voiceUsers: VoiceUserProfile[];
   llm: {
     provider: LLMProvider;
     apiKey: string;
@@ -359,6 +412,12 @@ interface FullModelConfig {
 
 const DEFAULT_FULL_CONFIG: FullModelConfig = {
   architecture: 'realtime',
+  livekit: {
+    url: 'wss://your-project.livekit.cloud',
+    apiKey: '',
+    apiSecret: '',
+    roomName: 'exia-agent-room',
+  },
   realtime: {
     provider: 'google',
     apiKey: '',
@@ -378,8 +437,12 @@ const DEFAULT_FULL_CONFIG: FullModelConfig = {
     enablePartials: true,
     language: 'en',
     customDictionary: ['Exia', 'LiveKit', 'WebRTC', 'PyTorch', 'Gemini'],
-    diarization: false,
+    diarization: true,
+    speakerIdentification: true,
+    voiceProfileName: 'Commander / Primary User',
+    speakerThreshold: 0.82,
   },
+  voiceUsers: DEFAULT_VOICE_USERS,
   llm: {
     provider: 'anthropic',
     apiKey: '',
@@ -402,6 +465,7 @@ const DEFAULT_FULL_CONFIG: FullModelConfig = {
 };
 
 const STORAGE_KEY = 'exia_unified_model_config';
+const USERS_JSON_STORAGE_KEY = 'exia_voice_users_json';
 
 export function ModelSelectionView() {
   const [config, setConfig] = useState<FullModelConfig>(DEFAULT_FULL_CONFIG);
@@ -410,22 +474,43 @@ export function ModelSelectionView() {
   const [auditioningVoice, setAuditioningVoice] = useState<string | null>(null);
   const [newKeyword, setNewKeyword] = useState('');
 
+  // Modals for users.json viewer & add voice user
+  const [isUsersJsonModalOpen, setIsUsersJsonModalOpen] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'user' | 'guest'>('user');
+  const [newUserThreshold, setNewUserThreshold] = useState(0.82);
+  const [newUserNotes, setNewUserNotes] = useState('');
+  const [copiedJson, setCopiedJson] = useState(false);
+
   // Load from localStorage on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
+      const rawUsers = localStorage.getItem(USERS_JSON_STORAGE_KEY);
+      let parsedUsers: VoiceUserProfile[] = DEFAULT_VOICE_USERS;
+      if (rawUsers) {
+        try {
+          parsedUsers = JSON.parse(rawUsers);
+        } catch {}
+      }
+
       if (raw) {
         const parsed = JSON.parse(raw);
         setConfig((prev) => ({
           ...prev,
           ...parsed,
+          livekit: { ...prev.livekit, ...(parsed.livekit || {}) },
           realtime: { ...prev.realtime, ...(parsed.realtime || {}) },
           stt: { ...prev.stt, ...(parsed.stt || {}) },
           speechmatics: { ...prev.speechmatics, ...(parsed.speechmatics || {}) },
+          voiceUsers: parsed.voiceUsers || parsedUsers,
           llm: { ...prev.llm, ...(parsed.llm || {}) },
           tts: { ...prev.tts, ...(parsed.tts || {}) },
           params: { ...prev.params, ...(parsed.params || {}) },
         }));
+      } else if (rawUsers) {
+        setConfig((prev) => ({ ...prev, voiceUsers: parsedUsers }));
       }
     } catch (e) {
       console.warn('Failed to parse saved config:', e);
@@ -461,13 +546,89 @@ export function ModelSelectionView() {
     }));
   };
 
+  const handleAddVoiceUser = () => {
+    if (!newUserName.trim()) return;
+    const newUser: VoiceUserProfile = {
+      id: `usr_${Date.now().toString(36)}`,
+      name: newUserName.trim(),
+      role: newUserRole,
+      voice_signature_id: `vs_ursa_${Math.floor(1000 + Math.random() * 9000)}`,
+      enrolled_at: new Date().toISOString().split('T')[0],
+      confidence_threshold: newUserThreshold,
+      pitch_hz: Math.floor(160 + Math.random() * 120),
+      sample_status: 'calibrated',
+      notes: newUserNotes.trim() || 'Custom enrolled voice profile',
+    };
+    setConfig((prev) => {
+      const updatedUsers = [...prev.voiceUsers, newUser];
+      try {
+        localStorage.setItem(USERS_JSON_STORAGE_KEY, JSON.stringify(updatedUsers));
+      } catch {}
+      return { ...prev, voiceUsers: updatedUsers };
+    });
+    setNewUserName('');
+    setNewUserNotes('');
+    setIsAddUserModalOpen(false);
+  };
+
+  const handleDeleteVoiceUser = (id: string) => {
+    setConfig((prev) => {
+      const updatedUsers = prev.voiceUsers.filter((u) => u.id !== id);
+      try {
+        localStorage.setItem(USERS_JSON_STORAGE_KEY, JSON.stringify(updatedUsers));
+      } catch {}
+      return { ...prev, voiceUsers: updatedUsers };
+    });
+  };
+
+  const handleCopyUsersJson = () => {
+    const jsonStr = JSON.stringify(
+      {
+        version: '1.0.0',
+        orchestrator: 'LiveKit',
+        recognition_engine: 'Speechmatics Ursa / Linden-1',
+        users: config.voiceUsers,
+      },
+      null,
+      2
+    );
+    navigator.clipboard.writeText(jsonStr);
+    setCopiedJson(true);
+    setTimeout(() => setCopiedJson(false), 2000);
+  };
+
+  const handleDownloadUsersJson = () => {
+    const jsonStr = JSON.stringify(
+      {
+        version: '1.0.0',
+        orchestrator: 'LiveKit',
+        recognition_engine: 'Speechmatics Ursa / Linden-1',
+        users: config.voiceUsers,
+      },
+      null,
+      2
+    );
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'users.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleSave = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      localStorage.setItem(USERS_JSON_STORAGE_KEY, JSON.stringify(config.voiceUsers));
+      localStorage.setItem('exia_livekit_config', JSON.stringify(config.livekit));
 
       const payload: Partial<ModelConfig> = {
         mode: config.architecture === 'realtime' ? 'gemini_live' : 'modular',
         pipeline_mode: config.architecture === 'realtime' ? 'gemini_live' : 'modular',
+        livekit_url: config.livekit.url,
+        livekit_api_key: config.livekit.apiKey,
+        livekit_api_secret: config.livekit.apiSecret,
         gemini_model: config.realtime.model,
         gemini_voice: config.realtime.voice,
         stt_provider: config.stt.provider,
@@ -489,6 +650,10 @@ export function ModelSelectionView() {
         speechmatics_enable_partials: config.speechmatics.enablePartials,
         speechmatics_custom_dictionary: config.speechmatics.customDictionary.join(', '),
         speechmatics_diarization: config.speechmatics.diarization,
+        speechmatics_speaker_identification: config.speechmatics.speakerIdentification,
+        speechmatics_voice_profile_name: config.speechmatics.voiceProfileName,
+        speechmatics_speaker_threshold: config.speechmatics.speakerThreshold,
+        voice_users: config.voiceUsers,
       };
 
       try {
@@ -595,6 +760,138 @@ export function ModelSelectionView() {
           <span>Configuration saved locally. Realtime sessions and tool pipelines will immediately use these credentials.</span>
         </div>
       )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          LIVEKIT VOICE AGENT ORCHESTRATOR CREDENTIALS (cortana_companion reference)
+         ───────────────────────────────────────────────────────────── */}
+      <section className="border-border bg-card relative space-y-4 overflow-hidden rounded-2xl border p-5 shadow-sm">
+        <div className="border-border flex flex-col justify-between gap-3 border-b pb-4 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3">
+            <div className="border-primary/40 bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl border shadow-sm">
+              <Radio className="size-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-foreground text-sm font-semibold">LiveKit Voice Agent Orchestrator</h3>
+                <span className="border-primary/30 bg-primary/15 text-primary rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
+                  WEBRTC ORCHESTRATOR
+                </span>
+                {config.livekit.url && config.livekit.apiKey ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
+                    <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
+                    <span>Configured & Ready</span>
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+                    Awaiting Credentials
+                  </span>
+                )}
+              </div>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                WebRTC session transport for bidirectional audio streaming, speaker activity detection, and agent room orchestration.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="https://cloud.livekit.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-border bg-muted/40 hover:bg-muted text-foreground inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors"
+            >
+              <ExternalLink className="text-muted-foreground size-3.5" />
+              <span>LiveKit Cloud</span>
+            </a>
+          </div>
+        </div>
+
+        {/* LiveKit Inputs Grid */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          {/* LIVEKIT_URL */}
+          <div className="space-y-1.5 md:col-span-2">
+            <div className="flex items-center justify-between">
+              <label className="text-foreground text-xs font-medium">LIVEKIT_URL</label>
+              <span className="text-muted-foreground text-[10px]">WebSocket Host</span>
+            </div>
+            <input
+              type="text"
+              placeholder="wss://your-project.livekit.cloud"
+              value={config.livekit.url}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  livekit: { ...prev.livekit, url: e.target.value },
+                }))
+              }
+              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 font-mono text-xs"
+            />
+            <div className="flex gap-2 text-[10px]">
+              <button
+                type="button"
+                onClick={() =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    livekit: { ...prev.livekit, url: 'ws://localhost:7880' },
+                  }))
+                }
+                className="text-primary hover:underline cursor-pointer"
+              >
+                Local Dev: ws://localhost:7880
+              </button>
+            </div>
+          </div>
+
+          {/* LIVEKIT_API_KEY */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-foreground text-xs font-medium">LIVEKIT_API_KEY</label>
+              <span className="text-muted-foreground text-[10px]">Project Key</span>
+            </div>
+            <input
+              type="text"
+              placeholder="APIxxxxxxxxxxxx"
+              value={config.livekit.apiKey}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  livekit: { ...prev.livekit, apiKey: e.target.value },
+                }))
+              }
+              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 font-mono text-xs"
+            />
+          </div>
+
+          {/* LIVEKIT_API_SECRET */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-foreground text-xs font-medium">LIVEKIT_API_SECRET</label>
+              <span className="text-muted-foreground text-[10px]">Secret Token</span>
+            </div>
+            <div className="relative">
+              <input
+                type={showKeys['livekit_secret'] ? 'text' : 'password'}
+                placeholder="Secret key string..."
+                value={config.livekit.apiSecret}
+                onChange={(e) =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    livekit: { ...prev.livekit, apiSecret: e.target.value },
+                  }))
+                }
+                className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 pr-9 font-mono text-xs"
+              />
+              <button
+                type="button"
+                onClick={() => toggleKey('livekit_secret')}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer p-0.5"
+              >
+                {showKeys['livekit_secret'] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ─────────────────────────────────────────────────────────────
           1. CHOOSE ARCHITECTURE: REALTIME S2S vs MODULAR PIPELINE
@@ -1664,6 +1961,154 @@ export function ModelSelectionView() {
                 </p>
               </div>
             </div>
+
+            {/* 5. ENROLLED VOICE USERS & SPEAKER RECOGNITION REGISTRY (users.json) */}
+            <div className="border-border border-t pt-5 space-y-4">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-xl border border-primary/40 bg-primary/10 text-primary">
+                    <Users className="size-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-foreground text-sm font-semibold">Enrolled Voice Users Registry (`users.json`)</h4>
+                      <span className="rounded-full border border-primary/30 bg-primary/15 px-2 py-0.5 text-[9px] font-bold text-primary uppercase">
+                        {config.voiceUsers.length} Profiles
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      Speech recognition speaker identification and persistent voice signatures matching `cortana_companion`.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsUsersJsonModalOpen(true)}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors"
+                  >
+                    <Code className="size-3.5 text-muted-foreground" />
+                    <span>View users.json</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAddUserModalOpen(true)}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary hover:bg-primary-hover px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Enroll Voice User</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Speaker Identification Mode Switch */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 p-3.5">
+                <div className="space-y-0.5">
+                  <div className="text-foreground text-xs font-semibold flex items-center gap-2">
+                    <span>Acoustic Speaker Voice Verification</span>
+                    {config.speechmatics.speakerIdentification && (
+                      <span className="text-[10px] text-emerald-500 font-medium">● Active</span>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground text-[11px]">
+                    Identifies who is speaking based on enrolled voice signatures, mapping turn transcripts to individual user profiles.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                  <span className="text-xs font-mono text-primary font-semibold">
+                    {(config.speechmatics.speakerThreshold * 100).toFixed(0)}% threshold
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={config.speechmatics.speakerIdentification}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        speechmatics: {
+                          ...prev.speechmatics,
+                          speakerIdentification: e.target.checked,
+                        },
+                      }))
+                    }
+                    className="size-4 accent-primary cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Voice Users List Cards */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {config.voiceUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="border-border bg-muted/20 hover:bg-muted/30 relative flex flex-col justify-between rounded-xl border p-4 transition-all"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="flex size-7 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+                            <UserCheck className="size-3.5" />
+                          </div>
+                          <div>
+                            <div className="text-foreground text-xs font-semibold">{user.name}</div>
+                            <span className="text-[10px] text-muted-foreground font-mono">{user.voice_signature_id}</span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase border ${
+                            user.role === 'admin'
+                              ? 'border-primary/40 bg-primary/15 text-primary'
+                              : user.role === 'user'
+                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                              : 'border-border bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                      </div>
+
+                      {user.notes && (
+                        <p className="text-muted-foreground text-[11px] leading-relaxed line-clamp-2">
+                          {user.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-3 border-t border-border pt-2.5 flex items-center justify-between text-[10px]">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <span className="text-primary font-medium">{(user.confidence_threshold * 100).toFixed(0)}%</span>
+                        <span>match threshold</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {user.pitch_hz && (
+                          <button
+                            type="button"
+                            onClick={() => handleAudition(user.pitch_hz!, user.name)}
+                            className="text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+                            title="Audition fundamental pitch"
+                          >
+                            <Volume2 className="size-3" />
+                            <span>{user.pitch_hz}Hz</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVoiceUser(user.id)}
+                          className="text-muted-foreground hover:text-red-400 cursor-pointer p-0.5"
+                          title="Delete voice profile"
+                        >
+                          <Trash2 className="size-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </section>
         </div>
       )}
@@ -1781,6 +2226,187 @@ export function ModelSelectionView() {
           </p>
         </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: VIEW / EXPORT USERS.JSON (cortana_companion reference)
+         ───────────────────────────────────────────────────────────── */}
+      {isUsersJsonModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="border-border bg-card relative w-full max-w-2xl rounded-2xl border p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
+                  <Code className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-foreground text-sm font-semibold">Voice User Registry (`users.json`)</h3>
+                  <p className="text-muted-foreground text-xs">
+                    Persistent voice signatures and speaker profiles schema.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsUsersJsonModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Code Block */}
+            <div className="relative">
+              <pre className="bg-muted/50 border border-border rounded-xl p-4 font-mono text-xs text-foreground overflow-x-auto max-h-96">
+                {JSON.stringify(
+                  {
+                    version: '1.0.0',
+                    orchestrator: 'LiveKit',
+                    recognition_engine: 'Speechmatics Ursa / Linden-1',
+                    users: config.voiceUsers,
+                  },
+                  null,
+                  2
+                )}
+              </pre>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between border-t border-border pt-3">
+              <span className="text-[11px] text-muted-foreground font-mono">
+                {config.voiceUsers.length} enrolled profiles
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyUsersJson}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors"
+                >
+                  {copiedJson ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                  <span>{copiedJson ? 'Copied!' : 'Copy JSON'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadUsersJson}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary hover:bg-primary-hover px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all"
+                >
+                  <Download className="size-3.5" />
+                  <span>Download users.json</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: ENROLL NEW VOICE USER PROFILE
+         ───────────────────────────────────────────────────────────── */}
+      {isAddUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="border-border bg-card relative w-full max-w-md rounded-2xl border p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
+                  <UserCheck className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-foreground text-sm font-semibold">Enroll Voice User Profile</h3>
+                  <p className="text-muted-foreground text-xs">Register speaker name, access role, and threshold.</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAddUserModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {/* User Name */}
+              <div className="space-y-1">
+                <label className="text-foreground text-xs font-medium">Speaker Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Commander Alex, Sarah, Guest..."
+                  value={newUserName}
+                  onChange={(e) => setNewUserName(e.target.value)}
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-xs"
+                />
+              </div>
+
+              {/* Role */}
+              <div className="space-y-1">
+                <label className="text-foreground text-xs font-medium">Access Role</label>
+                <select
+                  value={newUserRole}
+                  onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'user' | 'guest')}
+                  className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-2 text-xs"
+                >
+                  <option value="admin" className="bg-card text-foreground">Admin / Owner (Full Directives Override)</option>
+                  <option value="user" className="bg-card text-foreground">Authorized User (Standard AI Queries)</option>
+                  <option value="guest" className="bg-card text-foreground">Guest Speaker (Limited Access)</option>
+                </select>
+              </div>
+
+              {/* Confidence Threshold */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-foreground text-xs font-medium">Match Confidence Threshold</label>
+                  <span className="text-primary font-mono text-xs font-semibold">
+                    {(newUserThreshold * 100).toFixed(0)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.70"
+                  max="0.95"
+                  step="0.01"
+                  value={newUserThreshold}
+                  onChange={(e) => setNewUserThreshold(parseFloat(e.target.value))}
+                  className="w-full accent-primary cursor-pointer"
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-1">
+                <label className="text-foreground text-xs font-medium">Profile Directives / Notes</label>
+                <textarea
+                  rows={2}
+                  placeholder="Notes on voice tone, privileges, or companion response style..."
+                  value={newUserNotes}
+                  onChange={(e) => setNewUserNotes(e.target.value)}
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+              <button
+                type="button"
+                onClick={() => setIsAddUserModalOpen(false)}
+                className="cursor-pointer rounded-xl border border-border px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddVoiceUser}
+                disabled={!newUserName.trim()}
+                className="cursor-pointer rounded-xl bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover disabled:opacity-50"
+              >
+                Save & Enroll Voice User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

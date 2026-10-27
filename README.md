@@ -45,6 +45,8 @@ A 100% private, local-first Desktop AI Assistant built as an alternative to Chat
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
+> 🗺️ **Editable architecture diagrams (draw.io):** [`docs/architecture/exia-high-level-architecture.drawio`](docs/architecture/) — main architecture, plus `exia-backend-server.drawio` and `exia-voice-agent.drawio` with cloud icons. See [`docs/architecture/README.md`](docs/architecture/README.md).
+
 ---
 
 ## 2. Research: UI & Database Architecture

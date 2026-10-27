@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" agent="Exia" version="24.7.17" type="device">
+  <diagram id="exia-backend-server" name="Exia — Backend Server">
+    <mxGraphModel dx="1422" dy="757" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="Exia — Backend Server Architecture (FastAPI Gateway · port 8000)" style="text;html=1;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="10" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" value="&lt;b&gt;Exia UI&lt;/b&gt; — Next.js 15 · React 19&lt;br&gt;&lt;br&gt;• Login / Signup  • Voice Session&lt;br&gt;• History  • MCP Hub  • Prompts&lt;br&gt;• Models  • Settings&lt;br&gt;&lt;br&gt;&lt;i&gt;ALL user data goes to the Backend —&lt;br&gt;the UI never touches the DB&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontSize=11;align=left;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="320" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="bc" value="Backend — FastAPI Gateway  (uvicorn :8000)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=center;fontSize=13;fontStyle=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="480" y="60" width="620" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="mw" value="&lt;b&gt;Middleware&lt;/b&gt; — CORS · request logging + latency · JWT bearer guard on protected routes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="bc">
+          <mxGeometry x="40" y="55" width="540" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="rw" value="Route modules — /api/*" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;dashed=1;dashPattern=6 4;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="bc">
+          <mxGeometry x="40" y="135" width="540" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" value="&lt;b&gt;Auth&lt;/b&gt;&lt;br&gt;POST /signup · /signin&lt;br&gt;POST /refresh_token&lt;br&gt;GET /me · /update_password" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;verticalAlign=middle;" vertex="1" parent="rw">
+          <mxGeometry x="20" y="45" width="160" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="&lt;b&gt;Token&lt;/b&gt;&lt;br&gt;POST /agent/token&lt;br&gt;mints LiveKit room JWT&lt;br&gt;records the session" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;verticalAlign=middle;" vertex="1" parent="rw">
+          <mxGeometry x="200" y="45" width="160" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="&lt;b&gt;MCP&lt;/b&gt;&lt;br&gt;GET/POST/PUT/DELETE&lt;br&gt;POST /{id}/test — ping&lt;br&gt;tool schemas stored in DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;verticalAlign=middle;" vertex="1" parent="rw">
+          <mxGeometry x="380" y="45" width="160" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="&lt;b&gt;Prompts&lt;/b&gt;&lt;br&gt;directives + macros CRUD&lt;br&gt;POST /{id}/set-active&lt;br&gt;active persona for sessions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;verticalAlign=middle;" vertex="1" parent="rw">
+          <mxGeometry x="20" y="150" width="160" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="&lt;b&gt;Models&lt;/b&gt;&lt;br&gt;GET /models/config&lt;br&gt;PUT speech pipeline&lt;br&gt;model · voice · parameters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;verticalAlign=middle;" vertex="1" parent="rw">
+          <mxGeometry x="200" y="150" width="160" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="&lt;b&gt;Sessions&lt;/b&gt;&lt;br&gt;GET history · detail&lt;br&gt;POST /end · DELETE&lt;br&gt;transcript + telemetry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;verticalAlign=middle;" vertex="1" parent="rw">
+          <mxGeometry x="380" y="150" width="160" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="svc" value="&lt;b&gt;Services&lt;/b&gt;&lt;br&gt;• bcrypt password hashing  • token blacklist&lt;br&gt;• MongoServices data access (PyMongo)  • LiveKit token minting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="bc">
+          <mxGeometry x="40" y="440" width="540" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="stx" value="&lt;b&gt;Static SPA server&lt;/b&gt; — in-memory LRU cache + ETag&lt;br&gt;serves the built frontend (dist / out) · SPA fallback routing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="bc">
+          <mxGeometry x="40" y="550" width="540" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="mongo" value="&lt;b&gt;MongoDB Atlas&lt;/b&gt; (cloud database)&lt;br&gt;db: home_assistant&lt;br&gt;&lt;br&gt;users · sessions · mcp_servers&lt;br&gt;prompts · model_config&lt;br&gt;token_blacklist&lt;br&gt;&lt;br&gt;&lt;i&gt;ONLY writer of ALL UI data&lt;/i&gt;" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="100" width="380" height="310" as="geometry" />
+        </mxCell>
+        <mxCell id="lvc" value="&lt;b&gt;LiveKit Cloud&lt;/b&gt;&lt;br&gt;&lt;br&gt;agent session rooms&lt;br&gt;&lt;i&gt;Backend signs room access JWT&lt;br&gt;with LIVEKIT_API_KEY / SECRET&lt;/i&gt;" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="490" width="380" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;Single source of truth&lt;/b&gt; — every collection is owned and written ONLY by the Backend.&lt;br&gt;The FastAPI static server also fronts the deployed frontend build, so the whole product ships from port 8000." style="shape=note;whiteSpace=wrap;html=1;size=20;fillColor=#fff9cc;strokeColor=#d6b656;align=left;spacingLeft=10;spacingTop=4;verticalAlign=top;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="730" width="1060" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" value="1 · HTTPS /api/* (JWT bearer)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ui" target="bc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" value="serves static SPA + assets" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1;dashed=1;dashPattern=6 4;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="stx" target="ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" value="2 · writes / reads UI data (PyMongo)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="bc" target="mongo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" value="3 · signs room access JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0e8088;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="bc" target="lvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -80,6 +80,29 @@ export interface PromptItem {
   updated_at?: string;
 }
 
+export interface AgentSkill {
+  id: string;
+  name: string;
+  description: string;
+  category: 'automation' | 'search' | 'code' | 'memory' | 'voice' | 'custom';
+  enabled: boolean;
+  triggers: string[];
+  instruction_prompt: string;
+  created_at?: string;
+}
+
+export interface VoiceUserProfile {
+  id: string;
+  name: string;
+  role: 'admin' | 'user' | 'guest';
+  voice_signature_id: string;
+  enrolled_at: string;
+  confidence_threshold: number;
+  pitch_hz?: number;
+  sample_status: 'enrolled' | 'calibrated' | 'pending';
+  notes?: string;
+}
+
 export interface ModelConfig {
   mode: 'gemini_live' | 'modular';
   // Alias used by model-selection-view (mirrored by backend GET/PUT /models/config)
@@ -107,6 +130,11 @@ export interface ModelConfig {
   speechmatics_api_key?: string;
   ollama_base_url?: string;
 
+  // LiveKit Voice Agent Orchestrator Credentials (as referenced in cortana_companion)
+  livekit_url?: string;
+  livekit_api_key?: string;
+  livekit_api_secret?: string;
+
   // Speechmatics Voice Recognition & STT Parameters
   speechmatics_model?: 'linden-1' | 'enhanced' | 'standard' | string;
   speechmatics_language?: string;
@@ -115,6 +143,14 @@ export interface ModelConfig {
   speechmatics_enable_partials?: boolean;
   speechmatics_custom_dictionary?: string;
   speechmatics_diarization?: boolean;
+  speechmatics_speaker_identification?: boolean;
+  speechmatics_voice_profile_name?: string;
+  speechmatics_speaker_threshold?: number;
+  voice_users?: VoiceUserProfile[];
+
+  // Base System Prompt & Skills
+  base_system_prompt?: string;
+  skills?: AgentSkill[];
 
   // Advanced Tuning Parameters
   top_p?: number;

@@ -18,7 +18,7 @@ const TAB_TITLES: Record<NavTab, string> = {
   session:  'Voice Session',
   history:  'Session History',
   mcp:      'MCP Registry',
-  prompts:  'Directives',
+  prompts:  'Prompts',
   models:   'Model Engine',
   settings: 'Settings',
 };

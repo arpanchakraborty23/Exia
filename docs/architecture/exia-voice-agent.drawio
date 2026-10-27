@@ -1,0 +1,109 @@
+<mxfile host="app.diagrams.net" agent="Exia" version="24.7.17" type="device">
+  <diagram id="exia-voice-agent" name="Exia — Voice Agent">
+    <mxGraphModel dx="1422" dy="757" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1130" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="Exia — Voice Agent Worker Architecture (Python · livekit-agents)" style="text;html=1;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="10" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" value="&lt;b&gt;Exia UI&lt;/b&gt; — Next.js 15 · React 19&lt;br&gt;Voice stage · camera · screen share" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontSize=11;align=left;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="340" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="livekit" value="&lt;b&gt;LiveKit Server / LiveKit Cloud&lt;/b&gt; — WebRTC SFU&lt;br&gt;&lt;br&gt;• publishes compact room JWT metadata&lt;br&gt;• user id · model ref (tool schemas kept in DB)" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="280" width="340" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="agent" value="Voice Agent Worker — Python (livekit-agents)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;align=center;fontSize=13;fontStyle=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="60" y="560" width="780" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="pipe" value="Realtime voice pipeline" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;dashed=1;dashPattern=6 4;verticalAlign=top;fontSize=11;fontStyle=1;" vertex="1" parent="agent">
+          <mxGeometry x="30" y="55" width="280" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="vad" value="Silero VAD — voice activity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="pipe">
+          <mxGeometry x="30" y="45" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="stt" value="STT — OpenAI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="pipe">
+          <mxGeometry x="30" y="120" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="llm" value="LLM — provider plug-in" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="pipe">
+          <mxGeometry x="30" y="195" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="tts" value="TTS — OpenAI voice" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="pipe">
+          <mxGeometry x="30" y="270" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1;endArrow=block;endFill=1;" edge="1" parent="pipe" source="vad" target="stt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1;endArrow=block;endFill=1;" edge="1" parent="pipe" source="stt" target="llm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1;endArrow=block;endFill=1;" edge="1" parent="pipe" source="llm" target="tts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vision" value="&lt;b&gt;Multimodal vision&lt;/b&gt;&lt;br&gt;subscribes camera / screen-share video frames&lt;br&gt;tool: inspect_visual_feed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=8;verticalAlign=middle;" vertex="1" parent="agent">
+          <mxGeometry x="340" y="55" width="400" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="mem0" value="&lt;b&gt;Mem0 memory&lt;/b&gt; (local files only)&lt;br&gt;SQLite turn history + Qdrant local vectors&lt;br&gt;recall before speaking · store after each message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=8;verticalAlign=middle;" vertex="1" parent="agent">
+          <mxGeometry x="340" y="170" width="400" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mcp" value="&lt;b&gt;MCP tool engine&lt;/b&gt;&lt;br&gt;1 · search_mcp_tools(query)&lt;br&gt;2 · execute_mcp_tool(server, tool, args)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;align=left;spacingLeft=8;verticalAlign=middle;" vertex="1" parent="agent">
+          <mxGeometry x="340" y="295" width="400" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="openai" value="&lt;b&gt;OpenAI Cloud&lt;/b&gt;&lt;br&gt;Whisper STT · TTS voices&lt;br&gt;GPT models (chat)" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="60" width="300" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="gemini" value="&lt;b&gt;Google Gemini&lt;/b&gt;&lt;br&gt;Gemini Flash — chat option" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="60" width="250" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="ollama" value="&lt;b&gt;Local fallback LLM&lt;/b&gt;&lt;br&gt;Ollama / LM Studio :11434" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;dashed=1;dashPattern=6 4;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="240" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="mongo" value="&lt;b&gt;MongoDB Atlas&lt;/b&gt; (cloud database)&lt;br&gt;&lt;br&gt;reads user data ONLY:&lt;br&gt;mcp_servers · prompts · memories · tasks&lt;br&gt;writes session events&lt;br&gt;&lt;br&gt;&lt;i&gt;no UI data flows through the Agent&lt;/i&gt;" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="560" width="440" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="stdio" value="&lt;b&gt;Local stdio MCP servers&lt;/b&gt;&lt;br&gt;npx · python · uvx CLI processes&lt;br&gt;&lt;i&gt;filesystem · windows automation&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=10;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="990" y="890" width="320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sse" value="&lt;b&gt;Remote SSE endpoints&lt;/b&gt;&lt;br&gt;HTTP Server-Sent Events bridges&lt;br&gt;&lt;i&gt;smart-home gateways&lt;/i&gt;" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=#0e8088;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1390" y="880" width="260" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;Rule:&lt;/b&gt; the Agent keeps no persistent storage and no direct UI link — user data arrives ONLY from MongoDB Atlas." style="shape=note;whiteSpace=wrap;html=1;size=20;fillColor=#fff9cc;strokeColor=#d6b656;align=left;spacingLeft=10;spacingTop=4;verticalAlign=top;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1040" width="780" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" value="user mic audio · camera / screen video (WebRTC Opus)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0e8088;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ui" target="livekit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g2" value="assistant audio + transcript" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0e8088;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="livekit" target="ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g3" value="1 · room session — relay user media · publish assistant audio" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;strokeWidth=2;fontSize=10;fontStyle=1;startArrow=classic;startFill=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="livekit" target="agent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g4" value="video frames" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1;dashed=1;dashPattern=6 4;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="livekit" target="vision">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g5" value="3 · reads user data only + syncs session events" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="agent" target="mongo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g6" value="STT / TTS (OpenAI-compatible)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0e8088;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="stt" target="openai">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g7" value="2 · chat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0e8088;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="llm" target="openai">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g8" value="chat option" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0e8088;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="llm" target="gemini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g9" value="or local" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1;dashed=1;dashPattern=6 4;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="llm" target="ollama">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g10" value="spawn CLI process (stdio)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="mcp" target="stdio">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g11" value="SSE HTTP (remote)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="mcp" target="sse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
