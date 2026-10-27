@@ -285,7 +285,9 @@ def read_root() -> Dict[str, str]:
 # Frontend Static Files Mount, In-Memory LRU Cache & SPA Routing
 # ==============================================================================
 
-FRONTEND_BASE = Path(__file__).resolve().parent.parent / "frontend"
+BACKEND_DIR = Path(__file__).resolve().parent
+BACKEND_DIST = BACKEND_DIR / "dist"
+FRONTEND_BASE = BACKEND_DIR.parent / "frontend"
 FRONTEND_DIST = FRONTEND_BASE / "dist"
 FRONTEND_OUT = FRONTEND_BASE / "out"
 
@@ -311,7 +313,9 @@ MIME_TYPE_MAP = {
 
 
 def get_static_build_dir() -> Path | None:
-    """Detects available frontend production build directory (dist or out)."""
+    """Detects available frontend production build directory (backend/dist, frontend/dist or out)."""
+    if BACKEND_DIST.exists():
+        return BACKEND_DIST
     if FRONTEND_DIST.exists():
         return FRONTEND_DIST
     if FRONTEND_OUT.exists():
