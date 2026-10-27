@@ -9,7 +9,16 @@ import {
   User,
 } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+export const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    // When running inside the browser or desktop WebView, always use the current window's origin
+    // This completely eliminates Cross-Origin (CORS) errors on any port (12568, 8000, 3000, etc.)
+    return `${window.location.origin}/api`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:12568/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const STORAGE_KEYS = {
   TOKEN: 'ha_auth_token',
@@ -60,7 +69,8 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const base = getApiBaseUrl();
+  const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`;
 
   const res = await fetch(url, {
     ...options,
@@ -128,6 +138,32 @@ async function fetchMCPToolNames(serverName: string): Promise<string[] | undefin
 // ---------------- LIVE BACKEND API SERVICES ----------------
 
 export const api = {
+  // 0. Health
+  health: {
+    async check(timeoutMs: number = 3000): Promise<{ status: string; target?: string; latencyMs: number }> {
+      const base = getApiBaseUrl();
+      const start = performance.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(`${base}/health`, {
+          signal: controller.signal,
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        clearTimeout(timeoutId);
+        if (!res.ok) {
+          throw new Error(`Health check failed with status ${res.status}`);
+        }
+        const data = await res.json();
+        const latencyMs = Math.round(performance.now() - start);
+        return { ...data, latencyMs };
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+      }
+    },
+  },
+
   // 1. Auth
   auth: {
     async login(emailOrUsername: string, password: string): Promise<LoginResponse> {

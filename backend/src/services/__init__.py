@@ -6,6 +6,7 @@ from .prompts import PromptServices
 from .model_config import ModelConfigServices
 from .token_blacklist import TokenBlacklistServices
 from .sessions import SessionServices
+from .bootstrap_seed import seed_database_if_empty
 
 __all__ = [
     "MongoDBValidation",
@@ -19,5 +20,6 @@ __all__ = [
     "PromptServices",
     "ModelConfigServices",
     "TokenBlacklistServices",
-    "SessionServices"
+    "SessionServices",
+    "seed_database_if_empty",
 ]

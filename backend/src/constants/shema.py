@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.aliases import AliasChoices
-from typing import Literal, Optional, Dict, List
+from typing import Literal, Optional, Dict, List, Any
 
 
 # Auth

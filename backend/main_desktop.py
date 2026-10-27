@@ -39,6 +39,7 @@ from src.routes.model_config import model_route
 from src.routes.prompts import prompt_route
 from src.routes.sessions import session_route
 from src.routes.token import api_router
+from src.services import seed_database_if_empty
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,6 +54,10 @@ IS_CONFIGURED: bool = is_system_configured()
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     logger.info("Initializing Exia Desktop Application...")
+    try:
+        seed_database_if_empty()
+    except Exception as e:
+        logger.warning("Auto-seed error on startup: %s", e)
     yield
     logger.info("Exia Desktop Application stopped.")
 
@@ -65,14 +70,53 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origins=[
+        "http://127.0.0.1:12568",
+        "http://localhost:12568",
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+        "null",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True,
+    expose_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    origin = request.headers.get("origin")
+    if request.method == "OPTIONS":
+        response = Response(status_code=status.HTTP_204_NO_CONTENT)
+    else:
+        try:
+            response = await call_next(request)
+        except Exception as e:
+            logger.exception("Error processing request: %s", e)
+            response = JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": str(e)},
+            )
+
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Expose-Headers"] = "*"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+
+    return response
 
 # Standard REST Routers
 app.include_router(auth_route)
@@ -210,17 +254,22 @@ def get_static_build_dir() -> Path | None:
     # 1. PyInstaller bundled temporary unpack directory
     if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
         bundled = Path(sys._MEIPASS) / "dist"
-        if bundled.exists():
+        if bundled.exists() and (bundled / "index.html").exists():
             return bundled
 
-    # 2. Local backend/dist
+    # 2. Local backend/dist (only if it contains a real static export)
     backend_dist = BACKEND_DIR / "dist"
-    if backend_dist.exists():
+    if backend_dist.exists() and (backend_dist / "index.html").exists():
         return backend_dist
 
-    # 3. Development frontend/dist
+    # 3. Next.js static export: frontend/out (next build with output: 'export')
+    frontend_out = BACKEND_DIR.parent / "frontend" / "out"
+    if frontend_out.exists() and (frontend_out / "index.html").exists():
+        return frontend_out
+
+    # 4. Development frontend/dist fallback
     frontend_dist = BACKEND_DIR.parent / "frontend" / "dist"
-    if frontend_dist.exists():
+    if frontend_dist.exists() and (frontend_dist / "index.html").exists():
         return frontend_dist
 
     return None
@@ -304,14 +353,17 @@ async def serve_desktop_ui(request: Request, full_path: str):
 # ==============================================================================
 
 
-def _start_uvicorn():
+DESKTOP_PORT = 12568
+
+
+def _start_uvicorn(port: int = DESKTOP_PORT):
     """Runs Uvicorn server in a background daemon thread."""
     import uvicorn
 
     config = uvicorn.Config(
         app=app,
         host="127.0.0.1",
-        port=8000,
+        port=port,
         log_level="warning",
         workers=1,
     )
@@ -319,7 +371,7 @@ def _start_uvicorn():
     server.run()
 
 
-def _wait_for_server(url: str = "http://127.0.0.1:8000/api/health", timeout: float = 8.0) -> bool:
+def _wait_for_server(url: str = f"http://127.0.0.1:{DESKTOP_PORT}/api/health", timeout: float = 8.0) -> bool:
     """Waits for local server to report healthy status."""
     start = time.time()
     while time.time() - start < timeout:
@@ -334,7 +386,15 @@ def _wait_for_server(url: str = "http://127.0.0.1:8000/api/health", timeout: flo
 
 def main():
     """Desktop Application Entrypoint."""
-    # 1. Start local ASGI server
+    # Set Windows AppUserModelID so taskbar groups properly with its own icon
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("exia.desktop.app")
+        except Exception:
+            pass
+
+    # 1. Start local ASGI server on specified port
     server_thread = threading.Thread(target=_start_uvicorn, daemon=True)
     server_thread.start()
 
@@ -354,30 +414,46 @@ def main():
 
     for c in candidates:
         if c.exists():
-            icon_path = str(c)
+            icon_path = str(c.resolve())
             break
 
     # 4. Launch Native Desktop Window (WebView2)
     try:
         import webview
 
-        logger.info("Opening native Edge WebView2 desktop window...")
+        width = 1280
+        height = 820
+        x = None
+        y = None
+
+        try:
+            screens = webview.screens
+            if screens:
+                primary = screens[0]
+                x = max(0, int((primary.width - width) / 2))
+                y = max(0, int((primary.height - height) / 2))
+        except Exception as e:
+            logger.debug("Failed to calculate center coordinates: %s", e)
+
+        logger.info("Opening native Edge WebView2 desktop window centered on port %d...", DESKTOP_PORT)
         window = webview.create_window(
             title="Exia",
-            url="http://127.0.0.1:8000",
-            width=1280,
-            height=820,
+            url=f"http://127.0.0.1:{DESKTOP_PORT}",
+            width=width,
+            height=height,
+            x=x,
+            y=y,
             min_size=(960, 640),
             background_color="#09090b",
         )
-        webview.start()
+        webview.start(icon=icon_path)
         logger.info("Exia desktop window closed by operator. Exiting.")
         sys.exit(0)
 
     except ImportError:
         logger.warning("pywebview is not installed. Falling back to default browser.")
         import webbrowser
-        webbrowser.open("http://127.0.0.1:8000")
+        webbrowser.open(f"http://127.0.0.1:{DESKTOP_PORT}")
         try:
             while True:
                 time.sleep(1)

@@ -513,6 +513,44 @@ export function ModelSelectionView() {
     } catch (e) {
       console.warn('Failed to parse saved config:', e);
     }
+
+    // Fetch and merge backend configuration
+    api.models
+      .getConfig()
+      .then((serverCfg: any) => {
+        if (serverCfg) {
+          setConfig((prev) => ({
+            ...prev,
+            livekit: {
+              ...prev.livekit,
+              url: serverCfg.livekit?.url || serverCfg.livekit_url || prev.livekit.url,
+              apiKey: serverCfg.livekit?.apiKey || serverCfg.livekit_api_key || prev.livekit.apiKey,
+              apiSecret: serverCfg.livekit?.apiSecret || serverCfg.livekit_api_secret || prev.livekit.apiSecret,
+            },
+            realtime: {
+              ...prev.realtime,
+              model: serverCfg.gemini_model || prev.realtime.model,
+              voice: serverCfg.gemini_voice || prev.realtime.voice,
+            },
+            stt: {
+              ...prev.stt,
+              provider: (serverCfg.stt_provider || prev.stt.provider).toLowerCase(),
+              model: serverCfg.stt_model || prev.stt.model,
+            },
+            llm: {
+              ...prev.llm,
+              provider: (serverCfg.llm_provider || prev.llm.provider).toLowerCase(),
+              model: serverCfg.llm_model || prev.llm.model,
+            },
+            tts: {
+              ...prev.tts,
+              provider: (serverCfg.tts_provider || prev.tts.provider).toLowerCase(),
+              model: serverCfg.tts_model || prev.tts.model,
+            },
+          }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const toggleKey = (keyId: string) => {

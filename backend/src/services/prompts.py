@@ -28,16 +28,19 @@ class PromptServices:
 
     @staticmethod
     def _to_public(doc: dict) -> dict:
+        raw_type = doc.get("type")
+        valid_type = raw_type if raw_type in ("system", "quick", "skill", "base") else "system"
+        prompt_id = doc.get("prompt_id") or (str(doc.get("_id")) if doc.get("_id") else uuid.uuid4().hex)
         return {
-            "id": doc.get("prompt_id"),
-            "user_id": doc.get("user_id"),
-            "title": doc.get("title"),
-            "prompt_text": doc.get("prompt_text"),
-            "type": doc.get("type"),
+            "id": str(prompt_id),
+            "user_id": doc.get("user_id") or "usr_admin",
+            "title": doc.get("title") or "Directive",
+            "prompt_text": doc.get("prompt_text") or "",
+            "type": valid_type,
             "tags": doc.get("tags") or [],
             "is_default": bool(doc.get("is_default", False)),
-            "created_at": doc.get("created_at"),
-            "updated_at": doc.get("updated_at"),
+            "created_at": doc.get("created_at") or _now_iso(),
+            "updated_at": doc.get("updated_at") or _now_iso(),
         }
 
     async def create_prompt(self, user_id: str, data: PromptCreateRequest) -> dict:
