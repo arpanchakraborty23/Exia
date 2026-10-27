@@ -2,6 +2,7 @@
 
 import React from 'react';
 import {
+  BarChart3,
   Cpu,
   FileText,
   History,
@@ -14,7 +15,7 @@ import {
 import { useAuth } from '@/context/auth-context';
 import { cn } from '@/lib/shadcn/utils';
 
-export type NavTab = 'session' | 'history' | 'mcp' | 'prompts' | 'models' | 'settings';
+export type NavTab = 'session' | 'history' | 'analytics' | 'mcp' | 'prompts' | 'models' | 'settings';
 
 interface SidebarProps {
   currentTab: NavTab;
@@ -44,14 +45,15 @@ const NAV_SECTIONS: NavSection[] = [
     group: 'Intelligence',
     items: [
       { id: 'history', label: 'History', shortcut: '⌘2', icon: History },
-      { id: 'mcp', label: 'MCP Registry', shortcut: '⌘3', icon: Cpu },
-      { id: 'prompts', label: 'Prompts', shortcut: '⌘4', icon: FileText },
-      { id: 'models', label: 'Model Engine', shortcut: '⌘5', icon: Sliders },
+      { id: 'analytics', label: 'Analytics', shortcut: '⌘3', icon: BarChart3 },
+      { id: 'mcp', label: 'MCP Registry', shortcut: '⌘4', icon: Cpu },
+      { id: 'prompts', label: 'Prompts', shortcut: '⌘5', icon: FileText },
+      { id: 'models', label: 'Model Engine', shortcut: '⌘6', icon: Sliders },
     ],
   },
   {
     group: 'System',
-    items: [{ id: 'settings', label: 'Settings', shortcut: '⌘6', icon: SettingsIcon }],
+    items: [{ id: 'settings', label: 'Settings', shortcut: '⌘7', icon: SettingsIcon }],
   },
 ];
 

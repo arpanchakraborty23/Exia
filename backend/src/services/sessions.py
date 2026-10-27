@@ -63,6 +63,8 @@ class SessionServices:
         else:
             message_count = 0
 
+        mcp_invocations = doc.get("mcp_tools_invoked") or []
+        turns = doc.get("turns") or []
         return {
             "id": doc.get("session_id"),
             "user_id": doc.get("user_id"),
@@ -74,6 +76,10 @@ class SessionServices:
             "model_used": doc.get("model_used"),
             "message_count": message_count,
             "preview_text": doc.get("session_summary"),
+            "total_tokens": doc.get("total_tokens"),
+            "avg_latency_ms": doc.get("avg_latency_ms"),
+            "turns_count": doc.get("turns_count", len(turns) if turns else message_count),
+            "tool_calls_count": doc.get("tool_calls_count", len(mcp_invocations)),
         }
 
     async def list_sessions(self, user_id: str, page: int = 1, limit: int = 10) -> dict:
@@ -111,9 +117,10 @@ class SessionServices:
                     detail=f"Session '{session_id}' not found",
                 )
             detail = self._to_summary(doc)
-            # No transcript/tool-invocation store yet — return empty collections
-            detail["transcript"] = []
-            detail["mcp_tools_invoked"] = []
+            detail["transcript"] = doc.get("transcript") or doc.get("conversation") or []
+            detail["mcp_tools_invoked"] = doc.get("mcp_tools_invoked") or []
+            detail["turns"] = doc.get("turns") or []
+            detail["analytics"] = doc.get("analytics")
             return detail
         except HTTPException:
             raise

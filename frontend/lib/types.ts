@@ -35,6 +35,46 @@ export interface MCPToolInvocation {
   timestamp: string;
 }
 
+export interface TurnMetrics {
+  stt_latency_ms?: number;
+  ttft_ms?: number;
+  llm_latency_ms?: number;
+  tts_latency_ms?: number;
+  e2e_latency_ms?: number;
+  input_tokens?: number;
+  output_tokens?: number;
+  total_tokens?: number;
+  audio_input_tokens?: number;
+  audio_output_tokens?: number;
+  cached_tokens?: number;
+}
+
+export interface SessionTurn {
+  id: string;
+  turn_index: number;
+  timestamp: string;
+  user_utterance: string;
+  speaker_tag?: string;
+  agent_response: string;
+  metrics: TurnMetrics;
+  tool_calls?: MCPToolInvocation[];
+}
+
+export interface SessionAnalyticsMetrics {
+  total_turns: number;
+  total_duration_seconds: number;
+  total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  audio_tokens: number;
+  cached_tokens: number;
+  avg_e2e_latency_ms: number;
+  avg_ttft_ms: number;
+  avg_stt_latency_ms: number;
+  tool_invocations_count: number;
+  tool_success_rate: number;
+}
+
 export interface SessionSummary {
   id: string;
   user_id: string;
@@ -46,12 +86,19 @@ export interface SessionSummary {
   model_used?: string;
   message_count?: number;
   preview_text?: string;
+  // Professional Observability Additions (aligned with LiveKit Agent telemetry)
+  total_tokens?: number;
+  avg_latency_ms?: number;
+  turns_count?: number;
+  tool_calls_count?: number;
 }
 
 export interface SessionDetail extends SessionSummary {
   transcript: SessionMessage[];
   model_config?: ModelConfig;
   mcp_tools_invoked?: MCPToolInvocation[];
+  turns?: SessionTurn[];
+  analytics?: SessionAnalyticsMetrics;
 }
 
 export interface MCPServer {

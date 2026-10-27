@@ -27,8 +27,8 @@ VS Code extension, or drag-and-drop into the draw.io editor.
 
 ## Legend (used across all diagrams)
 
-- **Cloud shapes** — hosted cloud services (MongoDB Atlas, LiveKit Cloud, OpenAI, Gemini, SSE endpoints)
-- **Green arrows** — data flow from the UI, written by the Backend
+- **AWS resource icons** (`mxgraph.aws4` stencils — the same Eraser-style cloud iconography): `users` (clients), `ec2` (FastAPI backend), `lambda_function` (agent worker), `database` (MongoDB Atlas), `chime_sdk` (LiveKit realtime), `group_aws_cloud` (cloud service outlines), `group_on_premise` (local processes), `cognito` / `security_group` (auth & tokens), `api_gateway` (MCP/SSE endpoints), `transcribe` (STT), `polly` (TTS), `bedrock` (LLM), `rekognition_video` (vision), `elasticache` (Mem0), `step_functions` (MCP 2-step pipeline), `cloudwatch_logs` (sessions), `app_config` (prompts/models config)
+- **Green arrows** — data flow from the UI, written by the Backend (only path to the DB)
 - **Teal arrows** — realtime WebRTC media (nothing is stored)
 - **Purple arrows** — agent ↔ database user-data access
 - **Dashed grey** — optional / local fallbacks and static serving

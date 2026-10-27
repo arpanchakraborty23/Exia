@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Cpu, FileText, History, Mic, Settings as SettingsIcon, Sliders } from 'lucide-react';
+import { BarChart3, Cpu, FileText, History, Mic, Settings as SettingsIcon, Sliders } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 import { NavTab } from './sidebar';
 
@@ -16,12 +16,13 @@ const MOBILE_ITEMS: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { id: 'session', label: 'Voice',    icon: Mic },
-  { id: 'history', label: 'History',  icon: History },
-  { id: 'mcp',     label: 'MCP',      icon: Cpu },
-  { id: 'prompts', label: 'Prompts',  icon: FileText },
-  { id: 'models',  label: 'Models',   icon: Sliders },
-  { id: 'settings',label: 'Settings', icon: SettingsIcon },
+  { id: 'session',   label: 'Voice',     icon: Mic },
+  { id: 'history',   label: 'History',   icon: History },
+  { id: 'analytics', label: 'Analysis',  icon: BarChart3 },
+  { id: 'mcp',       label: 'MCP',       icon: Cpu },
+  { id: 'prompts',   label: 'Prompts',   icon: FileText },
+  { id: 'models',    label: 'Models',    icon: Sliders },
+  { id: 'settings',  label: 'Settings',  icon: SettingsIcon },
 ];
 
 export function MobileNav({ currentTab, onSelectTab, isCallActive }: MobileNavProps) {

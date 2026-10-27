@@ -15,12 +15,13 @@ interface AppShellProps {
 }
 
 const TAB_TITLES: Record<NavTab, string> = {
-  session:  'Voice Session',
-  history:  'Session History',
-  mcp:      'MCP Registry',
-  prompts:  'Prompts',
-  models:   'Model Engine',
-  settings: 'Settings',
+  session:   'Voice Session',
+  history:   'Session History',
+  analytics: 'Analytics & Observability',
+  mcp:       'MCP Registry',
+  prompts:   'Prompts',
+  models:    'Model Engine',
+  settings:  'Settings',
 };
 
 export function AppShell({ currentTab, onSelectTab, isCallActive, children }: AppShellProps) {
@@ -46,8 +47,9 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
         const shortcuts: Record<string, NavTab> = {
-          '1': 'session', '2': 'history', '3': 'mcp',
-          '4': 'prompts', '5': 'models',  '6': 'settings',
+          '1': 'session', '2': 'history', '3': 'analytics',
+          '4': 'mcp',     '5': 'prompts', '6': 'models',
+          '7': 'settings',
         };
         if (shortcuts[e.key]) {
           e.preventDefault();
