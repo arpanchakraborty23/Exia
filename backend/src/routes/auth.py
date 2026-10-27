@@ -29,6 +29,11 @@ acess_token = access_token_bearer
 # Router
 auth_route = APIRouter(prefix="/api", tags=["Auth"])
 
+@auth_route.post("/auth/create-account", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
+@auth_route.post("/create-account", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
+@auth_route.post("/auth/register", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
+@auth_route.post("/register", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
+@auth_route.post("/auth/signup", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
 @auth_route.post("/signup", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_account(user_data: CreateUserRequest):
     # get user eamil
@@ -55,12 +60,24 @@ async def create_user_account(user_data: CreateUserRequest):
     new_user = await user_services.create_user(user_data)
     logger.info(f"New User {user_data.name} created !")
 
+    user_id = new_user.get("user_id") if isinstance(new_user, dict) else getattr(new_user, "user_id", "")
+    name = new_user.get("name") if isinstance(new_user, dict) else getattr(new_user, "name", "")
+    email = new_user.get("email") if isinstance(new_user, dict) else getattr(new_user, "email", "")
+    user_payload = {"user_id": user_id, "name": name, "email": email}
+    access_token_jwt = await auth_services.generate_access_token(user_payload, expiry=timedelta(hours=1))
+    refresh_token_jwt = await auth_services.generate_access_token(user_payload, expiry=timedelta(days=7), refresh_token=True)
     return CreateUserResponse(
         user_id=new_user.get("user_id") if isinstance(new_user, dict) else new_user.user_id,
         name=new_user.get("name") if isinstance(new_user, dict) else new_user.name,
-        email=new_user.get("email") if isinstance(new_user, dict) else new_user.email
+        email=email,
+        access_token=access_token_jwt,
+        refresh_token=refresh_token_jwt,
+        message="Account created successfully"
     )
 
+@auth_route.post("/auth/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
+@auth_route.post("/auth/signin", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
+@auth_route.post("/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
 @auth_route.post("/signin", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
 async def login_user(user_data: LoginUserRequest):
     try:

@@ -14,7 +14,9 @@ class CreateUserResponse(BaseModel):
     user_id: Optional[str] = None
     name: Optional[str] = None
     email: Optional[str] = None  
-    message : Optional[str] = None  
+    message: Optional[str] = None  
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None  
 
 class LoginUserRequest(BaseModel):
     email: Optional[str] = None

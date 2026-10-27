@@ -21,7 +21,7 @@ flowchart TB
         Gateway["Entrypoint Routing Gateway<br/>(main_desktop.py / main_vercel.py)"]
         
         subgraph APILayer ["REST & Realtime API Routes"]
-            AuthRoute["/api/auth (Login, Register, Session)"]
+            AuthRoute["/api/auth/create-account (Account Registration)<br/>/api/auth/login (JWT Login & Refresh)"]
             TokenRoute["/api/token (LiveKit WebRTC Tokens)"]
             SessionRoute["/api/sessions (Voice Agent Sessions)"]
             MCPRoute["/api/mcp (Tool Registry & Servers)"]
@@ -96,7 +96,7 @@ backend/
     │   └── shema.py            # MongoDB collection names and database constants
     │
     ├── routes/
-    │   ├── auth.py             # User authentication, registration, JWT validation
+    │   ├── auth.py             # User account creation, registration, JWT login, token refresh
     │   ├── token.py            # LiveKit access token generation for voice agent
     │   ├── sessions.py         # Voice session history, recording metadata, CRUD
     │   ├── mcp.py              # Model Context Protocol server registrations
