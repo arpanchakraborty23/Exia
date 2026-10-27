@@ -151,120 +151,98 @@ export function HistoryView() {
       {/* Screen Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
-              SESSION HISTORY & TELEMETRY
-            </h1>
-            <span className="rounded border border-primary/25 bg-primary/15 px-2 py-0.5 font-mono text-[10px] text-primary">
-              LOG ARCHIVE
-            </span>
-          </div>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
-            Complete transcript audit trails, WebRTC audio metrics, and autonomous MCP tool logs.
+          <h1 className="text-foreground text-xl font-semibold tracking-tight">
+            Session History
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Transcript audit trails, audio metrics, and MCP tool logs.
           </p>
         </div>
 
         <button
           onClick={() => fetchSessions(page)}
           disabled={isLoading}
-          className="bg-card/80 text-foreground border-border inline-flex items-center gap-2 self-start rounded-xl border px-3.5 py-2 text-xs font-medium transition-all hover:border-primary/25 hover:bg-white/[0.09] sm:self-auto"
+          className="border-border hover:bg-accent inline-flex items-center gap-2 self-start rounded-xl border px-3.5 py-2 text-sm font-medium transition-all sm:self-auto"
         >
-          <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin text-primary' : ''}`} />
-          <span>Refresh Feed</span>
+          <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          <span>Refresh</span>
         </button>
       </div>
 
-      {/* Bento Stats Matrix */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-        <div className="bg-card/80 border-border relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl">
+        <div className="border-border bg-card rounded-2xl border p-4">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-mono text-xs">Total Sessions</span>
-            <div className="flex size-6 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-              <History className="size-3.5" />
-            </div>
+            <span className="text-muted-foreground text-xs">Total Sessions</span>
+            <History className="text-muted-foreground size-4" />
           </div>
-          <div className="text-foreground mt-2 font-mono text-2xl font-bold">
+          <div className="text-foreground mt-2 text-2xl font-semibold">
             {total || sessions.length}
           </div>
-          <div className="text-muted-foreground mt-1 font-mono text-[11px]">
-            Autonomous missions
-          </div>
+          <div className="text-muted-foreground mt-1 text-xs">Recorded conversations</div>
         </div>
 
-        <div className="bg-card/80 border-border relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl">
+        <div className="border-border bg-card rounded-2xl border p-4">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-mono text-xs">Voice Airtime</span>
-            <div className="flex size-6 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-              <Clock className="size-3.5" />
-            </div>
+            <span className="text-muted-foreground text-xs">Voice Airtime</span>
+            <Clock className="text-muted-foreground size-4" />
           </div>
-          <div className="text-foreground mt-2 font-mono text-2xl font-bold">
+          <div className="text-foreground mt-2 text-2xl font-semibold">
             {totalDurationMinutes}{' '}
             <span className="text-muted-foreground text-sm font-normal">mins</span>
           </div>
-          <div className="text-muted-foreground mt-1 font-mono text-[11px]">
-            48kHz Opus streamed
-          </div>
+          <div className="text-muted-foreground mt-1 text-xs">48kHz Opus streamed</div>
         </div>
 
-        <div className="bg-card/80 border-border relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl">
+        <div className="border-border bg-card rounded-2xl border p-4">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-mono text-xs">Avg TTFT Latency</span>
-            <div className="flex size-6 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-              <Sparkles className="size-3.5" />
-            </div>
+            <span className="text-muted-foreground text-xs">Avg TTFT Latency</span>
+            <Sparkles className="text-muted-foreground size-4" />
           </div>
-          <div className="mt-2 font-mono text-2xl font-bold text-primary">
+          <div className="text-foreground mt-2 text-2xl font-semibold">
             185 <span className="text-muted-foreground text-sm font-normal">ms</span>
           </div>
-          <div className="mt-1 font-mono text-[11px] text-primary/80">
-            Near real-time response
-          </div>
+          <div className="text-muted-foreground mt-1 text-xs">Near real-time response</div>
         </div>
 
-        <div className="bg-card/80 border-border relative overflow-hidden rounded-2xl border p-4 backdrop-blur-xl">
+        <div className="border-border bg-card rounded-2xl border p-4">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-mono text-xs">MCP Tool Actions</span>
-            <div className="flex size-6 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-              <Cpu className="size-3.5" />
-            </div>
+            <span className="text-muted-foreground text-xs">MCP Tool Actions</span>
+            <Cpu className="text-muted-foreground size-4" />
           </div>
-          <div className="text-foreground mt-2 font-mono text-2xl font-bold">
+          <div className="text-foreground mt-2 text-2xl font-semibold">
             48 <span className="text-muted-foreground text-sm font-normal">calls</span>
           </div>
-          <div className="text-muted-foreground mt-1 font-mono text-[11px]">
-            100% execution rate
-          </div>
+          <div className="text-muted-foreground mt-1 text-xs">100% execution rate</div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-card/80 border-border flex flex-col items-center justify-between gap-3 rounded-2xl border p-3 sm:flex-row">
+      <div className="border-border bg-card flex flex-col items-center justify-between gap-3 rounded-xl border p-3 sm:flex-row">
         <div className="relative w-full sm:w-80">
           <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search transcripts, rooms, topics..."
+            placeholder="Search sessions, rooms, topics…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-muted/40 border-border text-foreground w-full rounded-xl border py-1.5 pr-3 pl-9 text-xs placeholder:text-zinc-600 focus:border-primary/50 focus:outline-none"
+            className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2 pr-3 pl-9 text-sm"
           />
         </div>
 
         <div className="flex w-full items-center justify-end gap-1.5 self-end sm:w-auto sm:self-auto">
-          <span className="text-muted-foreground mr-1 hidden font-mono text-[11px] md:inline">
-            Model:
-          </span>
+          <span className="text-muted-foreground mr-1 hidden text-xs md:inline">Model:</span>
           {(['all', 'gemini', 'modular'] as const).map((m) => (
             <button
               key={m}
               onClick={() => setModelFilter(m)}
-              className={`rounded-lg px-2.5 py-1 font-mono text-xs transition-all ${modelFilter === m
-                  ? 'border border-primary/25 bg-primary/20 text-primary'
-                  : 'bg-card/80 text-muted-foreground hover:text-foreground border border-transparent'
-                }`}
+              className={`rounded-lg px-2.5 py-1 text-xs transition-all ${
+                modelFilter === m
+                  ? 'border-border bg-muted text-foreground border font-medium'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {m === 'all' ? 'All Engines' : m === 'gemini' ? 'Gemini Live' : 'Modular'}
+              {m === 'all' ? 'All' : m === 'gemini' ? 'Gemini' : 'Modular'}
             </button>
           ))}
         </div>
@@ -277,7 +255,7 @@ export function HistoryView() {
           <span>{error}</span>
           <button
             onClick={() => fetchSessions(page)}
-            className="ml-auto cursor-pointer font-mono text-xs text-rose-300 underline hover:text-rose-200"
+            className="ml-auto cursor-pointer text-xs text-rose-300 underline hover:text-rose-200"
           >
             Retry
           </button>
@@ -290,20 +268,18 @@ export function HistoryView() {
           {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className="bg-card/80 border-border h-24 animate-pulse rounded-2xl border"
+              className="bg-card border-border h-24 animate-pulse rounded-2xl border"
             />
           ))}
         </div>
       ) : filteredSessions.length === 0 ? (
-        <div className="border-border space-y-3 rounded-2xl border border-dashed bg-white/[0.01] px-4 py-16 text-center">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
-            <History className="size-6" />
-          </div>
+        <div className="border-border space-y-3 rounded-2xl border border-dashed px-4 py-16 text-center">
+          <History className="text-muted-foreground mx-auto size-8" />
           <h3 className="text-foreground font-semibold">No sessions found</h3>
-          <p className="text-muted-foreground mx-auto max-w-sm text-xs">
+          <p className="text-muted-foreground mx-auto max-w-sm text-sm">
             {searchQuery
               ? 'Try modifying your search term or clearing the model filter.'
-              : 'Launch a voice conversation from the Voice Stage to populate session recordings and telemetry.'}
+              : 'Launch a voice conversation from the Voice Stage to populate session recordings.'}
           </p>
         </div>
       ) : (
@@ -313,44 +289,45 @@ export function HistoryView() {
             <div
               key={session.id}
               onClick={() => handleOpenDetail(session.id)}
-              className="group bg-card/80 hover:bg-card/80 border-border flex cursor-pointer flex-col justify-between gap-4 rounded-2xl border p-4 shadow-sm transition-all duration-200 hover:border-primary/25 sm:flex-row sm:items-center md:p-5"
+              className="group border-border bg-card flex cursor-pointer flex-col justify-between gap-4 rounded-2xl border p-4 transition-all duration-200 hover:border-white/10 sm:flex-row sm:items-center"
             >
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-foreground font-mono text-sm font-bold transition-colors group-hover:text-primary">
+                  <span className="text-foreground font-medium text-sm">
                     {session.room_name || session.id}
                   </span>
-                  <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-primary">
+                  <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-[11px]">
                     {session.model_used || 'Gemini 2.0 Flash'}
                   </span>
                   <span
-                    className={`rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium ${session.status === 'active'
-                        ? 'animate-pulse border-primary/35 bg-primary/20 text-primary'
-                        : 'bg-card/80 text-muted-foreground border-border'
-                      }`}
+                    className={`rounded-md px-2 py-0.5 text-[11px] ${
+                      session.status === 'active'
+                        ? 'animate-pulse bg-emerald-500/10 text-emerald-400'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
                   >
-                    {session.status.toUpperCase()}
+                    {session.status}
                   </span>
                 </div>
 
                 {session.preview_text && (
-                  <p className="text-muted-foreground line-clamp-1 text-xs italic">
+                  <p className="text-muted-foreground line-clamp-1 text-sm italic">
                     &ldquo;{session.preview_text}&rdquo;
                   </p>
                 )}
 
-                <div className="text-muted-foreground flex flex-wrap items-center gap-4 font-mono text-[11px]">
+                <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-xs">
                   <span className="flex items-center gap-1">
-                    <Calendar className="text-muted-foreground size-3" />
+                    <Calendar className="size-3" />
                     {formatDate(session.started_at)}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="text-muted-foreground size-3" />
+                    <Clock className="size-3" />
                     {formatDuration(session.duration_seconds)}
                   </span>
                   {session.message_count !== undefined && (
                     <span className="flex items-center gap-1">
-                      <MessageSquare className="text-muted-foreground size-3" />
+                      <MessageSquare className="size-3" />
                       {session.message_count} turns
                     </span>
                   )}
@@ -359,7 +336,7 @@ export function HistoryView() {
                     {[40, 70, 30, 90, 60, 80, 45, 100, 50, 75, 30].map((h, i) => (
                       <span
                         key={i}
-                        className="w-0.5 rounded-full bg-primary/30 transition-colors group-hover:bg-primary/90"
+                        className="bg-border group-hover:bg-muted-foreground w-0.5 rounded-full transition-colors"
                         style={{ height: `${h}%` }}
                       />
                     ))}
@@ -368,11 +345,11 @@ export function HistoryView() {
               </div>
 
               <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
-                <span className="flex hidden items-center gap-1 font-mono text-xs font-semibold text-primary transition-transform group-hover:translate-x-0.5 sm:inline">
-                  Telemetry Details
+                <span className="text-muted-foreground hidden items-center gap-1 text-xs transition-transform group-hover:translate-x-0.5 sm:inline-flex">
+                  View details
                   <ArrowUpRight className="size-3.5" />
                 </span>
-                <ChevronRight className="text-muted-foreground size-4 transition-colors group-hover:text-primary" />
+                <ChevronRight className="text-muted-foreground size-4" />
               </div>
             </div>
           ))}
@@ -382,22 +359,22 @@ export function HistoryView() {
       {/* Pagination Controls */}
       {total > 10 && (
         <div className="border-border flex items-center justify-between border-t pt-4">
-          <span className="text-muted-foreground font-mono text-xs">
-            Showing {(page - 1) * 10 + 1} - {Math.min(page * 10, total)} of {total} missions
+          <span className="text-muted-foreground text-xs">
+            Showing {(page - 1) * 10 + 1}–{Math.min(page * 10, total)} of {total}
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="bg-card/80 text-foreground border-border rounded-lg border px-3 py-1.5 font-mono text-xs hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
+              className="border-border hover:bg-accent rounded-lg border px-3 py-1.5 text-xs transition-all disabled:cursor-not-allowed disabled:opacity-30"
             >
               Previous
             </button>
-            <span className="px-2 font-mono text-xs text-primary">Page {page}</span>
+            <span className="text-muted-foreground px-2 text-xs">Page {page}</span>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={page * 10 >= total}
-              className="bg-card/80 text-foreground border-border rounded-lg border px-3 py-1.5 font-mono text-xs hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-30"
+              className="border-border hover:bg-accent rounded-lg border px-3 py-1.5 text-xs transition-all disabled:cursor-not-allowed disabled:opacity-30"
             >
               Next
             </button>
@@ -405,54 +382,54 @@ export function HistoryView() {
         </div>
       )}
 
-      {/* Detail Slide-out Drawer / Modal */}
+      {/* Detail Slide-out Drawer */}
       {selectedSessionId && (
-        <div className="bg-card animate-in fade-in fixed inset-0 z-50 flex justify-end backdrop-blur-md duration-200">
-          <div className="border-border relative flex h-full w-full max-w-2xl flex-col overflow-hidden border-l bg-[#080b12] shadow-2xl">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm duration-200">
+          <div className="border-border bg-card relative flex h-full w-full max-w-2xl flex-col overflow-hidden border-l shadow-2xl">
             {/* Drawer Header */}
-            <div className="border-border bg-card flex items-center justify-between border-b p-5">
+            <div className="border-border flex items-center justify-between border-b p-5">
               <div className="flex items-center gap-3">
-                <div className="flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/15 text-primary">
-                  <Terminal className="size-4.5" />
+                <div className="bg-muted flex size-9 items-center justify-center rounded-xl">
+                  <Terminal className="text-muted-foreground size-4" />
                 </div>
                 <div>
-                  <h2 className="text-foreground flex items-center gap-2 font-mono text-base font-bold">
-                    <span>{sessionDetail?.room_name || selectedSessionId}</span>
+                  <h2 className="text-foreground text-base font-semibold">
+                    {sessionDetail?.room_name || selectedSessionId}
                   </h2>
                   <p className="text-muted-foreground font-mono text-[11px]">
-                    ID: {selectedSessionId} • {formatDate(sessionDetail?.started_at || '')}
+                    {selectedSessionId} · {formatDate(sessionDetail?.started_at || '')}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleCloseDetail}
-                className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition-colors hover:bg-white/[0.08]"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg p-1.5 transition-colors"
               >
                 <X className="size-5" />
               </button>
             </div>
 
             {/* Audio Simulation Scrub Bar */}
-            <div className="bg-card/80 border-border flex items-center gap-4 border-b p-4">
+            <div className="border-border bg-card flex items-center gap-4 border-b p-4">
               <button
                 onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-black shadow-[0_0_10px_#10b981] transition-colors hover:bg-primary/90"
+                className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full shadow-lg transition-all hover:opacity-90"
               >
                 {isPlayingAudio ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}
               </button>
 
               <div className="flex-1 space-y-1">
-                <div className="text-muted-foreground flex items-center justify-between font-mono text-[10px]">
+                <div className="text-muted-foreground flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1">
-                    <Volume2 className="size-3 text-primary" />
-                    WebRTC Audio Stream (Opus 48kHz)
+                    <Volume2 className="size-3" />
+                    Audio stream (Opus 48kHz)
                   </span>
-                  <span>{Math.floor((audioProgress * 45) / 100)}s / 45s</span>
+                  <span className="font-mono">{Math.floor((audioProgress * 45) / 100)}s / 45s</span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
                   <div
-                    className="h-full rounded-full bg-primary shadow-[0_0_6px_rgba(31,213,249,0.5)] transition-all duration-200"
+                    className="bg-primary h-full rounded-full transition-all duration-200"
                     style={{ width: `${audioProgress}%` }}
                   />
                 </div>
@@ -463,31 +440,29 @@ export function HistoryView() {
             <div className="flex-1 space-y-6 overflow-y-auto p-5">
               {isLoadingDetail ? (
                 <div className="space-y-4 py-8">
-                  <div className="bg-card/80 h-16 animate-pulse rounded-xl" />
-                  <div className="bg-card/80 h-28 animate-pulse rounded-xl" />
-                  <div className="bg-card/80 h-40 animate-pulse rounded-xl" />
+                  <div className="bg-muted h-16 animate-pulse rounded-xl" />
+                  <div className="bg-muted h-28 animate-pulse rounded-xl" />
+                  <div className="bg-muted h-40 animate-pulse rounded-xl" />
                 </div>
               ) : sessionDetail ? (
                 <>
-                  {/* Telemetry Summary Cards */}
+                  {/* Summary Cards */}
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-card/80 border-border rounded-xl border p-3">
-                      <div className="text-muted-foreground font-mono text-[10px]">Duration</div>
-                      <div className="text-foreground mt-1 font-mono text-sm font-bold">
+                    <div className="border-border bg-card rounded-xl border p-3">
+                      <div className="text-muted-foreground text-xs">Duration</div>
+                      <div className="text-foreground mt-1 font-mono text-sm font-semibold">
                         {formatDuration(sessionDetail.duration_seconds)}
                       </div>
                     </div>
-                    <div className="bg-card/80 border-border rounded-xl border p-3">
-                      <div className="text-muted-foreground font-mono text-[10px]">
-                        Intelligence Engine
-                      </div>
-                      <div className="mt-1 truncate font-mono text-sm font-bold text-primary">
+                    <div className="border-border bg-card rounded-xl border p-3">
+                      <div className="text-muted-foreground text-xs">Model</div>
+                      <div className="text-foreground mt-1 truncate font-mono text-sm font-semibold">
                         {sessionDetail.model_used || 'Gemini 2.0'}
                       </div>
                     </div>
-                    <div className="bg-card/80 border-border rounded-xl border p-3">
-                      <div className="text-muted-foreground font-mono text-[10px]">Status</div>
-                      <div className="mt-1 font-mono text-sm font-bold text-primary uppercase">
+                    <div className="border-border bg-card rounded-xl border p-3">
+                      <div className="text-muted-foreground text-xs">Status</div>
+                      <div className="text-foreground mt-1 font-mono text-sm font-semibold capitalize">
                         {sessionDetail.status}
                       </div>
                     </div>
@@ -497,26 +472,26 @@ export function HistoryView() {
                   {sessionDetail.mcp_tools_invoked &&
                     sessionDetail.mcp_tools_invoked.length > 0 && (
                       <div className="space-y-2">
-                        <div className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold">
-                          <Cpu className="size-3.5 text-primary" />
+                        <div className="text-foreground flex items-center gap-1.5 text-sm font-medium">
+                          <Cpu className="text-muted-foreground size-3.5" />
                           <span>
-                            MCP Autonomous Actions ({sessionDetail.mcp_tools_invoked.length})
+                            MCP Actions ({sessionDetail.mcp_tools_invoked.length})
                           </span>
                         </div>
                         <div className="space-y-2">
                           {sessionDetail.mcp_tools_invoked.map((call, idx) => (
                             <div
                               key={call.id || idx}
-                              className="border-border space-y-2 rounded-xl border bg-[#0e131d] p-3 font-mono text-xs"
+                              className="border-border bg-muted/30 space-y-2 rounded-xl border p-3"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-bold text-primary">{call.name}</span>
-                                <span className="rounded border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                                <span className="font-mono text-xs font-semibold">{call.name}</span>
+                                <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-[11px]">
                                   {call.status || 'mcp-server'}
                                 </span>
                               </div>
                               {call.args && (
-                                <pre className="bg-card text-muted-foreground overflow-x-auto rounded-lg p-2 text-[10px]">
+                                <pre className="bg-muted text-muted-foreground overflow-x-auto rounded-lg p-2 font-mono text-[10px]">
                                   {typeof call.args === 'string'
                                     ? call.args
                                     : JSON.stringify(call.args, null, 2)}
@@ -530,16 +505,16 @@ export function HistoryView() {
 
                   {/* Conversation Transcript Turns */}
                   <div className="space-y-3">
-                    <div className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold">
-                      <MessageSquare className="size-3.5 text-primary" />
+                    <div className="text-foreground flex items-center gap-1.5 text-sm font-medium">
+                      <MessageSquare className="text-muted-foreground size-3.5" />
                       <span>
-                        Dialogue Transcript Turns ({sessionDetail.transcript?.length || 0})
+                        Transcript ({sessionDetail.transcript?.length || 0} turns)
                       </span>
                     </div>
 
                     {!sessionDetail.transcript || sessionDetail.transcript.length === 0 ? (
-                      <div className="text-muted-foreground border-border rounded-xl border border-dashed p-6 text-center font-mono text-xs">
-                        No text messages logged for this voice transmission.
+                      <div className="text-muted-foreground border-border rounded-xl border border-dashed p-6 text-center text-sm">
+                        No messages logged for this session.
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -551,26 +526,27 @@ export function HistoryView() {
                               className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
                             >
                               {!isUser && (
-                                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-primary">
+                                <div className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg">
                                   <Bot className="size-4" />
                                 </div>
                               )}
 
                               <div
-                                className={`max-w-[80%] space-y-1 rounded-2xl p-3.5 text-xs ${isUser
-                                    ? 'text-foreground rounded-tr-xs border border-primary/25 bg-primary/15'
-                                    : 'bg-card/80 text-foreground border-border rounded-tl-xs border'
-                                  }`}
+                                className={`max-w-[80%] space-y-1 rounded-2xl p-3.5 text-sm ${
+                                  isUser
+                                    ? 'text-foreground border-border rounded-tr-sm border bg-white/[0.05]'
+                                    : 'bg-muted text-foreground rounded-tl-sm'
+                                }`}
                               >
                                 <div className="text-muted-foreground flex items-center justify-between gap-4 font-mono text-[10px]">
-                                  <span>{isUser ? 'OPERATOR' : 'EXIA '}</span>
+                                  <span>{isUser ? 'You' : 'Exia'}</span>
                                   {msg.timestamp && <span>{formatDate(msg.timestamp)}</span>}
                                 </div>
                                 <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                               </div>
 
                               {isUser && (
-                                <div className="border-border text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg border bg-white/[0.08]">
+                                <div className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg">
                                   <UserIcon className="size-4" />
                                 </div>
                               )}

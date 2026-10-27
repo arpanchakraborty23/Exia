@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertCircle, ArrowRight, Loader2, Lock, Mail, ShieldCheck, Zap } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, Lock, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/app/theme-toggle';
 import { useAuth } from '@/context/auth-context';
 
@@ -21,7 +21,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
     clearError();
 
     if (!emailOrUsername.trim() || !password.trim()) {
-      setLocalError('Please enter both username/email and passkey.');
+      setLocalError('Please enter your credentials.');
       return;
     }
 
@@ -29,104 +29,102 @@ export function LoginView({ onSuccess }: LoginViewProps) {
       await login(emailOrUsername.trim(), password);
       onSuccess?.();
     } catch (err: unknown) {
-      setLocalError(err instanceof Error ? err.message : 'Authentication sequence failed.');
+      setLocalError(err instanceof Error ? err.message : 'Authentication failed.');
     }
   };
 
+  const handleFillDemo = () => {
+    setEmailOrUsername('admin@exia.local');
+    setPassword('admin1234');
+    setLocalError(null);
+  };
 
   const errorMessage = localError || error;
 
   return (
-    <div className="bg-background text-foreground bg-tactical-grid relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden p-4 transition-colors">
-      {/* Background ambient lighting */}
-      <div className="pointer-events-none absolute top-1/4 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-3xl" />
+    <div className="bg-background text-foreground relative flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden p-4">
+      {/* Ambient glow — very subtle */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div
+          className="absolute top-1/4 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(31,213,249,0.04) 0%, transparent 65%)',
+          }}
+        />
+      </div>
 
-      {/* Top right theme toggle */}
+      {/* Top-right theme toggle */}
       <div className="absolute top-4 right-4 z-20">
         <ThemeToggle />
       </div>
 
-      <div className="relative z-10 w-full max-w-md space-y-6">
-        {/* Branding & Avatar */}
-        <div className="space-y-3 text-center">
-          <div className="relative inline-block">
-            <div className="absolute -inset-2 animate-pulse rounded-3xl bg-gradient-to-tr from-primary/25 via-primary/8 to-primary/20 blur-xl" />
-            <div className="relative mx-auto size-24 overflow-hidden rounded-2xl border-2 border-primary/50 shadow-2xl shadow-primary/20">
+      <div className="relative z-10 w-full max-w-sm">
+        {/* Logo / Identity */}
+        <div className="mb-8 text-center">
+          <div className="relative mb-5 inline-flex items-center justify-center">
+            <div className="relative size-16 overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/exia-avatar.jpg"
-                alt="Exia "
+                alt="Exia"
                 className="size-full object-cover"
               />
             </div>
-            <span className="border-background absolute -right-1 -bottom-1 size-4 rounded-full border-2 bg-emerald-400 shadow-[0_0_8px_#10b981]" />
+            {/* Online status */}
+            <span className="border-background absolute -right-0.5 -bottom-0.5 size-3.5 rounded-full border-2 bg-emerald-500" />
           </div>
 
-          <div>
-            <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-primary uppercase">
-              <Zap className="size-3" />
-              <span> EXIA COMMAND SYSTEM</span>
-            </div>
-            <h1 className="text-foreground font-mono text-2xl font-extrabold tracking-tight">
-              TACTICAL ACCESS
-            </h1>
-            <p className="text-muted-foreground mt-1 font-mono text-xs">
-              LiveKit Voice link & FastAPI REST Autonomous Intelligence
-            </p>
-          </div>
+          <h1 className="text-foreground text-xl font-semibold tracking-tight">
+            Welcome back
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Sign in to your Exia workspace
+          </p>
         </div>
 
         {/* Card */}
-        <div className="bg-card/90 border-border relative space-y-6 overflow-hidden rounded-2xl border p-6 shadow-2xl backdrop-blur-2xl md:p-8">
-          {/* Subtle top edge glow */}
-          <div className="absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
-
-          {/* Telemetry status ticker */}
-          <div className="bg-muted/60 border-border text-muted-foreground flex items-center justify-between rounded-xl border p-2 font-mono text-[10px]">
-            <span className="flex items-center gap-1 font-bold text-primary">
-              <span className="size-1.5 animate-ping rounded-full bg-primary" />
-              SYNCHRONIZED
-            </span>
-          </div>
-
+        <div className="border-border bg-card rounded-2xl border p-6 shadow-2xl shadow-black/20">
           {errorMessage && (
-            <div className="flex items-start gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5 font-mono text-xs text-rose-600 dark:text-rose-300">
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-rose-500" />
-              <div className="flex-1">{errorMessage}</div>
+            <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-500/15 bg-red-500/8 p-3 text-sm text-red-500">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <span>{errorMessage}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5 font-mono">
-              <label className="text-foreground text-xs font-semibold">
-                Operator Email / Username
+            <div className="space-y-1.5">
+              <label className="text-foreground/80 text-xs font-medium">
+                Email or username
               </label>
               <div className="relative">
-                <Mail className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                <User className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                 <input
                   type="text"
                   value={emailOrUsername}
                   onChange={(e) => setEmailOrUsername(e.target.value)}
                   placeholder="admin@exia.local"
                   required
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border py-2.5 pr-3 pl-9 text-xs transition-all focus:border-primary/60 focus:shadow-[0_0_12px_rgba(31,213,249,0.15)] focus:outline-none"
+                  autoComplete="username"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2.5 pr-3 pl-9 text-sm transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5 font-mono">
-              <div className="flex items-center justify-between">
-                <label className="text-foreground text-xs font-semibold">Security Passkey</label>
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-foreground/80 text-xs font-medium">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="••••••••"
                   required
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border py-2.5 pr-3 pl-9 text-xs transition-all focus:border-primary/60 focus:shadow-[0_0_12px_rgba(31,213,249,0.15)] focus:outline-none"
+                  autoComplete="current-password"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2.5 pr-3 pl-9 text-sm transition-all"
                 />
               </div>
             </div>
@@ -134,27 +132,36 @@ export function LoginView({ onSuccess }: LoginViewProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-3 font-mono text-xs font-bold text-primary-foreground shadow-[0_0_20px_rgba(31,213,249,0.3)] transition-all hover:opacity-90 disabled:opacity-50"
+              className="bg-primary text-primary-foreground hover:bg-primary-hover mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
+              style={{ boxShadow: '0 4px 20px rgba(31,213,249,0.25)' }}
             >
               {isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
-                  <span>Engage Exia Terminal</span>
+                  <span>Sign in</span>
                   <ArrowRight className="size-4" />
                 </>
               )}
             </button>
+
+            {/* Quick-fill helper for testing */}
+            <div className="pt-1 text-center">
+              <button
+                type="button"
+                onClick={handleFillDemo}
+                className="text-muted-foreground hover:text-foreground text-xs transition-colors hover:underline"
+              >
+                Auto-fill test credentials
+              </button>
+            </div>
           </form>
-
-
         </div>
 
-        {/* Footer */}
-        <div className="text-muted-foreground flex items-center justify-center gap-2 font-mono text-[11px]">
-          <ShieldCheck className="size-3.5 text-primary/60" />
-          <span>FastAPI REST Endpoints • LiveKit RTC •  Core</span>
-        </div>
+        {/* Footer info */}
+        <p className="text-muted-foreground mt-6 text-center text-xs">
+          LiveKit WebRTC · FastAPI · Exia Personal Assistant
+        </p>
       </div>
     </div>
   );

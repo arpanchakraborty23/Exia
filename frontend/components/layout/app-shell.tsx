@@ -14,36 +14,30 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-const TAB_TITLES: Record<NavTab, { title: string; code: string }> = {
-  session: { title: 'Voice Stage', code: '01' },
-  history: { title: 'Session History', code: '02' },
-  mcp: { title: 'MCP Registry', code: '03' },
-  prompts: { title: 'Directive Library', code: '04' },
-  models: { title: 'Model Engine', code: '05' },
-  settings: { title: 'Configuration', code: '06' },
+const TAB_TITLES: Record<NavTab, string> = {
+  session:  'Voice Session',
+  history:  'Session History',
+  mcp:      'MCP Registry',
+  prompts:  'Directives',
+  models:   'Model Engine',
+  settings: 'Settings',
 };
 
 export function AppShell({ currentTab, onSelectTab, isCallActive, children }: AppShellProps) {
-  const currentMeta = TAB_TITLES[currentTab];
+  const title = TAB_TITLES[currentTab];
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('exia_sidebar_open');
       if (saved !== null) setIsSidebarOpen(saved === 'true');
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem('exia_sidebar_open', String(next));
-      } catch {
-        /* ignore */
-      }
+      try { localStorage.setItem('exia_sidebar_open', String(next)); } catch { /* ignore */ }
       return next;
     });
   };
@@ -52,12 +46,8 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
         const shortcuts: Record<string, NavTab> = {
-          '1': 'session',
-          '2': 'history',
-          '3': 'mcp',
-          '4': 'prompts',
-          '5': 'models',
-          '6': 'settings',
+          '1': 'session', '2': 'history', '3': 'mcp',
+          '4': 'prompts', '5': 'models',  '6': 'settings',
         };
         if (shortcuts[e.key]) {
           e.preventDefault();
@@ -73,7 +63,7 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
   }, [onSelectTab]);
 
   return (
-    <div className="bg-background text-foreground bg-tactical-grid relative flex h-screen w-screen overflow-hidden font-sans antialiased">
+    <div className="bg-background text-foreground relative flex h-screen w-screen overflow-hidden antialiased">
       {/* Desktop Sidebar */}
       <div
         className={cn(
@@ -93,27 +83,24 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
       {/* Hover edge trigger when sidebar hidden */}
       {!isSidebarOpen && (
         <div
-          className="group fixed top-0 bottom-0 left-0 z-40 hidden w-5 cursor-pointer items-center justify-start transition-all duration-200 hover:w-16 md:flex"
+          className="group fixed top-0 bottom-0 left-0 z-40 hidden w-4 cursor-pointer items-center justify-start transition-all duration-200 hover:w-14 md:flex"
           onClick={toggleSidebar}
-          title="Expand navigation (⌘B)"
+          title="Show navigation (⌘B)"
         >
-          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-primary/60 to-transparent transition-all group-hover:w-[2px] group-hover:shadow-[0_0_8px_rgba(31,213,249,0.35)]" />
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/8 to-transparent" />
           <button
             type="button"
-            className="border-border bg-card text-primary ml-1 flex cursor-pointer items-center gap-1.5 rounded-r-xl border-y border-r p-2 opacity-70 shadow-xl backdrop-blur-md transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
+            className="border-border bg-card/90 text-muted-foreground ml-0.5 flex cursor-pointer items-center gap-1 rounded-r-xl border-y border-r p-2 opacity-60 shadow-xl backdrop-blur-xl transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
           >
             <ChevronRight className="size-3.5" />
-            <span className="text-foreground hidden pr-1 font-mono text-[10px] font-bold tracking-wider uppercase group-hover:inline">
-              Nav
-            </span>
           </button>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="bg-radial-gradient flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Header — uses CSS vars, theme-aware */}
-        <header className="border-border bg-card/80 z-20 flex h-12 shrink-0 items-center justify-between border-b px-4 backdrop-blur-xl transition-colors md:px-5">
+      <div className="bg-ambient-bloom flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <header className="border-border bg-card/60 z-20 flex h-12 shrink-0 items-center justify-between border-b px-4 backdrop-blur-xl transition-colors md:px-5">
           {/* Left */}
           <div className="flex min-w-0 items-center gap-3">
             <button
@@ -121,7 +108,7 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
               onClick={toggleSidebar}
               title={isSidebarOpen ? 'Hide navigation (⌘B)' : 'Show navigation (⌘B)'}
               aria-label={isSidebarOpen ? 'Hide navigation' : 'Show navigation'}
-              className="border-border bg-accent text-muted-foreground hover:text-foreground hidden size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-colors md:flex"
+              className="border-border text-muted-foreground hover:text-foreground hover:bg-accent hidden size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-colors md:flex"
             >
               {isSidebarOpen ? (
                 <PanelLeftClose className="size-3.5" />
@@ -137,27 +124,21 @@ export function AppShell({ currentTab, onSelectTab, isCallActive, children }: Ap
             </div>
 
             <div className="flex min-w-0 items-center gap-2.5">
-              <span className="border-border bg-accent text-muted-foreground hidden shrink-0 rounded border px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest uppercase sm:inline">
-                {currentMeta.code}
-              </span>
-              <h2 className="text-foreground/80 truncate font-mono text-sm font-semibold tracking-tight">
-                {currentMeta.title}
-              </h2>
-              {/* LIVE badge — emerald is functional "connected" status, keep it */}
+              <h2 className="text-foreground/70 truncate text-sm font-medium">{title}</h2>
               {isCallActive && currentTab === 'session' && (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-2 py-0.5 font-mono text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
-                  <span className="size-1 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_4px_#10b981]" />
-                  LIVE
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
+                  <span className="size-1 animate-pulse rounded-full bg-emerald-500" />
+                  Live
                 </span>
               )}
             </div>
           </div>
 
           {/* Right */}
-          <div className="flex shrink-0 items-center gap-2.5">
-            <div className="border-border bg-accent text-muted-foreground hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-[10px] lg:flex">
-              <span className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_#10b981]" />
-              <span>WebRTC · 24ms · FastAPI Active</span>
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="text-muted-foreground hidden items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] lg:flex">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              <span>Connected</span>
             </div>
             <ThemeToggle />
           </div>

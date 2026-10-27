@@ -5,51 +5,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ═══════════════════════════════════════════════════
-   LIVEKIT DOCS BLACK THEME
-   ─────────────────────────────────────────────────
-   Dark Mode Brand Colors  (livekit.io):
-     Background:  #070707   near-black
-     Accent Cyan: #1FD5F9   electric cyan (primary CTA)
-
-   Starter Template Surface Scale  (lk-dbg vars):
-     --lk-surface-1: #111111   elevated card
-     --lk-surface-2: #1a1a1a   panel / secondary card
-     --lk-surface-3: #242424   input / control bg
-     --lk-surface-4: #2e2e2e   hover / active state
-     --lk-surface-5: #383838   border highlight
-
-   Status colors  (functional, not brand):
-     Live:     emerald #10b981
-     Thinking: amber   #f59e0b
-     Error:    red     #ef4444
+   EXIA DESIGN SYSTEM — SLEEK AI PRODUCT
+   Inspired by OpenAI / Perplexity / Linear aesthetics
+   
+   Core Palette:
+     Dark BG:   #090909  near-black canvas
+     Card:      #111111  elevated surface
+     Primary:   #1FD5F9  electric cyan (LiveKit brand)
+     Emerald:   #10b981  live status only
+   
+   Philosophy:
+     - Frosted glass, ultra-subtle borders
+     - Clean sans typography (mono only for data)
+     - Generous whitespace, sophisticated hierarchy
+     - Minimal decoration, maximum clarity
 ═══════════════════════════════════════════════════ */
 
 /* ───────── LIGHT MODE ───────── */
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
-  --background: #fdfdfc;
+  --background: #fafafa;
   --foreground: #0a0a0a;
   --card: #ffffff;
   --card-foreground: #0a0a0a;
   --popover: #ffffff;
   --popover-foreground: #0a0a0a;
 
-  /* LiveKit light-mode primary: #002CF2 */
   --primary: #002cf2;
   --primary-hover: #0022c4;
   --primary-foreground: #ffffff;
 
-  --secondary: #f4f4f5;
-  --secondary-foreground: #111111;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
   --accent-foreground: #0a0a0a;
 
   --destructive: #ef4444;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: rgba(0, 0, 0, 0.1);
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.06);
   --ring: #002cf2;
 
   --chart-1: #002cf2;
@@ -59,15 +55,14 @@
   --chart-5: #ec4899;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #0a0a0a;
+  --sidebar-foreground: #404040;
   --sidebar-primary: #002cf2;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f4f5;
+  --sidebar-accent: #f7f7f7;
   --sidebar-accent-foreground: #0a0a0a;
-  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-border: rgba(0, 0, 0, 0.06);
   --sidebar-ring: #002cf2;
 
-  /* Surface scale — light re-mapping */
   --lk-surface-1: #f8f8f8;
   --lk-surface-2: #f0f0f0;
   --lk-surface-3: #e8e8e8;
@@ -75,34 +70,32 @@
   --lk-surface-5: #d0d0d0;
 }
 
-/* ───────── DARK MODE (LiveKit Docs Black) ───────── */
+/* ───────── DARK MODE ───────── */
 .dark {
-  /* Surfaces — exact lk-dbg scale */
-  --background: #070707;
-  --foreground: #ffffff;
+  --background: #090909;
+  --foreground: #ededed;
 
   --card: #111111;
-  --card-foreground: #ffffff;
+  --card-foreground: #ededed;
 
-  --popover: #1a1a1a;
-  --popover-foreground: #ffffff;
+  --popover: #161616;
+  --popover-foreground: #ededed;
 
-  /* LiveKit dark-mode primary: #1FD5F9 cyan */
   --primary: #1fd5f9;
-  --primary-hover: #3dddfa;
+  --primary-hover: #45dcfa;
   --primary-foreground: #000000;
 
   --secondary: #1a1a1a;
-  --secondary-foreground: #d6d6d6;
-  --muted: #1a1a1a;
-  --muted-foreground: #555555;
-  --accent: #242424;
-  --accent-foreground: #ffffff;
+  --secondary-foreground: #c0c0c0;
+  --muted: #141414;
+  --muted-foreground: #666666;
+  --accent: #1c1c1c;
+  --accent-foreground: #e0e0e0;
 
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.07);
+  --input: rgba(255, 255, 255, 0.05);
   --ring: #1fd5f9;
 
   --chart-1: #1fd5f9;
@@ -111,22 +104,48 @@
   --chart-4: #f59e0b;
   --chart-5: #ec4899;
 
-  /* Sidebar — deepest black */
-  --sidebar: #040404;
-  --sidebar-foreground: #d4d4d4;
+  --sidebar: #050505;
+  --sidebar-foreground: #999999;
   --sidebar-primary: #1fd5f9;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #d6d6d6;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-accent: #131313;
+  --sidebar-accent-foreground: #d0d0d0;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
   --sidebar-ring: #1fd5f9;
 
-  /* Surface scale — dark */
   --lk-surface-1: #111111;
-  --lk-surface-2: #1a1a1a;
-  --lk-surface-3: #242424;
-  --lk-surface-4: #2e2e2e;
-  --lk-surface-5: #383838;
+  --lk-surface-2: #161616;
+  --lk-surface-3: #1c1c1c;
+  --lk-surface-4: #242424;
+  --lk-surface-5: #2e2e2e;
+}
+
+/* ───────── BASE SURFACE PRESETS ───────── */
+[data-surface="oled"].dark {
+  --background: #000000;
+  --card: #080808;
+  --popover: #0d0d0d;
+  --sidebar: #000000;
+  --sidebar-accent: #0c0c0c;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+[data-surface="navy"].dark {
+  --background: #060913;
+  --card: #0b1120;
+  --popover: #0f172a;
+  --sidebar: #04060e;
+  --sidebar-accent: #111a33;
+  --border: rgba(56, 189, 248, 0.1);
+}
+
+[data-surface="obsidian"].dark {
+  --background: #090909;
+  --card: #111111;
+  --popover: #161616;
+  --sidebar: #050505;
+  --sidebar-accent: #131313;
+  --border: rgba(255, 255, 255, 0.07);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -172,7 +191,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* lk-surface scale exposed as Tailwind colors: bg-lk-1 … bg-lk-5 */
   --color-lk-1: var(--lk-surface-1);
   --color-lk-2: var(--lk-surface-2);
   --color-lk-3: var(--lk-surface-3);
@@ -189,6 +207,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -196,93 +217,118 @@
    KEYFRAMES
 ═══════════════════════════════════════════════════ */
 @keyframes aurora {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translateY(-8px) scale(1.06);
-    opacity: 0.65;
-  }
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.35; }
+  50%       { transform: translateY(-10px) scale(1.08); opacity: 0.55; }
 }
 @keyframes shimmer-sweep {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
 }
 @keyframes float-orb {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); opacity: 0.7; }
+  70%  { transform: scale(1.05); opacity: 0;   }
+  100% { transform: scale(1.05); opacity: 0;   }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
 /* ═══════════════════════════════════════════════════
-   UTILITY CLASSES
+   UTILITY & GLASS CLASSES
 ═══════════════════════════════════════════════════ */
 
-/* Glassmorphism — theme-aware */
+/* Default Frosted glass card */
 .glass {
-  background: color-mix(in srgb, var(--card) 70%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: color-mix(in srgb, var(--card) 75%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid var(--border);
 }
 
-/* Cyan glow — LiveKit dark-mode primary */
-.glow-cyan {
+/* Deep frosted surface for modals / overlays */
+.glass-deep {
+  background: color-mix(in srgb, var(--background) 85%, transparent);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid var(--border);
+}
+
+/* Glassy style presets */
+[data-glass="crystal"] .glass,
+.glass-crystal {
+  background: color-mix(in srgb, var(--card) 45%, transparent);
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+[data-glass="neon"] .glass,
+.glass-neon {
+  background: color-mix(in srgb, var(--card) 65%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--primary) 12%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-glass="matte"] .glass,
+.glass-matte {
+  background: var(--card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+[data-glass="frosted"] .glass,
+.glass-frosted {
+  background: color-mix(in srgb, var(--card) 75%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--border);
+}
+
+/* Subtle glow — primary accent */
+.glow-primary {
   box-shadow:
-    0 0 24px rgba(31, 213, 249, 0.35),
-    0 0 48px rgba(31, 213, 249, 0.12);
+    0 0 20px var(--accent-glow, rgba(31, 213, 249, 0.25)),
+    0 0 60px var(--accent-glow, rgba(31, 213, 249, 0.08));
 }
-.glow-cyan-sm {
-  box-shadow: 0 0 12px rgba(31, 213, 249, 0.3);
+.glow-primary-sm {
+  box-shadow: 0 0 10px var(--accent-glow, rgba(31, 213, 249, 0.2));
 }
 
-/* Blue glow — LiveKit light-mode primary */
-.glow-blue {
+/* Status glows */
+.glow-emerald { box-shadow: 0 0 10px rgba(16, 185, 129, 0.25); }
+.glow-amber   { box-shadow: 0 0 10px rgba(245, 158, 11,  0.25); }
+.glow-red     { box-shadow: 0 0 12px rgba(239, 68,  68,  0.25); }
+
+/* Soft card shadow */
+.shadow-card {
   box-shadow:
-    0 0 24px rgba(0, 44, 242, 0.35),
-    0 0 48px rgba(0, 44, 242, 0.12);
-}
-.glow-blue-sm {
-  box-shadow: 0 0 12px rgba(0, 44, 242, 0.3);
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* Status glows — keep distinct for functional readability */
-.glow-emerald {
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
-}
-.glow-amber {
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
-}
-.glow-red {
-  box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
-}
+/* Animation utility classes */
+.aurora-orb  { animation: aurora    4s  ease-in-out infinite; }
+.float-orb   { animation: float-orb 3s  ease-in-out infinite; }
+.fade-in-up  { animation: fade-in-up 0.4s ease-out forwards; }
 
-/* Aurora animation */
-.aurora-orb {
-  animation: aurora 4s ease-in-out infinite;
-}
-.float-orb {
-  animation: float-orb 3s ease-in-out infinite;
-}
-
-/* White shimmer text */
+/* Shimmer text */
 .shimmer-text {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.2) 0%,
     rgba(255, 255, 255, 0.85) 40%,
-    rgba(255, 255, 255, 0.25) 60%,
-    rgba(255, 255, 255, 0.08) 100%
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0.05) 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -291,34 +337,25 @@
   animation: shimmer-sweep 2.5s linear infinite;
 }
 
-/* Cyan shimmer text — LiveKit accent variant */
-.shimmer-text-cyan {
-  background: linear-gradient(
-    90deg,
-    rgba(31, 213, 249, 0.3) 0%,
-    rgba(31, 213, 249, 0.9) 40%,
-    rgba(31, 213, 249, 0.3) 60%,
-    rgba(31, 213, 249, 0.1) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer-sweep 2.5s linear infinite;
+/* Dot-grid background */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
-
-/* Dot grid background — theme-aware */
 .bg-tactical-grid {
   background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-size: 32px 32px;
 }
 
-/* Main content radial gradient — subtle cyan bloom in dark mode */
+/* Radial ambient bloom */
+.bg-ambient-bloom {
+  background: radial-gradient(ellipse at 50% 0%, var(--accent-glow, rgba(31, 213, 249, 0.05)) 0%, transparent 65%);
+}
 .bg-radial-gradient {
-  background: radial-gradient(ellipse at 50% -10%, rgba(31, 213, 249, 0.06) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 50% -10%, var(--accent-glow, rgba(31, 213, 249, 0.05)) 0%, transparent 60%);
 }
 
-/* LiveKit starter template surface cards */
+/* Surface cards */
 .lk-card {
   background: var(--lk-surface-2);
   border: 1px solid var(--border);
@@ -330,18 +367,21 @@
   border-radius: var(--radius);
 }
 
-/* Scrollbars — matches LiveKit starter thin-scroll style */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* Input focus ring */
+.input-focus {
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+.input-focus:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+  outline: none;
 }
+
+/* Thin scrollbars */
+::-webkit-scrollbar       { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: var(--lk-surface-5, var(--border));
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(31, 213, 249, 0.4);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }

@@ -161,17 +161,12 @@ export function MCPView() {
       {/* Screen Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
-              MODEL CONTEXT PROTOCOL (MCP) REGISTRY
-            </h1>
-            <span className="rounded border border-primary/25 bg-primary/15 px-2 py-0.5 font-mono text-[10px] text-primary dark:text-primary">
-              REMOTE ONLY
-            </span>
-          </div>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
-            Connect remote SSE tool servers (HTTP Stream). Exia invokes these tools in real-time
-            during voice sessions. Currently, only Remote MCP is supported.
+          <h1 className="text-foreground text-xl font-semibold tracking-tight">
+            MCP Registry
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Connect remote SSE tool servers. Exia invokes these tools in real-time during voice sessions.{' '}
+            <span className="text-muted-foreground/70">Remote MCP only — local STDIO is not supported.</span>
           </p>
         </div>
 
@@ -179,69 +174,57 @@ export function MCPView() {
           <button
             onClick={fetchServers}
             disabled={isLoading}
-            className="bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border cursor-pointer rounded-xl border p-2 transition-all"
+            className="border-border hover:bg-accent text-muted-foreground cursor-pointer rounded-xl border p-2 transition-all"
             title="Refresh"
           >
             <RefreshCw
-              className={`size-4 ${isLoading ? 'animate-spin text-primary dark:text-primary' : ''}`}
+              className={`size-4 ${isLoading ? 'animate-spin' : ''}`}
             />
           </button>
           <button
             onClick={() => handleOpenAdd()}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white shadow-[0_0_15px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/80 dark:text-black dark:hover:bg-primary/90"
+            className="bg-primary text-primary-foreground inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-lg transition-all hover:opacity-90"
           >
             <Plus className="size-4" />
-            <span>Connect Remote Server</span>
+            <span>Connect Server</span>
           </button>
         </div>
       </div>
 
-      {/* Remote Support Notice Banner */}
-      <div className="flex items-start gap-3 rounded-2xl border border-border bg-accent p-4 text-xs text-foreground dark:text-foreground/80">
-        <Globe className="mt-0.5 size-4 shrink-0 text-muted-foreground dark:text-muted-foreground" />
-        <div className="space-y-0.5">
-          <p className="font-bold">Currently, we support Remote MCP servers (SSE / HTTP Stream)</p>
-          <p className="text-[11px] text-muted-foreground/90 dark:text-foreground/80/80">
-            Local STDIO server execution (npx / shell command) is not supported at this time. Please
-            connect external or self-hosted MCP endpoints using their remote SSE URLs.
-          </p>
-        </div>
-      </div>
-
-      {/* Bento Status Bar */}
+      {/* Stats Bar */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
-        <div className="bg-card/80 border-border rounded-2xl border p-4 backdrop-blur-xl">
-          <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
+        <div className="border-border bg-card rounded-2xl border p-4">
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
             <span>Configured Servers</span>
-            <Cpu className="size-4 text-primary" />
+            <Cpu className="text-muted-foreground size-4" />
           </div>
-          <div className="text-foreground mt-2 font-mono text-2xl font-bold">
+          <div className="text-foreground mt-2 text-2xl font-semibold">
             {servers.length}{' '}
-            <span className="text-muted-foreground text-xs font-normal">active instances</span>
+            <span className="text-muted-foreground text-xs font-normal">instances</span>
           </div>
         </div>
 
-        <div className="bg-card/80 border-border rounded-2xl border p-4 backdrop-blur-xl">
-          <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
-            <span>Armed Tools</span>
-            <Wrench className="size-4 text-primary" />
+        <div className="border-border bg-card rounded-2xl border p-4">
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
+            <span>Available Tools</span>
+            <Wrench className="text-muted-foreground size-4" />
           </div>
-          <div className="mt-2 font-mono text-2xl font-bold text-primary">
+          <div className="text-foreground mt-2 text-2xl font-semibold">
             {totalActiveTools}{' '}
-            <span className="text-muted-foreground text-xs font-normal">callable functions</span>
+            <span className="text-muted-foreground text-xs font-normal">functions</span>
           </div>
         </div>
 
-        <div className="bg-card/80 border-border rounded-2xl border p-4 backdrop-blur-xl">
-          <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
-            <span>Protocol Standard</span>
-            <ShieldCheck className="size-4 text-primary" />
+        <div className="border-border bg-card rounded-2xl border p-4">
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
+            <span>Protocol</span>
+            <ShieldCheck className="text-muted-foreground size-4" />
           </div>
-          <div className="text-foreground mt-2 font-mono text-sm font-bold">
-            Remote SSE (HTTP Stream)
+          <div className="text-foreground mt-2 text-sm font-semibold">
+            Remote SSE
           </div>
-          <div className="text-muted-foreground mt-0.5 font-mono text-[10px]">
-            Remote MCP Supported · Local STDIO Unavailable
+          <div className="text-muted-foreground mt-0.5 text-xs">
+            HTTP Stream · Local STDIO unavailable
           </div>
         </div>
       </div>
@@ -257,8 +240,8 @@ export function MCPView() {
       {/* Active Servers Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
-            <Radio className="size-3.5 text-primary" />
+          <h2 className="text-foreground flex items-center gap-2 text-sm font-medium">
+            <Radio className="text-muted-foreground size-3.5" />
             <span>Active Server Connections ({servers.length})</span>
           </h2>
         </div>
@@ -268,17 +251,16 @@ export function MCPView() {
             {[1, 2].map((n) => (
               <div
                 key={n}
-                className="bg-card/80 border-border h-44 animate-pulse rounded-2xl border"
+                className="bg-card border-border h-44 animate-pulse rounded-2xl border"
               />
             ))}
           </div>
         ) : servers.length === 0 ? (
           <div className="border-border bg-card space-y-3 rounded-2xl border border-dashed px-4 py-12 text-center">
-            <Cpu className="text-muted-foreground mx-auto size-10" />
-            <h3 className="text-foreground font-semibold">No Remote MCP servers registered</h3>
-            <p className="text-muted-foreground mx-auto max-w-sm text-xs">
-              Install a 1-click remote preset below or register a custom remote SSE endpoint to give
-              Exia tool-use capabilities.
+            <Cpu className="text-muted-foreground mx-auto size-8" />
+            <h3 className="text-foreground font-semibold">No MCP servers registered</h3>
+            <p className="text-muted-foreground mx-auto max-w-sm text-sm">
+              Register a remote SSE endpoint to give Exia tool-use capabilities during voice sessions.
             </p>
           </div>
         ) : (
@@ -290,38 +272,32 @@ export function MCPView() {
               return (
                 <div
                   key={server.id}
-                  className={`flex flex-col justify-between rounded-2xl border p-5 transition-all duration-200 ${
+                  className={`border-border bg-card flex flex-col justify-between rounded-2xl border p-5 transition-all duration-200 ${
                     server.enabled
-                      ? 'bg-card hover:bg-card/90 border-border shadow-xs hover:border-primary/25'
-                      : 'bg-card border-border/50 opacity-60'
+                      ? 'hover:border-white/10'
+                      : 'opacity-60'
                   }`}
                 >
                   <div className="space-y-3">
                     {/* Header */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <div
-                          className={`flex size-9 shrink-0 items-center justify-center rounded-xl border ${
-                            server.enabled
-                              ? 'border-primary/25 bg-primary/10 text-primary dark:text-primary'
-                              : 'bg-muted text-muted-foreground border-border'
-                          }`}
-                        >
+                        <div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
                           {isStdio ? (
-                            <Terminal className="size-4.5" />
+                            <Terminal className="size-4" />
                           ) : (
-                            <Globe className="size-4.5" />
+                            <Globe className="size-4" />
                           )}
                         </div>
                         <div className="truncate">
-                          <h3 className="text-foreground truncate font-mono text-sm font-bold">
+                          <h3 className="text-foreground truncate font-medium text-sm">
                             {server.name}
                           </h3>
                           <div className="mt-0.5 flex items-center gap-1.5">
-                            <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[10px] uppercase">
+                            <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-[11px]">
                               {server.server_type}
                             </span>
-                            <span className="text-muted-foreground font-mono text-[11px]">
+                            <span className="text-muted-foreground text-xs">
                               {server.tools?.length || 4} tools
                             </span>
                           </div>
@@ -334,7 +310,7 @@ export function MCPView() {
                         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                           server.enabled
                             ? 'bg-primary'
-                            : 'bg-muted-foreground/30 dark:bg-zinc-700'
+                            : 'bg-muted-foreground/30'
                         }`}
                       >
                         <span
@@ -346,8 +322,7 @@ export function MCPView() {
                     </div>
 
                     {/* Command / URL */}
-                    <div className="bg-muted/40 border-border text-muted-foreground truncate rounded-xl border p-2.5 font-mono text-[11px]">
-                      <span className="text-muted-foreground mr-1.5 select-none">$</span>
+                    <div className="bg-muted/30 border-border text-muted-foreground truncate rounded-lg border p-2.5 font-mono text-xs">
                       {server.command_or_url}
                     </div>
 
@@ -359,7 +334,7 @@ export function MCPView() {
                       ).map((tool, idx) => (
                         <span
                           key={idx}
-                          className="bg-card/80 text-muted-foreground border-border rounded-md border px-2 py-0.5 font-mono text-[10px]"
+                          className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 font-mono text-[11px]"
                         >
                           {tool}
                         </span>
@@ -372,14 +347,14 @@ export function MCPView() {
                     <button
                       onClick={() => handleTestPing(server.id)}
                       disabled={isTesting || !server.enabled}
-                      className="text-muted-foreground inline-flex cursor-pointer items-center gap-1.5 font-mono text-[11px] transition-colors hover:text-primary disabled:opacity-40 dark:hover:text-primary"
+                      className="text-muted-foreground inline-flex cursor-pointer items-center gap-1.5 text-xs transition-colors hover:text-foreground disabled:opacity-40"
                     >
                       {isTesting ? (
-                        <Loader2 className="size-3 animate-spin text-primary dark:text-primary" />
+                        <Loader2 className="size-3 animate-spin" />
                       ) : (
-                        <Zap className="size-3 text-primary dark:text-primary" />
+                        <Zap className="size-3" />
                       )}
-                      <span>{isTesting ? 'Pinging...' : 'Test Connection'}</span>
+                      <span>{isTesting ? 'Pinging…' : 'Test connection'}</span>
                     </button>
 
                     <div className="flex items-center gap-2">
@@ -392,7 +367,7 @@ export function MCPView() {
                       </button>
                       <button
                         onClick={() => handleDelete(server.id)}
-                        className="text-muted-foreground cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400"
+                        className="text-muted-foreground cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-rose-500/10 hover:text-rose-500"
                         title="Delete server"
                       >
                         <Trash2 className="size-3.5" />
@@ -413,15 +388,15 @@ export function MCPView() {
           <div className="bg-card border-border text-foreground w-full max-w-lg space-y-5 rounded-2xl border p-6 shadow-2xl">
             <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 text-primary dark:text-primary">
-                  <Globe className="size-4" />
+                <div className="bg-muted flex size-8 items-center justify-center rounded-xl">
+                  <Globe className="text-muted-foreground size-4" />
                 </div>
                 <div>
-                  <h3 className="text-foreground font-mono text-sm font-bold">
-                    {editingServer ? 'Edit Remote MCP Server' : 'Register Remote MCP Server'}
+                  <h3 className="text-foreground text-sm font-semibold">
+                    {editingServer ? 'Edit MCP Server' : 'Register MCP Server'}
                   </h3>
-                  <p className="text-muted-foreground text-[11px]">
-                    LiveKit voice agent will auto-discover callable tools via SSE
+                  <p className="text-muted-foreground text-xs">
+                    Exia auto-discovers callable tools via SSE
                   </p>
                 </div>
               </div>
@@ -434,90 +409,83 @@ export function MCPView() {
             </div>
 
             {/* Remote Support Note */}
-            <div className="flex items-start gap-2.5 rounded-xl border border-border bg-accent p-2.5 text-[11px] text-foreground dark:text-foreground/80">
-              <Globe className="mt-0.5 size-3.5 shrink-0 text-muted-foreground dark:text-muted-foreground" />
+            <div className="text-muted-foreground flex items-start gap-2.5 rounded-xl border border-border bg-muted/30 p-2.5 text-xs">
+              <Globe className="mt-0.5 size-3.5 shrink-0" />
               <span>
-                Currently, only <strong>Remote MCP (SSE / HTTP Stream)</strong> is supported. Local
-                (stdio) command execution is unavailable.
+                Only <strong className="text-foreground">Remote MCP (SSE / HTTP Stream)</strong> is supported. Local stdio execution is unavailable.
               </span>
             </div>
 
             {modalError && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 font-mono text-xs text-rose-600 dark:text-rose-300">
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-600 dark:text-rose-300">
                 {modalError}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
+            <form onSubmit={handleSubmit} className="space-y-4 text-sm">
               <div>
-                <label className="text-foreground mb-1 block font-semibold">Server Name</label>
+                <label className="text-foreground mb-1 block text-xs font-medium">Server Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Home Assistant IoT Gateway"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary w-full rounded-xl border px-3 py-2 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 input-focus w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
                   required
                 />
               </div>
 
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="text-foreground font-semibold">Transport Protocol</label>
-                  <span className="text-[10px] font-medium text-primary dark:text-primary">
-                    Remote SSE Supported
-                  </span>
+                  <label className="text-foreground text-xs font-medium">Transport Protocol</label>
+                  <span className="text-muted-foreground text-[11px]">Remote SSE supported</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setServerType('sse')}
-                    className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/35 bg-primary/15 px-3 py-2 font-bold text-primary transition-all dark:text-primary"
+                    className="border-primary/35 bg-primary/10 text-primary flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all"
                   >
                     <Globe className="size-3.5" />
-                    <span>Remote SSE (Stream)</span>
+                    <span>Remote SSE</span>
                   </button>
                   <div
-                    className="bg-muted/20 border-border/50 text-muted-foreground/40 flex cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border px-3 py-2 select-none"
+                    className="bg-muted/20 border-border/50 text-muted-foreground/40 flex cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm select-none"
                     title="Local stdio execution is not currently supported"
                   >
                     <Terminal className="size-3.5 opacity-40" />
                     <span>Local STDIO</span>
-                    <span className="bg-muted text-muted-foreground rounded px-1 py-0.5 text-[9px]">
+                    <span className="bg-muted text-muted-foreground rounded px-1 py-0.5 text-[10px]">
                       Disabled
                     </span>
                   </div>
                 </div>
-                <p className="text-muted-foreground mt-1 text-[10px]">
-                  Local command execution is currently not supported. Please provide a remote SSE
-                  endpoint URL.
-                </p>
               </div>
 
               <div>
-                <label className="text-foreground mb-1 block font-semibold">
+                <label className="text-foreground mb-1 block text-xs font-medium">
                   Remote SSE Endpoint URL
                 </label>
                 <input
                   type="url"
-                  placeholder="e.g. http://homeassistant.local:8123/api/mcp/sse or https://api.example.com/sse"
+                  placeholder="https://api.example.com/sse"
                   value={commandOrUrl}
                   onChange={(e) => setCommandOrUrl(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary w-full rounded-xl border px-3 py-2 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 input-focus w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-foreground mb-1 block font-semibold">
-                  Bearer Token / Secret (Optional)
+                <label className="text-foreground mb-1 block text-xs font-medium">
+                  Bearer Token (optional)
                 </label>
                 <input
                   type="password"
                   placeholder="Bearer token if endpoint requires auth"
                   value={authToken}
                   onChange={(e) => setAuthToken(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary w-full rounded-xl border px-3 py-2 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 input-focus w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
                 />
               </div>
 
@@ -531,9 +499,9 @@ export function MCPView() {
                 />
                 <label
                   htmlFor="enabled"
-                  className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer text-sm transition-colors"
                 >
-                  Activate server immediately upon saving
+                  Activate immediately upon saving
                 </label>
               </div>
 
@@ -541,16 +509,16 @@ export function MCPView() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="text-muted-foreground hover:text-foreground cursor-pointer rounded-xl px-4 py-2 transition-colors"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer rounded-xl px-4 py-2 text-sm transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="cursor-pointer rounded-xl bg-primary px-5 py-2 font-bold text-white shadow-[0_0_12px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/80 disabled:opacity-50 dark:text-black dark:hover:bg-primary/90"
+                  className="bg-primary text-primary-foreground cursor-pointer rounded-xl px-5 py-2 text-sm font-semibold shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : editingServer ? 'Update Server' : 'Register Server'}
+                  {isSubmitting ? 'Saving…' : editingServer ? 'Update Server' : 'Register Server'}
                 </button>
               </div>
             </form>

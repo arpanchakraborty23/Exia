@@ -140,7 +140,7 @@ export function AgentSessionView_01({
 }: React.ComponentProps<'section'> & AgentSessionView_01Props) {
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { state: agentState } = useAgent();
   const { mood, expression } = useAgentExpression();
@@ -192,17 +192,17 @@ export function AgentSessionView_01({
           {stateConfig ? (
             <>
               <span className={cn('size-1.5 rounded-full', stateConfig.dot)} />
-              <span className={cn('font-mono text-xs font-semibold', stateConfig.text)}>
+              <span className={cn('text-xs font-semibold', stateConfig.text)}>
                 {stateConfig.label}
               </span>
               {agentState === 'listening' && (
-                <span className="font-mono text-[10px] text-white/30">— speak naturally</span>
+                <span className="text-[11px] text-white/40">— speak naturally</span>
               )}
             </>
           ) : (
             <>
               <span className="size-1.5 rounded-full bg-white/20" />
-              <span className="font-mono text-xs text-white/40 capitalize">
+              <span className="text-xs text-white/40 capitalize">
                 {agentState || 'Ready'}
               </span>
             </>
@@ -213,7 +213,7 @@ export function AgentSessionView_01({
             <>
               <span className="text-white/15">·</span>
               <span
-                className="rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold capitalize"
+                className="rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize"
                 style={{
                   backgroundColor: `${moodColor}15`,
                   borderColor: `${moodColor}40`,
@@ -269,7 +269,7 @@ export function AgentSessionView_01({
                 key="pre-connect-message"
                 aria-hidden={messages.length > 0}
                 {...SHIMMER_MOTION}
-                className="shimmer-text pointer-events-none mx-auto mb-3 block w-full max-w-lg text-center font-mono text-sm font-semibold tracking-wide"
+                className="shimmer-text pointer-events-none mx-auto mb-3 block w-full max-w-lg text-center text-sm font-medium tracking-wide"
               >
                 {preConnectMessage}
               </motion.p>

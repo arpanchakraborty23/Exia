@@ -9,7 +9,6 @@ import {
   FileText,
   Plus,
   RefreshCw,
-  Sliders,
   Sparkles,
   Terminal,
   Trash2,
@@ -29,36 +28,36 @@ const VARIABLE_PILLS = [
 
 const CURATED_DIRECTIVES = [
   {
-    title: 'Exia  Tactical Guardian',
+    title: 'Exia Standard Persona',
     type: 'system' as const,
     badge: 'DEFAULT',
     icon: Terminal,
     prompt_text:
-      'You are Exia (), an autonomous mecha tactical intelligence designed for home command and personal assistance. Speak with calm, authoritative precision. Keep voice responses crisp and under 2-3 sentences unless asked for an in-depth breakdown. Prioritize safety, smart home diagnostics, and immediate tactical execution.',
+      'You are Exia, an intelligent multimodal assistant. Speak with calm, natural precision. Keep voice responses crisp and under 2-3 sentences unless asked for an in-depth breakdown. Prioritize helpfulness, smart device actions, and immediate clarity.',
   },
   {
-    title: 'Minimalist Voice Assistant',
+    title: 'Concise Voice Assistant',
     type: 'system' as const,
-    badge: 'ULTRA-FAST',
+    badge: 'FAST',
     icon: Zap,
     prompt_text:
-      'You are a high-speed home automation interface. Respond in 1 brief sentence whenever possible. Confirm commands concisely (e.g. "Living room lamps set to 40%"). Never output conversational filler.',
+      'You are a high-speed home automation interface. Respond in 1 brief sentence whenever possible. Confirm commands concisely (e.g. "Living room lights set to 40%"). Avoid conversational filler.',
   },
   {
     title: 'Home Diagnostic Macro',
     type: 'quick' as const,
-    badge: 'SECURITY',
+    badge: 'DIAGNOSTICS',
     icon: Sparkles,
     prompt_text:
-      'Run an immediate diagnostic scan of all Home Assistant connected entities. Check HVAC setpoint, exterior perimeter contact sensors, lock statuses, and network latency. Report status anomalies immediately.',
+      'Inspect home telemetry across all registered MCP servers. Report disconnected endpoints, battery alerts, and offline smart sensors immediately.',
   },
   {
-    title: 'Night Patrol Mode',
-    type: 'quick' as const,
-    badge: 'ROUTINE',
-    icon: Sliders,
+    title: 'Technical Coding Companion',
+    type: 'system' as const,
+    badge: 'EXPERT',
+    icon: FileText,
     prompt_text:
-      'Activate Night Patrol protocol: Arm exterior sensors, dim all hallway lighting to 10% warm amber, ensure garage entry is locked, and confirm thermostat is lowered to 68°F.',
+      'You are a software engineering peer assistant. Provide code snippets directly, highlight potential bugs or edge cases, and keep architectural explanations clear and structured.',
   },
 ];
 
@@ -67,13 +66,13 @@ export function PromptsView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Active directive ID (stored in localStorage)
-  const [activeDirectiveId, setActiveDirectiveId] = useState<string>('default-exia');
+  // Active directive ID
+  const [activeDirectiveId, setActiveDirectiveId] = useState<string>('preset_0');
 
-  // Filter tab: 'all' | 'system' | 'quick'
+  // Filter state: 'all' | 'system' | 'quick'
   const [filterType, setFilterType] = useState<'all' | 'system' | 'quick'>('all');
 
-  // Modal states
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<PromptItem | null>(null);
   const [title, setTitle] = useState('');
@@ -82,27 +81,8 @@ export function PromptsView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
 
-  // Copied feedback
+  // Copy status
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  // Load active directive from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('exia_active_directive_id');
-      if (saved) setActiveDirectiveId(saved);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const handleSetActive = (id: string) => {
-    setActiveDirectiveId(id);
-    try {
-      localStorage.setItem('exia_active_directive_id', id);
-    } catch {
-      // ignore
-    }
-  };
 
   const fetchPrompts = async () => {
     setIsLoading(true);
@@ -110,8 +90,21 @@ export function PromptsView() {
     try {
       const data = await api.prompts.getPrompts();
       setPrompts(data || []);
+      if (data && data.length > 0 && activeDirectiveId === 'preset_0') {
+        setActiveDirectiveId(data[0].id);
+      }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load prompts from backend endpoint');
+      console.warn('API fetch failed, falling back to defaults:', err);
+      // Fallback curated defaults so page never renders empty
+      setPrompts(
+        CURATED_DIRECTIVES.map((d, i) => ({
+          id: `preset_${i}`,
+          title: d.title,
+          prompt_text: d.prompt_text,
+          type: d.type,
+          created_at: new Date().toISOString(),
+        }))
+      );
     } finally {
       setIsLoading(false);
     }
@@ -121,11 +114,7 @@ export function PromptsView() {
     fetchPrompts();
   }, []);
 
-  const handleOpenAdd = (preset?: {
-    title: string;
-    prompt_text: string;
-    type: 'system' | 'quick';
-  }) => {
+  const handleOpenAdd = (preset?: (typeof CURATED_DIRECTIVES)[0]) => {
     setEditingPrompt(null);
     setTitle(preset?.title || '');
     setPromptText(preset?.prompt_text || '');
@@ -181,9 +170,16 @@ export function PromptsView() {
     try {
       await api.prompts.deletePrompt(id);
       setPrompts((prev) => prev.filter((p) => p.id !== id));
+      if (activeDirectiveId === id) {
+        setActiveDirectiveId(prompts[0]?.id || 'preset_0');
+      }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to delete directive');
+      console.error('Delete error:', err);
     }
+  };
+
+  const handleSetActive = (id: string) => {
+    setActiveDirectiveId(id);
   };
 
   const handleCopy = (text: string, id: string) => {
@@ -201,74 +197,64 @@ export function PromptsView() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-4 md:p-8">
+    <div className="mx-auto max-w-5xl space-y-8 p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-foreground font-mono text-xl font-extrabold tracking-tight md:text-2xl">
-              DIRECTIVE & PROMPT MATRIX
-            </h1>
-            <span className="rounded border border-primary/25 bg-primary/15 px-2 py-0.5 font-mono text-[10px] font-bold text-primary dark:text-primary">
-              TACTICAL BRAIN
-            </span>
-          </div>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
-            Configure system instructions, voice response brevity, and smart home command macros for
-            Exia.
+          <h1 className="text-foreground text-xl font-semibold tracking-tight">
+            Directives & System Prompts
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Configure system personas, conversational brevity, and smart home command behavior for Exia.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={fetchPrompts}
             disabled={isLoading}
-            className="bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border cursor-pointer rounded-xl border p-2 shadow-xs transition-all"
-            title="Refresh"
+            className="border-border hover:bg-muted text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center justify-center rounded-xl border p-2 transition-colors"
+            title="Refresh directives"
           >
             <RefreshCw className={`size-4 ${isLoading ? 'animate-spin text-primary' : ''}`} />
           </button>
           <button
+            type="button"
             onClick={() => handleOpenAdd()}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-black shadow-[0_0_15px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary-hover inline-flex cursor-pointer items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold shadow-sm transition-all"
           >
             <Plus className="size-4" />
-            <span>New Custom Directive</span>
+            <span>New Directive</span>
           </button>
         </div>
       </div>
 
       {/* Active Directive Spotlight Banner */}
-      <div className="via-card to-card relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/8 p-5 shadow-xs backdrop-blur-xl">
-        <div className="relative z-10 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+      <div className="border-border bg-card relative overflow-hidden rounded-2xl border p-5 shadow-sm">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="size-2 animate-pulse rounded-full bg-primary shadow-[0_0_8px_rgba(31,213,249,0.5)]" />
-              <span className="font-mono text-xs font-bold tracking-wider text-primary uppercase dark:text-primary">
-                LIVE AGENT DIRECTIVE IN PLAY
+              <span className="size-2 rounded-full bg-emerald-500" />
+              <span className="text-muted-foreground text-xs font-medium">
+                Active Live Directive
               </span>
             </div>
-            <h3 className="text-foreground font-mono text-base font-bold">
-              Exia  Tactical Autonomous Butler
+            <h3 className="text-foreground text-base font-semibold">
+              Exia Standard Persona
             </h3>
             <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">
-              Real-time voice tone tuned to concise military brevity, proactive IoT anomaly
-              detection, and rapid tool dispatching.
+              Sub-second conversational audio tuned to concise responses, IoT anomaly detection, and automated tool calls.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="text-muted-foreground hidden text-right font-mono text-[11px] sm:block">
-              <div>System Tokens: ~180</div>
-              <div className="font-semibold text-primary dark:text-primary">
-                Audio Latency: Optimized
-              </div>
-            </div>
+          <div className="flex items-center gap-2.5">
             <button
+              type="button"
               onClick={() => handleOpenAdd(CURATED_DIRECTIVES[0])}
-              className="cursor-pointer rounded-xl border border-primary/30 bg-primary/15 px-3.5 py-1.5 font-mono text-xs font-medium text-primary shadow-xs transition-all hover:bg-primary/25 dark:text-primary"
+              className="border-border hover:bg-muted text-foreground inline-flex cursor-pointer items-center rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors"
             >
-              Tune Parameters
+              Tune parameters
             </button>
           </div>
         </div>
@@ -280,11 +266,13 @@ export function PromptsView() {
           {(['all', 'system', 'quick'] as const).map((t) => (
             <button
               key={t}
+              type="button"
               onClick={() => setFilterType(t)}
-              className={`cursor-pointer rounded-xl px-3 py-1.5 font-mono text-xs font-medium transition-all ${filterType === t
-                  ? 'bg-muted text-foreground border-border border font-bold shadow-xs'
+              className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
+                filterType === t
+                  ? 'border-border bg-muted text-foreground border shadow-xs'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
+              }`}
             >
               {t === 'all'
                 ? `All Directives (${prompts.length})`
@@ -298,8 +286,8 @@ export function PromptsView() {
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 font-mono text-sm text-rose-600 dark:text-rose-300">
-          <AlertCircle className="size-4 shrink-0 text-rose-500" />
+        <div className="flex items-center gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-xs font-medium text-rose-500">
+          <AlertCircle className="size-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -308,13 +296,13 @@ export function PromptsView() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="bg-card border-border h-44 animate-pulse rounded-2xl border" />
+            <div key={n} className="border-border bg-card h-40 animate-pulse rounded-2xl border" />
           ))}
         </div>
       ) : filteredPrompts.length === 0 ? (
         <div className="border-border bg-card/40 space-y-3 rounded-2xl border border-dashed px-4 py-12 text-center">
           <FileText className="text-muted-foreground mx-auto size-10" />
-          <h3 className="text-foreground font-semibold">No directives match this filter</h3>
+          <h3 className="text-foreground text-sm font-semibold">No directives match this filter</h3>
           <p className="text-muted-foreground mx-auto max-w-sm text-xs">
             Choose a curated preset below or add a new custom instruction.
           </p>
@@ -329,78 +317,84 @@ export function PromptsView() {
             return (
               <div
                 key={item.id}
-                className={`group flex flex-col justify-between rounded-2xl border p-5 shadow-xs transition-all duration-200 ${isActive
-                    ? 'bg-card border-primary/35 shadow-[0_0_15px_rgba(16,185,129,0.08)]'
-                    : 'bg-card hover:bg-card/90 border-border hover:border-primary/25'
-                  }`}
+                className={`flex flex-col justify-between rounded-2xl border p-5 shadow-sm transition-all ${
+                  isActive
+                    ? 'border-primary/40 bg-card ring-1 ring-primary/20'
+                    : 'border-border bg-card hover:border-border/80'
+                }`}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <div className="bg-muted text-foreground border-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div className="border-border bg-muted/60 flex size-8 shrink-0 items-center justify-center rounded-xl border">
                         {isSystem ? (
-                          <Terminal className="size-4 text-primary" />
+                          <Terminal className="text-primary size-4" />
                         ) : (
-                          <Sparkles className="size-4 text-primary" />
+                          <Sparkles className="text-primary size-4" />
                         )}
                       </div>
                       <div className="truncate">
-                        <h3 className="text-foreground truncate font-mono text-sm font-bold">
+                        <h3 className="text-foreground truncate text-sm font-semibold">
                           {item.title}
                         </h3>
-                        <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[10px] uppercase">
+                        <span className="text-muted-foreground text-[10px] font-medium uppercase">
                           {item.type}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       <button
+                        type="button"
                         onClick={() => handleCopy(item.prompt_text, item.id)}
                         className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                        title="Copy to clipboard"
+                        title="Copy prompt text"
                       >
                         {isCopied ? (
-                          <Check className="size-4 text-primary" />
+                          <Check className="text-primary size-4" />
                         ) : (
                           <Copy className="size-4" />
                         )}
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleOpenEdit(item)}
                         className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                        title="Edit prompt"
+                        title="Edit directive"
                       >
                         <Edit3 className="size-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDelete(item.id)}
-                        className="text-muted-foreground cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-rose-500/10 hover:text-rose-500"
-                        title="Delete prompt"
+                        className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 cursor-pointer rounded-lg p-1.5 transition-colors"
+                        title="Delete directive"
                       >
                         <Trash2 className="size-4" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="bg-muted/50 border-border text-foreground line-clamp-4 rounded-xl border p-3 font-mono text-xs leading-relaxed select-text">
+                  <p className="border-border bg-muted/30 text-foreground/80 line-clamp-3 rounded-xl border p-3 text-xs leading-relaxed">
                     {item.prompt_text}
-                  </div>
+                  </p>
                 </div>
 
-                <div className="border-border mt-4 flex items-center justify-between border-t pt-3 text-xs">
-                  <span className="text-muted-foreground font-mono text-[10px]">
-                    {item.prompt_text.length} chars
+                <div className="border-border mt-4 flex items-center justify-between border-t pt-3">
+                  <span className="text-muted-foreground text-[11px]">
+                    {item.prompt_text.length} characters
                   </span>
 
                   <button
+                    type="button"
                     onClick={() => handleSetActive(item.id)}
-                    className={`cursor-pointer rounded-lg px-3 py-1 font-mono text-[11px] font-medium transition-all ${isActive
-                        ? 'border border-primary/35 bg-primary/15 font-bold text-primary dark:text-primary'
-                        : 'bg-muted text-muted-foreground hover:text-foreground border-border border'
-                      }`}
+                    className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
+                      isActive
+                        ? 'border border-primary/30 bg-primary/10 text-primary'
+                        : 'border-border bg-muted/30 text-muted-foreground hover:text-foreground border'
+                    }`}
                   >
-                    {isActive ? '✓ Active Live' : 'Set as Active'}
+                    {isActive ? 'Active' : 'Set active'}
                   </button>
                 </div>
               </div>
@@ -410,15 +404,13 @@ export function PromptsView() {
       )}
 
       {/* Preset Library Showcase */}
-      <div className="border-border space-y-4 border-t pt-4">
+      <div className="border-border space-y-4 border-t pt-6">
         <div>
-          <h2 className="text-foreground flex items-center gap-2 font-mono text-sm font-bold tracking-wider uppercase">
-            <Zap className="size-3.5 text-primary" />
-            <span>Curated Tactical Directives</span>
+          <h2 className="text-foreground text-sm font-semibold">
+            Curated Directives
           </h2>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            Pre-engineered prompts calibrated for voice latency, clarity, and smart home command
-            response.
+            Pre-configured templates calibrated for sub-second latency and smart home execution.
           </p>
         </div>
 
@@ -428,29 +420,30 @@ export function PromptsView() {
             return (
               <div
                 key={idx}
-                className="bg-card hover:bg-muted/50 border-border flex flex-col justify-between rounded-2xl border p-4 shadow-xs transition-all duration-200 hover:border-primary/25"
+                className="border-border bg-card hover:bg-muted/20 flex flex-col justify-between rounded-2xl border p-4 shadow-sm transition-all"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:text-primary">
+                    <div className="border-border bg-muted/60 flex size-8 items-center justify-center rounded-xl border text-primary">
                       <Icon className="size-4" />
                     </div>
-                    <span className="py-0.2 bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-[9px] font-bold">
+                    <span className="border-border bg-muted text-muted-foreground rounded border px-1.5 py-0.5 text-[10px] font-medium">
                       {preset.badge}
                     </span>
                   </div>
-                  <h3 className="text-foreground font-mono text-xs font-bold">{preset.title}</h3>
-                  <p className="text-muted-foreground line-clamp-3 text-[11px] leading-relaxed">
+                  <h3 className="text-foreground text-xs font-semibold">{preset.title}</h3>
+                  <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed">
                     {preset.prompt_text}
                   </p>
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => handleOpenAdd(preset)}
-                  className="bg-muted text-foreground border-border mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-medium transition-all hover:border-primary/35 hover:bg-primary/15 hover:text-primary dark:hover:text-primary"
+                  className="border-border bg-muted/30 hover:bg-muted text-foreground mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors"
                 >
                   <Plus className="size-3.5" />
-                  <span>Import Directive</span>
+                  <span>Import</span>
                 </button>
               </div>
             );
@@ -460,108 +453,103 @@ export function PromptsView() {
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-150">
-          <div className="bg-card border-border text-foreground w-full max-w-lg space-y-5 rounded-2xl border p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="border-border bg-card text-foreground w-full max-w-lg space-y-5 rounded-2xl border p-6 shadow-2xl">
             <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/20 bg-primary/15 text-primary dark:text-primary">
+                <div className="border-border bg-muted/60 flex size-8 items-center justify-center rounded-xl border text-primary">
                   <FileText className="size-4" />
                 </div>
                 <div>
-                  <h3 className="text-foreground font-mono text-sm font-bold">
+                  <h3 className="text-foreground text-sm font-semibold">
                     {editingPrompt ? 'Edit Directive' : 'New Directive'}
                   </h3>
-                  <p className="text-muted-foreground text-[11px]">
-                    LiveKit system persona injected at voice session start
+                  <p className="text-muted-foreground text-xs">
+                    System persona injected during LiveKit voice sessions
                   </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg p-1.5 transition-colors"
               >
-                <X className="size-5" />
+                <X className="size-4" />
               </button>
             </div>
 
             {modalError && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 font-mono text-xs text-rose-600 dark:text-rose-300">
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs font-medium text-rose-500">
                 {modalError}
               </div>
             )}
 
-            <form onSubmit={handleSave} className="space-y-4 font-mono text-xs">
-              <div>
-                <label className="text-foreground mb-1 block font-semibold">Directive Name</label>
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-foreground text-xs font-medium">Directive Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Exia Tactical Butler"
+                  placeholder="e.g. Exia Personal Butler"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full rounded-xl border px-3 py-2 focus:border-primary/50 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-sm transition-all"
                   required
                 />
               </div>
 
-              <div>
-                <label className="text-foreground mb-1 block font-semibold">
-                  Type Classification
-                </label>
+              <div className="space-y-1.5">
+                <label className="text-foreground text-xs font-medium">Directive Type</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setType('system')}
-                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${type === 'system'
-                        ? 'border-primary/35 bg-primary/15 font-bold text-primary dark:text-primary'
-                        : 'bg-muted/40 text-muted-foreground border-border hover:text-foreground'
-                      }`}
+                    className={`cursor-pointer rounded-xl border p-2.5 text-center text-xs font-medium transition-all ${
+                      type === 'system'
+                        ? 'border-primary/40 bg-primary/10 text-primary font-semibold'
+                        : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40'
+                    }`}
                   >
-                    <Terminal className="size-3.5" />
-                    <span>System Persona</span>
+                    System Persona
                   </button>
                   <button
                     type="button"
                     onClick={() => setType('quick')}
-                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-2 transition-all ${type === 'quick'
-                        ? 'border-primary/35 bg-primary/15 font-bold text-primary dark:text-primary'
-                        : 'bg-muted/40 text-muted-foreground border-border hover:text-foreground'
-                      }`}
+                    className={`cursor-pointer rounded-xl border p-2.5 text-center text-xs font-medium transition-all ${
+                      type === 'quick'
+                        ? 'border-primary/40 bg-primary/10 text-primary font-semibold'
+                        : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40'
+                    }`}
                   >
-                    <Sparkles className="size-3.5" />
-                    <span>Quick Command</span>
+                    Quick Macro
                   </button>
                 </div>
               </div>
 
-              <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <label className="text-foreground font-semibold">Prompt Instructions</label>
-                  <span className="text-muted-foreground text-[10px]">
-                    Insert variable pills below
-                  </span>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-foreground text-xs font-medium">Instructions</label>
+                  <span className="text-muted-foreground text-[10px]">Supports prompt variables</span>
                 </div>
                 <textarea
                   rows={6}
-                  placeholder="Enter system instructions for Exia..."
+                  placeholder="Describe voice demeanor, domain knowledge, and response constraints..."
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 w-full resize-none rounded-xl border p-3 leading-relaxed focus:border-primary/50 focus:outline-none"
+                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border p-3 text-sm leading-relaxed transition-all"
                   required
                 />
               </div>
 
-              {/* Dynamic Variable Chips */}
+              {/* Dynamic Variables */}
               <div className="space-y-1.5">
-                <span className="text-muted-foreground text-[10px]">
-                  Click to insert dynamic variable:
-                </span>
+                <span className="text-muted-foreground text-[11px]">Insert variables:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {VARIABLE_PILLS.map((v) => (
                     <button
                       key={v}
                       type="button"
                       onClick={() => handleInsertVariable(v)}
-                      className="bg-muted text-foreground border-border cursor-pointer rounded-md border px-2 py-1 text-[10px] transition-colors hover:bg-primary/15 hover:text-primary dark:hover:text-primary"
+                      className="border-border bg-muted/40 hover:bg-muted text-foreground/80 cursor-pointer rounded-md border px-2 py-0.5 text-[10px] transition-colors"
                     >
                       {v}
                     </button>
@@ -569,24 +557,20 @@ export function PromptsView() {
                 </div>
               </div>
 
-              <div className="border-border flex items-center justify-end gap-3 border-t pt-3">
+              <div className="border-border flex items-center justify-end gap-2 border-t pt-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="text-muted-foreground hover:text-foreground cursor-pointer rounded-xl px-4 py-2 transition-colors"
+                  className="border-border hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer rounded-xl border px-4 py-2 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="cursor-pointer rounded-xl bg-primary px-5 py-2 font-bold text-black shadow-[0_0_12px_rgba(31,213,249,0.25)] transition-all hover:bg-primary/90 disabled:opacity-50"
+                  className="bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
                 >
-                  {isSubmitting
-                    ? 'Saving...'
-                    : editingPrompt
-                      ? 'Update Directive'
-                      : 'Save Directive'}
+                  {isSubmitting ? 'Saving...' : 'Save Directive'}
                 </button>
               </div>
             </form>

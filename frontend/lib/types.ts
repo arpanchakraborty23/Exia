@@ -96,4 +96,32 @@ export interface ModelConfig {
   tts_model: string;
   temperature: number;
   max_output_tokens?: number;
+
+  // API Keys & Endpoints
+  gemini_api_key?: string;
+  openai_api_key?: string;
+  anthropic_api_key?: string;
+  deepgram_api_key?: string;
+  cartesia_api_key?: string;
+  elevenlabs_api_key?: string;
+  speechmatics_api_key?: string;
+  ollama_base_url?: string;
+
+  // Speechmatics Voice Recognition & STT Parameters
+  speechmatics_model?: 'linden-1' | 'enhanced' | 'standard' | string;
+  speechmatics_language?: string;
+  speechmatics_turn_detection?: 'vad' | 'external';
+  speechmatics_max_delay?: number;
+  speechmatics_enable_partials?: boolean;
+  speechmatics_custom_dictionary?: string;
+  speechmatics_diarization?: boolean;
+
+  // Advanced Tuning Parameters
+  top_p?: number;
+  top_k?: number;
+  thinking_budget?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+  system_prompt_override?: string;
+  custom_model_name?: string;
 }
