@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exia — Desktop Initial Setup</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --card: #121215;
+      --border: #27272a;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff;
+    }
+    h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+    p.subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+    /* Tab switcher */
+    .tab-bar {
+      display: flex;
+      background: #18181b;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background: #27272a;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #d4d4d8;
+      margin-bottom: 6px;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+    input, textarea {
+      width: 100%;
+      background: #18181b;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    textarea {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 140px;
+    }
+    input:focus, textarea:focus { border-color: var(--primary); }
+    button.btn-secondary {
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    button.btn-secondary:hover { background: #3f3f46; }
+    button.btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    button.btn-primary:hover { background: var(--primary-hover); }
+    button.btn-primary:active { transform: scale(0.99); }
+    button.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .status-msg {
+      font-size: 12px;
+      margin-top: 8px;
+      line-height: 1.4;
+      display: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+    .status-msg.ok {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--emerald);
+      display: block;
+    }
+    .status-msg.err {
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      color: var(--rose);
+      display: block;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    details {
+      margin-top: 14px;
+      background: #18181b;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    details summary {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    details .inner { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">EX</div>
+      <div>
+        <h1>Welcome to Exia Desktop</h1>
+        <p class="subtitle">Quick setup: Provide your environment configuration to confirm and launch.</p>
+      </div>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="tab-bar">
+      <button type="button" class="tab-btn active" id="tabEnvBtn">⚡ Paste .env (Recommended)</button>
+      <button type="button" class="tab-btn" id="tabManualBtn">Manual Inputs</button>
+    </div>
+
+    <!-- TAB 1: Fast .env Import (Zero Headache) -->
+    <div id="envPanel">
+      <form id="envForm">
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="envText" style="margin-bottom: 0;">Paste .env Configuration</label>
+            <label for="envFileInput" style="margin-bottom: 0; font-size: 12px; color: var(--primary); cursor: pointer; text-decoration: underline;">
+              📁 Load .env File
+            </label>
+            <input type="file" id="envFileInput" accept=".env,text/plain" style="display: none;">
+          </div>
+          <textarea id="envText" placeholder="MONGODB_URI=mongodb://localhost:27017
+MONGODB_DATABASE=exia_db
+LIVEKIT_API_HOST=wss://your-livekit-url
+LIVEKIT_API_KEY=APIxxxx
+LIVEKIT_API_SECRET=sec_xxxx" required></textarea>
+          <div class="hint">The code will automatically test connection to your database and verify configuration.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="envOpPass">Set Local Operator Password (min 6 characters)</label>
+          <input type="password" id="envOpPass" placeholder="••••••••" minlength="6" required>
+          <div class="hint">Used for your local desktop operator account (admin@exia.local).</div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="envSubmitBtn">Confirm with Code & Launch Exia</button>
+        <div id="envStatus" class="status-msg"></div>
+      </form>
+    </div>
+
+    <!-- TAB 2: Manual Entry Form -->
+    <div id="manualPanel" style="display: none;">
+      <form id="manualForm">
+        <div class="form-group">
+          <label for="mongoUri">MongoDB Connection URI</label>
+          <div class="input-row">
+            <input type="text" id="mongoUri" value="mongodb://localhost:27017" placeholder="mongodb://localhost:27017" required>
+            <button type="button" class="btn-secondary" id="testBtn">Test</button>
+          </div>
+          <div id="testStatus" class="status-msg"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="mongoDb">Database Name</label>
+          <input type="text" id="mongoDb" value="exia_db" required>
+        </div>
+
+        <div class="form-group">
+          <label for="opName">Operator Display Name</label>
+          <input type="text" id="opName" value="Operator Alpha" required>
+        </div>
+
+        <div class="form-group">
+          <label for="opEmail">Operator Email</label>
+          <input type="email" id="opEmail" value="admin@exia.local" required>
+        </div>
+
+        <div class="form-group">
+          <label for="opPass">Operator Password</label>
+          <input type="password" id="opPass" placeholder="••••••••" minlength="6" required>
+        </div>
+
+        <details>
+          <summary>LiveKit SFU Gateway (Optional)</summary>
+          <div class="inner">
+            <div class="form-group">
+              <label for="lkUrl">LiveKit Host URL</label>
+              <input type="text" id="lkUrl" placeholder="wss://your-project.livekit.cloud">
+            </div>
+            <div class="form-group">
+              <label for="lkKey">LiveKit API Key</label>
+              <input type="text" id="lkKey" placeholder="APIxxxxxxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label for="lkSecret">LiveKit API Secret</label>
+              <input type="password" id="lkSecret" placeholder="sec_xxxxxxxxxxxx">
+            </div>
+          </div>
+        </details>
+
+        <button type="submit" class="btn-primary" id="manualSubmitBtn">Save Configuration & Launch</button>
+        <div id="manualStatus" class="status-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    const tabEnvBtn = document.getElementById('tabEnvBtn');
+    const tabManualBtn = document.getElementById('tabManualBtn');
+    const envPanel = document.getElementById('envPanel');
+    const manualPanel = document.getElementById('manualPanel');
+
+    tabEnvBtn.addEventListener('click', () => {
+      tabEnvBtn.classList.add('active');
+      tabManualBtn.classList.remove('active');
+      envPanel.style.display = 'block';
+      manualPanel.style.display = 'none';
+    });
+
+    tabManualBtn.addEventListener('click', () => {
+      tabManualBtn.classList.add('active');
+      tabEnvBtn.classList.remove('active');
+      envPanel.style.display = 'none';
+      manualPanel.style.display = 'block';
+    });
+
+    // File input for .env
+    const envFileInput = document.getElementById('envFileInput');
+    const envText = document.getElementById('envText');
+    envFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        envText.value = evt.target.result;
+      };
+      reader.readAsText(file);
+    });
+
+    // Handle .env direct confirmation
+    const envForm = document.getElementById('envForm');
+    const envSubmitBtn = document.getElementById('envSubmitBtn');
+    const envStatus = document.getElementById('envStatus');
+
+    envForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      envSubmitBtn.disabled = true;
+      envSubmitBtn.textContent = 'Testing Connection & Confirming with Code...';
+      envStatus.className = 'status-msg';
+      envStatus.textContent = '';
+
+      const payload = {
+        env_content: envText.value.trim(),
+        operator_password: document.getElementById('envOpPass').value,
+        operator_email: 'admin@exia.local',
+        operator_name: 'Operator'
+      };
+
+      try {
+        const res = await fetch('/api/setup/confirm-env', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+          envStatus.className = 'status-msg ok';
+          envStatus.innerHTML = `✓ <strong>Verified!</strong> Connected to database.<br>✓ Configuration confirmed and saved to APPDATA.<br>✓ Redirecting to Exia Dashboard...`;
+          setTimeout(() => { window.location.href = '/'; }, 1500);
+        } else {
+          envStatus.className = 'status-msg err';
+          envStatus.textContent = '✗ ' + (data.detail || data.message || 'Setup verification failed.');
+          envSubmitBtn.disabled = false;
+          envSubmitBtn.textContent = 'Confirm with Code & Launch Exia';
+        }
+      } catch (err) {
+        envStatus.className = 'status-msg err';
+        envStatus.textContent = '✗ Connection error: ' + err.message;
+        envSubmitBtn.disabled = false;
+        envSubmitBtn.textContent = 'Confirm with Code & Launch Exia';
+      }
+    });
+
+    // Manual Form handler
+    const testBtn = document.getElementById('testBtn');
+    const testStatus = document.getElementById('testStatus');
+    const manualForm = document.getElementById('manualForm');
+    const manualStatus = document.getElementById('manualStatus');
+    const manualSubmitBtn = document.getElementById('manualSubmitBtn');
+
+    testBtn.addEventListener('click', async () => {
+      const uri = document.getElementById('mongoUri').value.trim();
+      testStatus.className = 'status-msg';
+      testStatus.textContent = 'Testing connection...';
+      testStatus.style.display = 'block';
+
+      try {
+        const res = await fetch('/api/setup/test-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uri })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          testStatus.className = 'status-msg ok';
+          testStatus.textContent = '✓ ' + data.message;
+        } else {
+          testStatus.className = 'status-msg err';
+          testStatus.textContent = '✗ ' + (data.message || 'Connection failed');
+        }
+      } catch (err) {
+        testStatus.className = 'status-msg err';
+        testStatus.textContent = '✗ Test failed: ' + err.message;
+      }
+    });
+
+    manualForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      manualSubmitBtn.disabled = true;
+      manualSubmitBtn.textContent = 'Initializing Database & Operator...';
+      manualStatus.className = 'status-msg';
+      manualStatus.textContent = '';
+
+      const payload = {
+        mongodb_uri: document.getElementById('mongoUri').value.trim(),
+        mongodb_database: document.getElementById('mongoDb').value.trim(),
+        operator_name: document.getElementById('opName').value.trim(),
+        operator_email: document.getElementById('opEmail').value.trim(),
+        operator_password: document.getElementById('opPass').value,
+        livekit_url: document.getElementById('lkUrl').value.trim(),
+        livekit_api_key: document.getElementById('lkKey').value.trim(),
+        livekit_api_secret: document.getElementById('lkSecret').value.trim(),
+      };
+
+      try {
+        const res = await fetch('/api/setup/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+          manualStatus.className = 'status-msg ok';
+          manualStatus.textContent = '✓ Setup complete! Redirecting to dashboard...';
+          setTimeout(() => { window.location.href = '/'; }, 1500);
+        } else {
+          manualStatus.className = 'status-msg err';
+          manualStatus.textContent = '✗ ' + (data.detail || data.message || 'Setup failed');
+          manualSubmitBtn.disabled = false;
+          manualSubmitBtn.textContent = 'Save Configuration & Launch';
+        }
+      } catch (err) {
+        manualStatus.className = 'status-msg err';
+        manualStatus.textContent = '✗ Setup error: ' + err.message;
+        manualSubmitBtn.disabled = false;
+        manualSubmitBtn.textContent = 'Save Configuration & Launch';
+      }
+    });
+  </script>
+</body>
+</html>

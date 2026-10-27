@@ -1,3 +1,5 @@
+import os
+import sys
 from functools import lru_cache
 from pathlib import Path
 from pydantic import Field
@@ -8,13 +10,39 @@ CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent
 PROJECT_ROOT = BACKEND_DIR.parent
 
+
+def get_candidate_env_files() -> list[Path]:
+    """Returns candidate .env paths prioritizing portable mode and user APPDATA."""
+    candidates = []
+
+    # 1. Portable mode: next to running executable (if frozen)
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / ".env")
+
+    # 2. Windows APPDATA persistent user config
+    appdata = os.environ.get("APPDATA")
+    if appdata:
+        candidates.append(Path(appdata) / "Exia" / ".env")
+    else:
+        candidates.append(Path.home() / ".exia" / ".env")
+
+    # 3. Current working directory
+    candidates.append(Path.cwd() / ".env")
+
+    # 4. Project workspace locations
+    candidates.extend([
+        PROJECT_ROOT / ".env",
+        BACKEND_DIR / ".env",
+    ])
+
+    existing = [p for p in candidates if p.exists()]
+    return existing if existing else candidates
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=[
-            PROJECT_ROOT / ".env",
-            BACKEND_DIR / ".env",
-            ".env",
-        ],
+        env_file=get_candidate_env_files(),
         env_file_encoding="utf-8",
         extra="ignore",
     )
