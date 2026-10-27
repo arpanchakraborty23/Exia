@@ -3,7 +3,6 @@ import json
 import time
 import hashlib
 import argparse
-import urllib.request
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
@@ -248,9 +247,8 @@ class ToolToggleRequest(BaseModel):
 @app.post("/api/mcp/check-and-save")
 async def check_and_save_mcp(req: MCPServerRequest):
     """
-    Checks connection to an MCP server, discovers/validates tools,
-    and directly stores the server & tool catalog in MongoDB Atlas 'mcp_servers' collection.
-    All tool data is fetched from the DB by the UI.
+    Validates the MCP configuration and stores the server & tool catalog in MongoDB Atlas
+    'mcp_servers' collection. All tool data is fetched from the DB by the UI.
     """
     server_dict = req.model_dump()
     status = "connected"
@@ -296,20 +294,10 @@ async def check_and_save_mcp(req: MCPServerRequest):
 
     server_dict["tools"] = tools
 
-    # Check network connection for SSE / HTTP endpoints
+    # Do not make requests to user-provided URLs; save endpoints for later connection.
     if req.transport in ["sse", "websocket"] and req.url:
-        try:
-            # Quick 2.5-second HTTP probe
-            probe_req = urllib.request.Request(
-                req.url,
-                headers={"User-Agent": "HomeAssistant-MCP-Probe/1.0"}
-            )
-            with urllib.request.urlopen(probe_req, timeout=2.5) as response:
-                status = "connected"
-                check_message = f"Successfully contacted SSE server at {req.url} (HTTP {response.status}). Discovered {len(tools)} tools."
-        except Exception as net_err:
-            status = "unreachable"
-            check_message = f"Warning: Could not reach SSE endpoint {req.url}: {net_err}. Tools recorded in MongoDB Atlas for offline/reconnect."
+        status = "offline"
+        check_message = "Endpoint saved without a connection check; it will be available for later connection."
 
     server_dict["is_connected"] = (status == "connected")
     server_dict["status"] = status
