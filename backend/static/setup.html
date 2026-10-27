@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exia — Desktop Initial Setup</title>
+  <title>Exia — First-Time Environment Setup</title>
   <style>
     :root {
       --bg: #09090b;
       --card: #121215;
       --border: #27272a;
+      --border-focus: #3b82f6;
       --primary: #3b82f6;
       --primary-hover: #2563eb;
       --text: #f4f4f5;
       --muted: #a1a1aa;
       --emerald: #10b981;
       --rose: #f43f5e;
+      --card-inner: #18181b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -25,7 +27,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px;
+      padding: 32px 16px;
       -webkit-font-smoothing: antialiased;
     }
     .container {
@@ -33,101 +35,96 @@
       border: 1px solid var(--border);
       border-radius: 20px;
       width: 100%;
-      max-width: 600px;
-      padding: 32px;
+      max-width: 680px;
+      padding: 36px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
     .header {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
+      gap: 16px;
+      margin-bottom: 24px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--border);
     }
     .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 18px;
+      font-size: 20px;
       color: #fff;
     }
-    h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
-    p.subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+    p.subtitle { color: var(--muted); font-size: 13px; margin-top: 3px; line-height: 1.4; }
 
-    /* Tab switcher */
-    .tab-bar {
-      display: flex;
-      background: #18181b;
+    .card-section {
+      background: var(--card-inner);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 20px;
-      gap: 4px;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
     }
-    .tab-btn {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 12px;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .tab-btn.active {
-      background: #27272a;
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .form-group {
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 14px;
     }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e4e4e7;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group:last-child { margin-bottom: 0; }
     label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: #d4d4d8;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .input-row {
       display: flex;
       gap: 8px;
     }
-    input, textarea {
+    input, select, textarea {
       width: 100%;
-      background: #18181b;
+      background: #09090b;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
+      border-radius: 8px;
+      padding: 9px 12px;
       font-size: 13px;
       color: #fff;
       outline: none;
       transition: border-color 0.15s;
-      font-family: inherit;
     }
-    textarea {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.5;
-      resize: vertical;
-      min-height: 140px;
-    }
-    input:focus, textarea:focus { border-color: var(--primary); }
+    input:focus, select:focus, textarea:focus { border-color: var(--border-focus); }
     button.btn-secondary {
       background: #27272a;
       border: 1px solid #3f3f46;
       color: #e4e4e7;
-      padding: 0 16px;
-      border-radius: 10px;
+      padding: 0 14px;
+      border-radius: 8px;
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
@@ -141,11 +138,11 @@
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 12px 18px;
+      padding: 14px 20px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 16px;
+      margin-top: 20px;
       transition: background 0.15s, transform 0.1s;
     }
     button.btn-primary:hover { background: var(--primary-hover); }
@@ -171,25 +168,56 @@
       color: var(--rose);
       display: block;
     }
-    .hint {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 4px;
-    }
     details {
-      margin-top: 14px;
-      background: #18181b;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      margin-top: 8px;
     }
     details summary {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
+      font-size: 12px;
+      color: var(--primary);
       cursor: pointer;
+      font-weight: 500;
+      user-select: none;
     }
-    details .inner { margin-top: 12px; }
+    details .inner {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #27272a;
+    }
+    .helper-banner {
+      background: #18181b;
+      border: 1px dashed #3f3f46;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .helper-banner button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 12px;
+      text-decoration: underline;
+    }
+    #envPasteModal {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: #09090b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    #envPasteModal textarea {
+      font-family: monospace;
+      font-size: 11px;
+      height: 90px;
+    }
   </style>
 </head>
 <body>
@@ -197,55 +225,35 @@
     <div class="header">
       <div class="logo">EX</div>
       <div>
-        <h1>Welcome to Exia Desktop</h1>
-        <p class="subtitle">Quick setup: Provide your environment configuration to confirm and launch.</p>
+        <h1>Exia Desktop Setup</h1>
+        <p class="subtitle">Configure your database, custom collection names, and security credentials. This setup runs once.</p>
       </div>
     </div>
 
-    <!-- Mode Selector Tabs -->
-    <div class="tab-bar">
-      <button type="button" class="tab-btn active" id="tabEnvBtn">⚡ Paste .env (Recommended)</button>
-      <button type="button" class="tab-btn" id="tabManualBtn">Manual Inputs</button>
+    <!-- Optional Quick Auto-Fill Banner -->
+    <div class="helper-banner">
+      <span>Have an existing .env? Auto-populate form fields:</span>
+      <button type="button" id="togglePasteBtn">📋 Auto-Fill from .env</button>
+    </div>
+    <div id="envPasteModal">
+      <textarea id="envPasteInput" placeholder="Paste .env content here to automatically populate the fields below..."></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+        <button type="button" class="btn-secondary" id="applyEnvBtn">Apply Values</button>
+      </div>
     </div>
 
-    <!-- TAB 1: Fast .env Import (Zero Headache) -->
-    <div id="envPanel">
-      <form id="envForm">
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label for="envText" style="margin-bottom: 0;">Paste .env Configuration</label>
-            <label for="envFileInput" style="margin-bottom: 0; font-size: 12px; color: var(--primary); cursor: pointer; text-decoration: underline;">
-              📁 Load .env File
-            </label>
-            <input type="file" id="envFileInput" accept=".env,text/plain" style="display: none;">
-          </div>
-          <textarea id="envText" placeholder="MONGODB_URI=mongodb://localhost:27017
-MONGODB_DATABASE=exia_db
-LIVEKIT_API_HOST=wss://your-livekit-url
-LIVEKIT_API_KEY=APIxxxx
-LIVEKIT_API_SECRET=sec_xxxx" required></textarea>
-          <div class="hint">The code will automatically test connection to your database and verify configuration.</div>
+    <form id="setupForm">
+      <!-- 1. Database & Custom Collection Names -->
+      <div class="card-section">
+        <div class="section-header">
+          <span class="section-title">1. MongoDB Database & Collections</span>
         </div>
 
-        <div class="form-group">
-          <label for="envOpPass">Set Local Operator Password (min 6 characters)</label>
-          <input type="password" id="envOpPass" placeholder="••••••••" minlength="6" required>
-          <div class="hint">Used for your local desktop operator account (admin@exia.local).</div>
-        </div>
-
-        <button type="submit" class="btn-primary" id="envSubmitBtn">Confirm with Code & Launch Exia</button>
-        <div id="envStatus" class="status-msg"></div>
-      </form>
-    </div>
-
-    <!-- TAB 2: Manual Entry Form -->
-    <div id="manualPanel" style="display: none;">
-      <form id="manualForm">
         <div class="form-group">
           <label for="mongoUri">MongoDB Connection URI</label>
           <div class="input-row">
-            <input type="text" id="mongoUri" value="mongodb://localhost:27017" placeholder="mongodb://localhost:27017" required>
-            <button type="button" class="btn-secondary" id="testBtn">Test</button>
+            <input type="text" id="mongoUri" value="mongodb://localhost:27017" placeholder="mongodb://localhost:27017 or mongodb+srv://..." required>
+            <button type="button" class="btn-secondary" id="testBtn">Test Connection</button>
           </div>
           <div id="testStatus" class="status-msg"></div>
         </div>
@@ -255,130 +263,190 @@ LIVEKIT_API_SECRET=sec_xxxx" required></textarea>
           <input type="text" id="mongoDb" value="exia_db" required>
         </div>
 
-        <div class="form-group">
-          <label for="opName">Operator Display Name</label>
-          <input type="text" id="opName" value="Operator Alpha" required>
-        </div>
-
-        <div class="form-group">
-          <label for="opEmail">Operator Email</label>
-          <input type="email" id="opEmail" value="admin@exia.local" required>
-        </div>
-
-        <div class="form-group">
-          <label for="opPass">Operator Password</label>
-          <input type="password" id="opPass" placeholder="••••••••" minlength="6" required>
-        </div>
-
+        <!-- Custom Collection Names -->
         <details>
-          <summary>LiveKit SFU Gateway (Optional)</summary>
+          <summary>⚙️ Custom Collection Names (Optional)</summary>
           <div class="inner">
-            <div class="form-group">
-              <label for="lkUrl">LiveKit Host URL</label>
-              <input type="text" id="lkUrl" placeholder="wss://your-project.livekit.cloud">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="colUsers">Users Collection</label>
+                <input type="text" id="colUsers" value="users" required>
+              </div>
+              <div class="form-group">
+                <label for="colSessions">Sessions Collection</label>
+                <input type="text" id="colSessions" value="sessions" required>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="lkKey">LiveKit API Key</label>
-              <input type="text" id="lkKey" placeholder="APIxxxxxxxxxxxx">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="colMcp">MCP Servers Collection</label>
+                <input type="text" id="colMcp" value="mcp_servers" required>
+              </div>
+              <div class="form-group">
+                <label for="colPrompts">Prompts Collection</label>
+                <input type="text" id="colPrompts" value="prompts" required>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="lkSecret">LiveKit API Secret</label>
-              <input type="password" id="lkSecret" placeholder="sec_xxxxxxxxxxxx">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="colModels">Models Collection</label>
+                <input type="text" id="colModels" value="model_config" required>
+              </div>
+              <div class="form-group">
+                <label for="colBlacklist">Token Blacklist Collection</label>
+                <input type="text" id="colBlacklist" value="token_blacklist" required>
+              </div>
             </div>
           </div>
         </details>
+      </div>
 
-        <button type="submit" class="btn-primary" id="manualSubmitBtn">Save Configuration & Launch</button>
-        <div id="manualStatus" class="status-msg"></div>
-      </form>
-    </div>
+      <!-- 2. Security & JWT Tokens -->
+      <div class="card-section">
+        <div class="section-header">
+          <span class="section-title">2. Authentication & JWT Tokens</span>
+        </div>
+
+        <div class="form-group">
+          <label for="jwtSecret">JWT Secret Key</label>
+          <div class="input-row">
+            <input type="text" id="jwtSecret" placeholder="Enter custom secret key or click Generate" minlength="16" required>
+            <button type="button" class="btn-secondary" id="genSecretBtn">🎲 Generate Key</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="jwtAlgorithm">JWT Algorithm</label>
+          <select id="jwtAlgorithm">
+            <option value="HS256" selected>HS256 (HMAC with SHA-256 - Recommended)</option>
+            <option value="HS384">HS384</option>
+            <option value="HS512">HS512</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3. Operator Account Enrollment -->
+      <div class="card-section">
+        <div class="section-header">
+          <span class="section-title">3. Initial Operator Account</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="opName">Display Name</label>
+            <input type="text" id="opName" value="Operator Alpha" required>
+          </div>
+          <div class="form-group">
+            <label for="opEmail">Email Address</label>
+            <input type="email" id="opEmail" value="admin@exia.local" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="opPass">Operator Password (min 6 characters)</label>
+          <input type="password" id="opPass" placeholder="••••••••" minlength="6" required>
+        </div>
+      </div>
+
+      <!-- 4. LiveKit Realtime Gateway (Voice Agent) -->
+      <div class="card-section">
+        <div class="section-header">
+          <span class="section-title">4. LiveKit Realtime SFU (Optional)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="lkUrl">LiveKit Host URL</label>
+          <input type="text" id="lkUrl" placeholder="wss://your-project.livekit.cloud">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="lkKey">API Key</label>
+            <input type="text" id="lkKey" placeholder="APIxxxxxxxxxxxx">
+          </div>
+          <div class="form-group">
+            <label for="lkSecret">API Secret</label>
+            <input type="password" id="lkSecret" placeholder="sec_xxxxxxxxxxxx">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="submitBtn">Save Configuration & Launch Exia</button>
+      <div id="formStatus" class="status-msg"></div>
+    </form>
   </div>
 
   <script>
-    // Tab switching
-    const tabEnvBtn = document.getElementById('tabEnvBtn');
-    const tabManualBtn = document.getElementById('tabManualBtn');
-    const envPanel = document.getElementById('envPanel');
-    const manualPanel = document.getElementById('manualPanel');
-
-    tabEnvBtn.addEventListener('click', () => {
-      tabEnvBtn.classList.add('active');
-      tabManualBtn.classList.remove('active');
-      envPanel.style.display = 'block';
-      manualPanel.style.display = 'none';
-    });
-
-    tabManualBtn.addEventListener('click', () => {
-      tabManualBtn.classList.add('active');
-      tabEnvBtn.classList.remove('active');
-      envPanel.style.display = 'none';
-      manualPanel.style.display = 'block';
-    });
-
-    // File input for .env
-    const envFileInput = document.getElementById('envFileInput');
-    const envText = document.getElementById('envText');
-    envFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        envText.value = evt.target.result;
-      };
-      reader.readAsText(file);
-    });
-
-    // Handle .env direct confirmation
-    const envForm = document.getElementById('envForm');
-    const envSubmitBtn = document.getElementById('envSubmitBtn');
-    const envStatus = document.getElementById('envStatus');
-
-    envForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      envSubmitBtn.disabled = true;
-      envSubmitBtn.textContent = 'Testing Connection & Confirming with Code...';
-      envStatus.className = 'status-msg';
-      envStatus.textContent = '';
-
-      const payload = {
-        env_content: envText.value.trim(),
-        operator_password: document.getElementById('envOpPass').value,
-        operator_email: 'admin@exia.local',
-        operator_name: 'Operator'
-      };
-
-      try {
-        const res = await fetch('/api/setup/confirm-env', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (res.ok && data.status === 'success') {
-          envStatus.className = 'status-msg ok';
-          envStatus.innerHTML = `✓ <strong>Verified!</strong> Connected to database.<br>✓ Configuration confirmed and saved to APPDATA.<br>✓ Redirecting to Exia Dashboard...`;
-          setTimeout(() => { window.location.href = '/'; }, 1500);
-        } else {
-          envStatus.className = 'status-msg err';
-          envStatus.textContent = '✗ ' + (data.detail || data.message || 'Setup verification failed.');
-          envSubmitBtn.disabled = false;
-          envSubmitBtn.textContent = 'Confirm with Code & Launch Exia';
-        }
-      } catch (err) {
-        envStatus.className = 'status-msg err';
-        envStatus.textContent = '✗ Connection error: ' + err.message;
-        envSubmitBtn.disabled = false;
-        envSubmitBtn.textContent = 'Confirm with Code & Launch Exia';
-      }
-    });
-
-    // Manual Form handler
+    // Elements
     const testBtn = document.getElementById('testBtn');
     const testStatus = document.getElementById('testStatus');
-    const manualForm = document.getElementById('manualForm');
-    const manualStatus = document.getElementById('manualStatus');
-    const manualSubmitBtn = document.getElementById('manualSubmitBtn');
+    const genSecretBtn = document.getElementById('genSecretBtn');
+    const jwtSecretInput = document.getElementById('jwtSecret');
+    const setupForm = document.getElementById('setupForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formStatus = document.getElementById('formStatus');
 
+    // Auto-fill modal toggle
+    const togglePasteBtn = document.getElementById('togglePasteBtn');
+    const envPasteModal = document.getElementById('envPasteModal');
+    const envPasteInput = document.getElementById('envPasteInput');
+    const applyEnvBtn = document.getElementById('applyEnvBtn');
+
+    togglePasteBtn.addEventListener('click', () => {
+      envPasteModal.style.display = envPasteModal.style.display === 'block' ? 'none' : 'block';
+    });
+
+    applyEnvBtn.addEventListener('click', () => {
+      const text = envPasteInput.value;
+      const lines = text.split('\n');
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) return;
+        const [k, ...vParts] = trimmed.split('=');
+        const key = k.trim();
+        let val = vParts.join('=').trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+
+        if (key === 'MONGODB_URI') document.getElementById('mongoUri').value = val;
+        if (key === 'MONGODB_DATABASE') document.getElementById('mongoDb').value = val;
+        if (key === 'MONGODB_USER_COLLECTION') document.getElementById('colUsers').value = val;
+        if (key === 'MONGODB_SESSION_COLLECTION') document.getElementById('colSessions').value = val;
+        if (key === 'MONGODB_MCP_COLLECTION') document.getElementById('colMcp').value = val;
+        if (key === 'MONGODB_PROMPT_COLLECTION') document.getElementById('colPrompts').value = val;
+        if (key === 'MONGODB_MODEL_COLLECTION') document.getElementById('colModels').value = val;
+        if (key === 'MONGODB_BLACKLIST_COLLECTION') document.getElementById('colBlacklist').value = val;
+        if (key === 'JWT_SECRET') document.getElementById('jwtSecret').value = val;
+        if (key === 'JWT_ALGORITHM') document.getElementById('jwtAlgorithm').value = val;
+        if (key === 'LIVEKIT_API_HOST') document.getElementById('lkUrl').value = val;
+        if (key === 'LIVEKIT_API_KEY') document.getElementById('lkKey').value = val;
+        if (key === 'LIVEKIT_API_SECRET') document.getElementById('lkSecret').value = val;
+      });
+      envPasteModal.style.display = 'none';
+    });
+
+    // Auto-generate JWT secret on page load if empty
+    function generateRandomSecret() {
+      const arr = new Uint8Array(32);
+      window.crypto.getRandomValues(arr);
+      return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    jwtSecretInput.value = generateRandomSecret();
+
+    genSecretBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/setup/generate-secret');
+        const data = await res.json();
+        if (data.jwt_secret) {
+          jwtSecretInput.value = data.jwt_secret;
+          return;
+        }
+      } catch (err) {}
+      jwtSecretInput.value = generateRandomSecret();
+    });
+
+    // Test MongoDB Connection
     testBtn.addEventListener('click', async () => {
       const uri = document.getElementById('mongoUri').value.trim();
       testStatus.className = 'status-msg';
@@ -405,16 +473,25 @@ LIVEKIT_API_SECRET=sec_xxxx" required></textarea>
       }
     });
 
-    manualForm.addEventListener('submit', async (e) => {
+    // Form Submit (Save One-Time Configuration)
+    setupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      manualSubmitBtn.disabled = true;
-      manualSubmitBtn.textContent = 'Initializing Database & Operator...';
-      manualStatus.className = 'status-msg';
-      manualStatus.textContent = '';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying Database & Saving Configuration...';
+      formStatus.className = 'status-msg';
+      formStatus.textContent = '';
 
       const payload = {
         mongodb_uri: document.getElementById('mongoUri').value.trim(),
         mongodb_database: document.getElementById('mongoDb').value.trim(),
+        user_collection: document.getElementById('colUsers').value.trim(),
+        session_collection: document.getElementById('colSessions').value.trim(),
+        mcp_collection: document.getElementById('colMcp').value.trim(),
+        prompt_collection: document.getElementById('colPrompts').value.trim(),
+        model_collection: document.getElementById('colModels').value.trim(),
+        blacklist_collection: document.getElementById('colBlacklist').value.trim(),
+        jwt_secret: document.getElementById('jwtSecret').value.trim(),
+        jwt_algorithm: document.getElementById('jwtAlgorithm').value.trim(),
         operator_name: document.getElementById('opName').value.trim(),
         operator_email: document.getElementById('opEmail').value.trim(),
         operator_password: document.getElementById('opPass').value,
@@ -431,20 +508,20 @@ LIVEKIT_API_SECRET=sec_xxxx" required></textarea>
         });
         const data = await res.json();
         if (res.ok && data.status === 'success') {
-          manualStatus.className = 'status-msg ok';
-          manualStatus.textContent = '✓ Setup complete! Redirecting to dashboard...';
+          formStatus.className = 'status-msg ok';
+          formStatus.innerHTML = `✓ <strong>Setup Verified!</strong> Configuration saved permanently.<br>✓ Launching Exia Dashboard...`;
           setTimeout(() => { window.location.href = '/'; }, 1500);
         } else {
-          manualStatus.className = 'status-msg err';
-          manualStatus.textContent = '✗ ' + (data.detail || data.message || 'Setup failed');
-          manualSubmitBtn.disabled = false;
-          manualSubmitBtn.textContent = 'Save Configuration & Launch';
+          formStatus.className = 'status-msg err';
+          formStatus.textContent = '✗ ' + (data.detail || data.message || 'Configuration failed.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Save Configuration & Launch Exia';
         }
       } catch (err) {
-        manualStatus.className = 'status-msg err';
-        manualStatus.textContent = '✗ Setup error: ' + err.message;
-        manualSubmitBtn.disabled = false;
-        manualSubmitBtn.textContent = 'Save Configuration & Launch';
+        formStatus.className = 'status-msg err';
+        formStatus.textContent = '✗ Setup error: ' + err.message;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Configuration & Launch Exia';
       }
     });
   </script>

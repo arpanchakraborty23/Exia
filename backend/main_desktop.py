@@ -95,6 +95,14 @@ class TestDbRequest(BaseModel):
 class SetupInitRequest(BaseModel):
     mongodb_uri: str
     mongodb_database: str = "exia_db"
+    user_collection: str = "users"
+    session_collection: str = "sessions"
+    mcp_collection: str = "mcp_servers"
+    prompt_collection: str = "prompts"
+    model_collection: str = "model_config"
+    blacklist_collection: str = "token_blacklist"
+    jwt_secret: str = ""
+    jwt_algorithm: str = "HS256"
     operator_name: str = "Operator"
     operator_email: str = "admin@exia.local"
     operator_password: str
@@ -109,6 +117,12 @@ def get_setup_status() -> Dict[str, Any]:
     return {"configured": IS_CONFIGURED}
 
 
+@app.get("/api/setup/generate-secret", tags=["Setup"])
+def api_generate_secret() -> Dict[str, str]:
+    import secrets
+    return {"jwt_secret": secrets.token_hex(32)}
+
+
 @app.post("/api/setup/test-db", tags=["Setup"])
 def api_test_db(data: TestDbRequest) -> Dict[str, Any]:
     return test_mongodb_connection(data.uri)
@@ -121,6 +135,14 @@ def api_initialize_setup(data: SetupInitRequest) -> Dict[str, Any]:
         result = save_initial_setup(
             mongodb_uri=data.mongodb_uri,
             mongodb_database=data.mongodb_database,
+            user_collection=data.user_collection,
+            session_collection=data.session_collection,
+            mcp_collection=data.mcp_collection,
+            prompt_collection=data.prompt_collection,
+            model_collection=data.model_collection,
+            blacklist_collection=data.blacklist_collection,
+            jwt_secret=data.jwt_secret,
+            jwt_algorithm=data.jwt_algorithm,
             livekit_url=data.livekit_url,
             livekit_api_key=data.livekit_api_key,
             livekit_api_secret=data.livekit_api_secret,

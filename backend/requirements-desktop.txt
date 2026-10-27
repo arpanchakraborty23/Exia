@@ -1,0 +1,27 @@
+# ==============================================================================
+# Exia Desktop Application Requirements (Standalone Windows .exe)
+# ==============================================================================
+
+# Core Web Framework & ASGI
+fastapi>=0.141.1
+uvicorn>=0.52.4
+pydantic>=2.13.5
+pydantic-settings>=2.15.0
+python-dotenv>=1.2.3
+
+# Database & Pooling
+pymongo>=4.18.1
+
+# Authentication & Security
+bcrypt>=4.0.1
+passlib>=1.7.4
+pyjwt[crypto]>=2.14.0
+
+# Realtime WebRTC & MCP Agent
+livekit>=1.1.18
+livekit-api>=1.2.1
+fastmcp>=4.0.3
+
+# Native Desktop UI & Packaging (Desktop Only)
+pywebview>=5.1
+pyinstaller>=6.5.0

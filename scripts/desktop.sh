@@ -30,16 +30,11 @@ fi
 
 echo "Using Python: $($PY_BIN --version 2>&1)"
 
-# Check PyInstaller & pywebview prerequisites
-echo "Checking build prerequisites..."
-$PY_BIN -c "import PyInstaller" 2>/dev/null || {
-    echo "PyInstaller not found. Installing pyinstaller..."
-    $PY_BIN -m pip install pyinstaller
-}
-
-$PY_BIN -c "import webview" 2>/dev/null || {
-    echo "pywebview not found. Installing pywebview..."
-    $PY_BIN -m pip install pywebview
+# Check & install Desktop prerequisites from requirements-desktop.txt
+echo "Checking build prerequisites from backend/requirements-desktop.txt..."
+$PY_BIN -c "import PyInstaller, webview" 2>/dev/null || {
+    echo "Installing desktop dependencies from requirements-desktop.txt..."
+    $PY_BIN -m pip install -r "$BACKEND_DIR/requirements-desktop.txt"
 }
 
 # Verify / sync frontend dist

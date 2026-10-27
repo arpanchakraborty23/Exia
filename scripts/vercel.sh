@@ -47,9 +47,12 @@ if [ ! -d "$BACKEND_DIR/dist" ]; then
     fi
 fi
 
-# Verify requirements.txt
-if [ ! -f "$BACKEND_DIR/requirements.txt" ]; then
-    echo "Error: $BACKEND_DIR/requirements.txt is missing."
+# Verify & sync requirements-vercel.txt into requirements.txt
+if [ -f "$BACKEND_DIR/requirements-vercel.txt" ]; then
+    cp "$BACKEND_DIR/requirements-vercel.txt" "$BACKEND_DIR/requirements.txt"
+    echo "✓ Vercel requirements synchronized from backend/requirements-vercel.txt"
+elif [ ! -f "$BACKEND_DIR/requirements.txt" ]; then
+    echo "Error: Neither requirements-vercel.txt nor requirements.txt found."
     exit 1
 fi
 

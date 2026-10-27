@@ -93,6 +93,14 @@ def test_mongodb_connection(uri: str) -> Dict[str, Any]:
 def save_initial_setup(
     mongodb_uri: str,
     mongodb_database: Optional[str] = "exia_db",
+    user_collection: Optional[str] = "users",
+    session_collection: Optional[str] = "sessions",
+    mcp_collection: Optional[str] = "mcp_servers",
+    prompt_collection: Optional[str] = "prompts",
+    model_collection: Optional[str] = "model_config",
+    blacklist_collection: Optional[str] = "token_blacklist",
+    jwt_secret: Optional[str] = "",
+    jwt_algorithm: Optional[str] = "HS256",
     livekit_url: Optional[str] = "",
     livekit_api_key: Optional[str] = "",
     livekit_api_secret: Optional[str] = "",
@@ -101,24 +109,34 @@ def save_initial_setup(
     operator_password: Optional[str] = "",
 ) -> Dict[str, Any]:
     """
-    Validates credentials, creates the initial operator account in MongoDB,
-    generates a secure JWT secret, and saves persistent .env configuration.
+    Validates user credentials, creates the initial operator account in the user-specified
+    MongoDB collection, establishes custom or generated JWT security tokens, and writes
+    the one-time persistent .env configuration into %APPDATA%/Exia/.env.
     """
     clean_uri = (mongodb_uri or "").strip()
     clean_db = (mongodb_database or "exia_db").strip()
+    clean_user_col = (user_collection or "users").strip()
+    clean_session_col = (session_collection or "sessions").strip()
+    clean_mcp_col = (mcp_collection or "mcp_servers").strip()
+    clean_prompt_col = (prompt_collection or "prompts").strip()
+    clean_model_col = (model_collection or "model_config").strip()
+    clean_blacklist_col = (blacklist_collection or "token_blacklist").strip()
+    clean_algorithm = (jwt_algorithm or "HS256").strip()
 
     if not clean_uri:
         raise ValueError("MongoDB URI is required")
 
-    # 1. Test live connection
+    # 1. Test live connection with code
     conn_result = test_mongodb_connection(clean_uri)
     if conn_result["status"] != "ok":
         raise ValueError(conn_result["message"])
 
-    # 2. Generate cryptographically strong JWT Secret
-    jwt_secret = secrets.token_hex(32)
+    # 2. Use user-specified JWT Secret or generate cryptographically secure 32-byte secret
+    active_jwt_secret = (jwt_secret or "").strip()
+    if not active_jwt_secret or len(active_jwt_secret) < 16 or "replace_with" in active_jwt_secret:
+        active_jwt_secret = secrets.token_hex(32)
 
-    # 3. Seed Operator Account in MongoDB if password provided
+    # 3. Seed Operator Account in user's custom user collection if password provided
     user_id = f"usr_{secrets.token_hex(4)}"
     clean_email = (operator_email or "admin@exia.local").strip().lower()
     clean_name = (operator_name or "Operator").strip()
@@ -127,14 +145,14 @@ def save_initial_setup(
         client = MongoClient(clean_uri, serverSelectionTimeoutMS=5000)
         try:
             db = client[clean_db]
-            users_col = db["users"]
+            users_col = db[clean_user_col]
 
             # Hash password with bcrypt
             pwd_bytes = operator_password.encode("utf-8")[:72]
             salt = bcrypt.gensalt()
             hash_pw = bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
-            # Insert or update operator document
+            # Insert or update operator document in custom collection
             now_iso = datetime.now(timezone.utc).isoformat()
             users_col.update_one(
                 {"email": clean_email},
@@ -154,36 +172,36 @@ def save_initial_setup(
                 },
                 upsert=True,
             )
-            logger.info("✅ Operator account '%s' seeded into MongoDB.", clean_email)
+            logger.info("✅ Operator account '%s' seeded into collection '%s'.", clean_email, clean_user_col)
         finally:
             client.close()
 
-    # 4. Save to persistent APPDATA .env
+    # 4. Save one-time persistent APPDATA .env with user-configured collection names & JWT
     target_env = get_appdata_dir() / ".env"
-    env_content = f"""# Exia Desktop Persistent Configuration
+    env_content = f"""# Exia Desktop Persistent User Configuration
 # Generated on {datetime.now(timezone.utc).isoformat()}
 
 # Authentication & Security
-JWT_SECRET={jwt_secret}
-JWT_ALGORITHM=HS256
+JWT_SECRET={active_jwt_secret}
+JWT_ALGORITHM={clean_algorithm}
 
 # LiveKit SFU Realtime Gateway
 LIVEKIT_API_HOST={(livekit_url or '').strip()}
 LIVEKIT_API_KEY={(livekit_api_key or '').strip()}
 LIVEKIT_API_SECRET={(livekit_api_secret or '').strip()}
 
-# MongoDB Database
+# MongoDB Database & Custom Collections
 MONGODB_URI={clean_uri}
 MONGODB_DATABASE={clean_db}
-MONGODB_USER_COLLECTION=users
-MONGODB_SESSION_COLLECTION=sessions
-MONGODB_MCP_COLLECTION=mcp_servers
-MONGODB_PROMPT_COLLECTION=prompts
-MONGODB_MODEL_COLLECTION=model_config
-MONGODB_BLACKLIST_COLLECTION=token_blacklist
+MONGODB_USER_COLLECTION={clean_user_col}
+MONGODB_SESSION_COLLECTION={clean_session_col}
+MONGODB_MCP_COLLECTION={clean_mcp_col}
+MONGODB_PROMPT_COLLECTION={clean_prompt_col}
+MONGODB_MODEL_COLLECTION={clean_model_col}
+MONGODB_BLACKLIST_COLLECTION={clean_blacklist_col}
 """
     target_env.write_text(env_content, encoding="utf-8")
-    logger.info("✅ Saved desktop environment configuration to: %s", target_env)
+    logger.info("✅ Saved user desktop environment configuration to: %s", target_env)
 
     # 5. Clear cached Pydantic settings so the server instantly reloads the new .env
     try:
@@ -194,9 +212,17 @@ MONGODB_BLACKLIST_COLLECTION=token_blacklist
 
     return {
         "status": "success",
-        "message": "Desktop setup completed successfully!",
+        "message": "Desktop configuration saved successfully! Launching Exia...",
         "config_path": str(target_env),
         "user_email": clean_email,
+        "collections": {
+            "users": clean_user_col,
+            "sessions": clean_session_col,
+            "mcp": clean_mcp_col,
+            "prompts": clean_prompt_col,
+            "models": clean_model_col,
+            "blacklist": clean_blacklist_col,
+        },
     }
 
 
