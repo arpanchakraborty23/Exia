@@ -185,3 +185,12 @@ Build and packaging scripts are centralized in the [`scripts/`](file:///e:/potfo
 ```bash
 ./scripts/vercel.sh --prod
 ```
+
+### E. Deploy Backend to Render
+
+Keep the Render service's Root Directory set to the repository root and use:
+
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
+
+The root `requirements.txt` installs the backend project and its dependencies from `backend/pyproject.toml`.
