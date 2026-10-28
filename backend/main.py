@@ -13,6 +13,7 @@ Run standalone:
 import logging
 import mimetypes
 import os
+import sys
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -20,9 +21,14 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict
 
+# Ensure backend root directory is in sys.path for Vercel Serverless
+_BACKEND_DIR = Path(__file__).resolve().parent
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 
 from src.routes.auth import auth_route
 from src.routes.mcp import mcp_route
@@ -69,12 +75,12 @@ app = FastAPI(
 
 @app.get("/api/docs", include_in_schema=False)
 def api_docs_redirect():
-    return JSONResponse(status_code=status.HTTP_307_TEMPORARY_REDIRECT, headers={"Location": "/docs"})
+    return RedirectResponse(url="/docs", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
 @app.get("/api/openapi.json", include_in_schema=False)
 def api_openapi_json_redirect():
-    return JSONResponse(status_code=status.HTTP_307_TEMPORARY_REDIRECT, headers={"Location": "/openapi.json"})
+    return RedirectResponse(url="/openapi.json", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
 # ------------------------------------------------------------------------------
