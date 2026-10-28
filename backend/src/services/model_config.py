@@ -12,6 +12,19 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
+def _update_runtime_env(key: str, value: str) -> None:
+    """Applies a settings change to the running process environment.
+
+    The source of truth is MongoDB (model_config collection); environment
+    updates apply in-memory so token minting picks them up immediately.
+    """
+    os.environ[key] = value
+    try:
+        get_settings.cache_clear()
+    except Exception:
+        pass
+
+
 # Defaults mirror frontend lib/api.ts DEFAULT_MODEL_CONFIG
 DEFAULT_MODEL_CONFIG: dict = {
     "mode": "gemini_live",
@@ -168,27 +181,25 @@ class ModelConfigServices:
 
             if new_url or new_key or new_secret:
                 try:
-                    from desktop_bootstrap import update_env_variable
                     if new_url:
-                        update_env_variable("LIVEKIT_API_HOST", new_url.strip())
+                        _update_runtime_env("LIVEKIT_API_HOST", new_url.strip())
                     if new_key:
-                        update_env_variable("LIVEKIT_API_KEY", new_key.strip())
+                        _update_runtime_env("LIVEKIT_API_KEY", new_key.strip())
                     if new_secret:
-                        update_env_variable("LIVEKIT_API_SECRET", new_secret.strip())
-                    logger.info("LiveKit credentials updated in persistent environment files")
+                        _update_runtime_env("LIVEKIT_API_SECRET", new_secret.strip())
+                    logger.info("LiveKit credentials updated in runtime environment")
                 except Exception as env_err:
-                    logger.warning("Could not persist LiveKit credentials to .env: %s", env_err)
+                    logger.warning("Could not update LiveKit runtime environment: %s", env_err)
 
             # Sync model provider API keys to persistent .env and process environment
             for model_attr, env_var in MODEL_KEY_TO_ENV.items():
                 key_val = patch_dict.get(model_attr)
                 if key_val is not None and isinstance(key_val, str) and key_val.strip():
                     try:
-                        from desktop_bootstrap import update_env_variable
-                        update_env_variable(env_var, key_val.strip())
-                        logger.info("Updated %s in persistent environment files", env_var)
+                        _update_runtime_env(env_var, key_val.strip())
+                        logger.info("Updated %s in runtime environment", env_var)
                     except Exception as env_err:
-                        logger.warning("Could not persist %s to .env: %s", env_var, env_err)
+                        logger.warning("Could not update %s in runtime environment: %s", env_var, env_err)
 
             doc = self.db.find_one({"user_id": user_id}, {"_id": 0})
             stored = _normalize((doc or {}).get("config", {}))

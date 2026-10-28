@@ -1,7 +1,7 @@
 """
 Exia Database Auto-Seeder & Environment Bootstrapper.
 
-Ensures that whenever Exia Desktop starts up against an empty or fresh MongoDB,
+Ensures that whenever Exia starts up against an empty or fresh MongoDB,
 it automatically seeds essential initial records (Operator user, Model Configuration,
 System Prompts, and MCP Servers) so the UI is immediately functional and never
 displays empty/broken screens.

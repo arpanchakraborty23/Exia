@@ -12,29 +12,18 @@ PROJECT_ROOT = BACKEND_DIR.parent
 
 
 def get_candidate_env_files() -> list[Path]:
-    """Returns candidate .env paths prioritizing portable mode and user APPDATA."""
-    candidates = []
+    """Returns candidate .env paths prioritizing local workspace and user config."""
+    candidates = [
+        Path.cwd() / ".env",
+        PROJECT_ROOT / ".env",
+        BACKEND_DIR / ".env",
+    ]
 
-    # 1. Portable mode: next to running executable (if frozen)
-    if getattr(sys, "frozen", False):
-        exe_dir = Path(sys.executable).resolve().parent
-        candidates.append(exe_dir / ".env")
-
-    # 2. Windows APPDATA persistent user config
     appdata = os.environ.get("APPDATA")
     if appdata:
         candidates.append(Path(appdata) / "Exia" / ".env")
     else:
         candidates.append(Path.home() / ".exia" / ".env")
-
-    # 3. Current working directory
-    candidates.append(Path.cwd() / ".env")
-
-    # 4. Project workspace locations
-    candidates.extend([
-        PROJECT_ROOT / ".env",
-        BACKEND_DIR / ".env",
-    ])
 
     existing = [p for p in candidates if p.exists()]
     return existing if existing else candidates
