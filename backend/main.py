@@ -172,20 +172,6 @@ def health_check() -> Dict[str, str]:
 BACKEND_DIR = Path(__file__).resolve().parent
 
 
-def get_static_build_dir() -> Path | None:
-    # 1. backend/dist (synced production build)
-    backend_dist = BACKEND_DIR / "dist"
-    if backend_dist.exists() and (backend_dist / "index.html").exists():
-        return backend_dist
-
-    # 2. Next.js static export: ui/web/out (next build with output: 'export')
-    web_out = BACKEND_DIR.parent / "ui" / "web" / "out"
-    if web_out.exists() and (web_out / "index.html").exists():
-        return web_out
-
-    return None
-
-
 MIME_TYPE_MAP = {
     ".html": "text/html; charset=utf-8",
     ".js": "application/javascript; charset=utf-8",
@@ -210,49 +196,6 @@ def get_cached_static_file(file_path_str: str, mtime: float) -> tuple[bytes, str
     return content, media_type, etag
 
 
-@app.get("/{full_path:path}", include_in_schema=False)
-async def serve_spa(request: Request, full_path: str):
-    # Allow API endpoints, docs, and schema to pass through to FastAPI native handlers
-    clean_strip = full_path.lstrip("/")
-    if (
-        clean_strip.startswith("api")
-        or clean_strip.startswith("docs")
-        or clean_strip.startswith("redoc")
-        or clean_strip.startswith("openapi")
-    ):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not Found"})
-
-    build_dir = get_static_build_dir()
-    if not build_dir:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Build dist not found"})
-
-    clean_path = full_path.lstrip("/")
-    file_to_serve: Path | None = None
-    is_html = False
-
-    if clean_path:
-        candidate = (build_dir / clean_path).resolve()
-        if candidate.is_file() and (candidate == build_dir or build_dir in candidate.parents):
-            file_to_serve = candidate
-            is_html = candidate.suffix.lower() == ".html"
-
-    if not file_to_serve:
-        index_file = build_dir / "index.html"
-        if index_file.is_file():
-            file_to_serve = index_file
-            is_html = True
-
-    if not file_to_serve or not file_to_serve.is_file():
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "index.html not found"})
-
-    mtime = file_to_serve.stat().st_mtime
-    content, media_type, etag = get_cached_static_file(str(file_to_serve), mtime)
-
-    if request.headers.get("if-none-match") == etag:
-        return Response(status_code=status.HTTP_304_NOT_MODIFIED)
-
-    cache_control = "no-cache, must-revalidate" if is_html else "public, max-age=31536000, immutable"
-    return Response(content=content, media_type=media_type, headers={"ETag": etag, "Cache-Control": cache_control})
 
 
 if __name__ == "__main__":
