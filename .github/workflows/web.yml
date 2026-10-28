@@ -4,15 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'ui/web/**'
-      - '.github/workflows/web.yml'
   pull_request:
     branches:
       - main
-    paths:
-      - 'ui/web/**'
-      - '.github/workflows/web.yml'
   workflow_dispatch:
     inputs:
       environment:
