@@ -23,12 +23,75 @@ logger = logging.getLogger("desktop_bootstrap")
 def get_appdata_dir() -> Path:
     """Returns the persistent user data directory for Exia on the desktop."""
     appdata = os.environ.get("APPDATA")
+    candidates = []
     if appdata:
-        target = Path(appdata) / "Exia"
-    else:
-        target = Path.home() / ".exia"
-    target.mkdir(parents=True, exist_ok=True)
-    return target
+        candidates.append(Path(appdata) / "Exia")
+    candidates.append(Path.home() / ".exia")
+    candidates.append(Path.cwd() / ".exia_data")
+
+    for target in candidates:
+        try:
+            target.mkdir(parents=True, exist_ok=True)
+            return target
+        except Exception:
+            continue
+    return Path(".")
+
+
+def create_desktop_shortcut(target_exe: Optional[Path] = None) -> bool:
+    """
+    Creates an Exia.lnk shortcut on the current user's Windows Desktop pointing to the executable.
+    Uses Windows WScript.Shell via PowerShell. Returns True if created successfully.
+    """
+    if sys.platform != "win32":
+        return False
+    try:
+        import subprocess
+        if not target_exe:
+            if getattr(sys, "frozen", False):
+                target_exe = Path(sys.executable).resolve()
+            else:
+                candidates = [
+                    Path(__file__).resolve().parent / "release" / "Exia.exe",
+                    Path(__file__).resolve().parent / "dist" / "Exia.exe",
+                ]
+                for c in candidates:
+                    if c.exists():
+                        target_exe = c
+                        break
+
+        if not target_exe or not target_exe.exists():
+            logger.debug("Shortcut target does not exist: %s", target_exe)
+            return False
+
+        icon_path = target_exe.parent / "exia-icon.ico"
+        icon_arg = f'"{icon_path}"' if icon_path.exists() else f'"{target_exe},0"'
+
+        ps_script = f"""
+        $wsh = New-Object -ComObject WScript.Shell
+        $desktop = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
+        $shortcut = $wsh.CreateShortcut("$desktop\\Exia.lnk")
+        $shortcut.TargetPath = "{target_exe}"
+        $shortcut.WorkingDirectory = "{target_exe.parent}"
+        $shortcut.IconLocation = {icon_arg}
+        $shortcut.Description = "Exia AI Voice & Reasoning Desktop Agent"
+        $shortcut.Save()
+        """
+        res = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+        if res.returncode == 0:
+            logger.info("✅ Desktop shortcut created: Exia.lnk")
+            return True
+        else:
+            logger.warning("Failed to create desktop shortcut: %s", res.stderr)
+            return False
+    except Exception as e:
+        logger.warning("Desktop shortcut creation error: %s", e)
+        return False
 
 
 def is_system_configured() -> bool:
@@ -210,6 +273,9 @@ MONGODB_BLACKLIST_COLLECTION={clean_blacklist_col}
     except Exception:
         pass
 
+    # 6. Auto-create desktop shortcut with Exia icon if on Windows
+    create_desktop_shortcut()
+
     return {
         "status": "success",
         "message": "Desktop configuration saved successfully! Launching Exia...",
@@ -343,6 +409,9 @@ def confirm_and_save_env(
         get_settings.cache_clear()
     except Exception:
         pass
+
+    # 6. Auto-create desktop shortcut with Exia icon if on Windows
+    create_desktop_shortcut()
 
     return {
         "status": "success",

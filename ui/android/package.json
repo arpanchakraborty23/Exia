@@ -1,0 +1,20 @@
+{
+  "name": "exia-android",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Exia Android client — Capacitor shell wrapping the apps/web static build",
+  "scripts": {
+    "copy-web": "node scripts/copy-web.mjs",
+    "sync": "npm run copy-web && cap sync android",
+    "open": "npm run sync && cap open android",
+    "apk:debug": "npm run sync && cd android && gradlew.bat assembleDebug",
+    "apk:release": "npm run sync && cd android && gradlew.bat assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}

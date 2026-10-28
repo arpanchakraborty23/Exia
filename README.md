@@ -88,7 +88,10 @@ A 100% private, local-first Desktop AI Assistant built as an alternative to Chat
 
 ```
 HomeAsstant/
-├── frontend/                     # Desktop Application Frontend
+├── ui/                             # UI applications (monorepo)
+│   ├── web/                        # Web UI — Next.js 15 + React 19 (source of all 3 clients)
+│   ├── android/                    # Android shell — Capacitor (wraps ui/web build)
+│   └── windows/                    # Windows shell — Tauri 2 (wraps ui/web build)
 │   ├── electron/                 # Desktop Window wrapper (Electron)
 │   │   ├── main.cjs
 │   │   └── preload.cjs
@@ -127,9 +130,9 @@ HomeAsstant/
 
 ## 4. How to Run the Frontend Right Now
 
-1. Navigate to the `frontend` folder:
+1. Navigate to the `ui/web` folder:
    ```bash
-   cd frontend
+   cd ui/web
    ```
 
 2. Start the local development server:

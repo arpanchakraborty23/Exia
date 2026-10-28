@@ -76,7 +76,7 @@ def health_check() -> Dict[str, str]:
 # Static SPA routing
 BACKEND_DIR = Path(__file__).resolve().parent
 BACKEND_DIST = BACKEND_DIR / "dist"
-FRONTEND_DIST = BACKEND_DIR.parent / "frontend" / "dist"
+FRONTEND_DIST = BACKEND_DIR.parent / "ui" / "web" / "dist"
 
 
 def get_static_build_dir() -> Path | None:

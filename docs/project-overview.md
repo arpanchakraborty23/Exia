@@ -182,8 +182,9 @@ Exia/
 │       ├── services/              # Business logic (auth, db, security, token blacklist)
 │       └── utils/                 # Utility helpers (JWT validation, password hashing)
 │
-├── frontend/                      # User Interface Application (Next.js 15 + React 19)
-│   ├── app/                       # Next.js App Router (layout.tsx, page.tsx)
+├── ui/                             # UI applications (monorepo)
+│   ├── web/                        # Web UI — Next.js 15 + React 19
+│   │   ├── app/                    # Next.js App Router (layout.tsx, page.tsx)
 │   ├── components/
 │   │   ├── agents-ui/             # LiveKit visualizers, control bar, transcript bubbles
 │   │   ├── app/                   # App root wrapper, theme provider, view controller
@@ -292,7 +293,7 @@ python agent.py dev
 
 #### Running in Web Format:
 ```bash
-cd frontend
+cd ui/web
 pnpm install
 pnpm dev
 ```
@@ -302,7 +303,7 @@ pnpm dev
 You can package or launch the frontend as a dedicated desktop window:
 1. Build the production static bundle:
    ```bash
-   cd frontend
+   cd ui/web
    pnpm build
    ```
 2. Run via an Electron/Tauri desktop shell wrapper pointing to the local build, or launch a dedicated Chromium app-mode window:

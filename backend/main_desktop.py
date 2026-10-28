@@ -22,6 +22,44 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict
 
+# Safe stream sink for PyInstaller GUI mode (when console=False sys.stdout/stderr are None)
+class SafeWriter:
+    def write(self, s):
+        pass
+    def flush(self):
+        pass
+    def isatty(self):
+        return False
+
+if sys.stdout is None:
+    sys.stdout = SafeWriter()
+if sys.stderr is None:
+    sys.stderr = SafeWriter()
+
+APPDATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / "Exia"
+try:
+    APPDATA_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    APPDATA_DIR = Path.home() / ".exia"
+    try:
+        APPDATA_DIR.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        APPDATA_DIR = Path(".")
+
+DESKTOP_LOG = APPDATA_DIR / "exia_desktop.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - [%(levelname)s] - %(name)s - %(message)s",
+)
+logger = logging.getLogger("exia_desktop")
+try:
+    file_handler = logging.FileHandler(DESKTOP_LOG, encoding="utf-8", mode="a")
+    file_handler.setFormatter(logging.Formatter("%(asctime)s - [%(levelname)s] - %(name)s - %(message)s"))
+    logger.addHandler(file_handler)
+except Exception:
+    pass
+
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
@@ -41,23 +79,24 @@ from src.routes.sessions import session_route
 from src.routes.token import api_router
 from src.services import seed_database_if_empty
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(levelname)s] - %(name)s - %(message)s",
-)
-logger = logging.getLogger("exia_desktop")
-
 # Track setup state in memory
 IS_CONFIGURED: bool = is_system_configured()
+
+
+def _background_seed():
+    """Seeds default records in a background thread so ASGI startup is instantaneous."""
+    try:
+        time.sleep(0.5)
+        seed_database_if_empty()
+    except Exception as e:
+        logger.warning("Auto-seed error in background: %s", e)
 
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     logger.info("Initializing Exia Desktop Application...")
-    try:
-        seed_database_if_empty()
-    except Exception as e:
-        logger.warning("Auto-seed error on startup: %s", e)
+    # Seed in background so we NEVER block ASGI startup or lifespan!
+    threading.Thread(target=_background_seed, daemon=True).start()
     yield
     logger.info("Exia Desktop Application stopped.")
 
@@ -321,6 +360,10 @@ async def serve_desktop_ui(request: Request, full_path: str):
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not Found"})
 
     # If system is not configured yet, present the setup pre-flight page
+    global IS_CONFIGURED
+    if not IS_CONFIGURED:
+        IS_CONFIGURED = is_system_configured()
+
     if not IS_CONFIGURED:
         setup_file = STATIC_DIR / "setup.html"
         if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
@@ -387,27 +430,31 @@ def _start_uvicorn(port: int = DESKTOP_PORT):
     """Runs Uvicorn server in a background daemon thread."""
     import uvicorn
 
-    config = uvicorn.Config(
-        app=app,
-        host="127.0.0.1",
-        port=port,
-        log_level="info",
-        workers=1,
-    )
-    server = uvicorn.Server(config)
-    server.run()
+    try:
+        config = uvicorn.Config(
+            app=app,
+            host="127.0.0.1",
+            port=port,
+            log_level="warning",
+            loop="asyncio",
+        )
+        server = uvicorn.Server(config)
+        server.install_signal_handlers = lambda: None
+        server.run()
+    except Exception as e:
+        logger.exception("Fatal error in Uvicorn background server thread: %s", e)
 
 
-def _wait_for_server(url: str, timeout: float = 10.0) -> bool:
+def _wait_for_server(url: str, timeout: float = 20.0) -> bool:
     """Waits for local server to report healthy status."""
     start = time.time()
     while time.time() - start < timeout:
         try:
-            with urllib.request.urlopen(url, timeout=0.5) as res:
+            with urllib.request.urlopen(url, timeout=0.8) as res:
                 if res.status == 200:
                     return True
         except Exception:
-            time.sleep(0.15)
+            time.sleep(0.1)
     return False
 
 
@@ -426,10 +473,7 @@ def main():
         except Exception:
             pass
 
-    print(f"\n==================================================")
-    print(f"🚀 Exia Desktop Server: http://127.0.0.1:{DESKTOP_PORT}")
-    print(f"📖 Swagger API Docs:    http://127.0.0.1:{DESKTOP_PORT}/docs")
-    print(f"==================================================\n")
+    logger.info("Starting Exia Desktop Service on http://127.0.0.1:%d", DESKTOP_PORT)
 
     # 1. Start local ASGI server on specified port
     server_thread = threading.Thread(target=_start_uvicorn, args=(DESKTOP_PORT,), daemon=True)
@@ -437,9 +481,7 @@ def main():
 
     # 2. Wait until healthy
     health_url = f"http://127.0.0.1:{DESKTOP_PORT}/api/health"
-    server_ready = _wait_for_server(health_url)
-    if not server_ready:
-        logger.error("Failed to start local background server within timeout.")
+    server_ready = _wait_for_server(health_url, timeout=20.0)
 
     # 3. Locate icon
     icon_path = None
@@ -455,7 +497,47 @@ def main():
             icon_path = str(c.resolve())
             break
 
-    # 4. Launch Native Desktop Window (WebView2)
+    # 4. If server failed to start, present diagnostic screen instead of ERR_CONNECTION_REFUSED
+    if not server_ready or not server_thread.is_alive():
+        logger.error("Failed to start local background server within timeout.")
+        error_html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Exia - Startup Error</title>
+<style>
+body {{ background: #09090b; color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+.card {{ background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 32px; max-width: 540px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }}
+h2 {{ color: #ef4444; margin-top: 0; }}
+p {{ color: #a1a1aa; line-height: 1.5; font-size: 14px; }}
+code {{ background: #27272a; padding: 6px 10px; border-radius: 6px; font-size: 13px; color: #38bdf8; display: block; margin: 12px 0; word-break: break-all; text-align: left; }}
+button {{ background: #2563eb; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 16px; }}
+button:hover {{ background: #1d4ed8; }}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Unable to Start Exia Service</h2>
+  <p>The local Exia background service could not bind to port {DESKTOP_PORT} within 20 seconds.</p>
+  <p>Diagnostic details have been recorded in your desktop log file:</p>
+  <code>{DESKTOP_LOG}</code>
+  <button onclick="location.reload()">Retry Connection</button>
+</div>
+</body>
+</html>"""
+        try:
+            import webview
+            webview.create_window(
+                title="Exia - Startup Error",
+                html=error_html,
+                width=640,
+                height=480,
+                background_color="#09090b",
+            )
+            webview.start(icon=icon_path)
+        except Exception:
+            pass
+        sys.exit(1)
+
+    # 5. Launch Native Desktop Window (WebView2)
     try:
         import webview
 

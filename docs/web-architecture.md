@@ -123,6 +123,6 @@ Deployments to Vercel are executed through the streamlined shell script:
 
 ### Automation Workflow:
 1. **CLI Detection**: Checks if `vercel` is installed in PATH; if not, automatically invokes `npx --yes vercel` without failing.
-2. **Asset Validation**: Verifies that frontend assets exist in `backend/dist` (syncing from `frontend/dist` or executing a build if missing).
+2. **Asset Validation**: Verifies that frontend assets exist in `backend/dist` (syncing from `ui/web/dist` or executing a build if missing).
 3. **Runtime Configuration**: Verifies [`backend/vercel.json`](file:///e:/potfolio/Exia/backend/vercel.json) and synchronizes [`backend/requirements-vercel.txt`](file:///e:/potfolio/Exia/backend/requirements-vercel.txt) into `backend/requirements.txt` for Vercel's Python builder.
 4. **Execution**: Runs the Vercel deployment directly from `backend/`.

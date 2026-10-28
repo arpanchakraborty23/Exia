@@ -96,4 +96,8 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Loads and caches the configuration variables from the environment or .env file."""
-    return Settings()
+    candidate_files = get_candidate_env_files()
+    try:
+        return Settings(_env_file=tuple(candidate_files))
+    except Exception:
+        return Settings()
