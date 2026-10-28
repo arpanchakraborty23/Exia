@@ -190,9 +190,13 @@ Build and packaging scripts are centralized in the [`scripts/`](file:///e:/potfo
 
 Configure the Render web service to use Docker:
 
-- **Root Directory:** `backend`
-- **Runtime:** Docker
-- **Dockerfile Path:** `./Dockerfile`
-- **Docker Build Context Directory:** `.`
+- **Language / Runtime:** Docker
+- **Root Directory:** repository root (leave blank)
+- **Dockerfile Path:** `backend/Dockerfile`
+- **Docker Build Context Directory:** `backend`
 
-The multi-stage Dockerfile installs the backend dependencies and starts the FastAPI server on Render's assigned port. No separate Render build or start command is needed.
+Do not enter `docker build` as a Render Build Command. Render builds the image
+from the Dockerfile. Clear any custom Build Command and Start Command so Render
+uses the Dockerfile's `CMD`. The multi-stage Dockerfile installs the backend
+dependencies and starts the FastAPI server on Render's assigned port. Configure
+secrets such as `MONGODB_URI` and `JWT_SECRET` in the Render dashboard.
