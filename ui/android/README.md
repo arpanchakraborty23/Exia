@@ -1,35 +1,61 @@
 # Exia — Android Client (Capacitor)
 
-Packages the shared web UI (`apps/web` static export) as an Android application.
+Packages the shared web UI ([`ui/web`](file:///e:/potfolio/Exia/ui/web) Next.js static export) as a native Android application using **Capacitor 8**.
 
-## Prerequisites
+---
 
-- Node.js ≥ 20
-- JDK 17
-- Android Studio (SDK 35+) — needed to build/sign, not to scaffold
+## 1. Prerequisites
 
-## Workflow
+- **Node.js** ≥ 20
+- **JDK 17+** (required for Gradle CLI builds)
+- **Android Studio** (SDK 35+) for debugging, emulation, or release signing
+
+---
+
+## 2. Fast Build via Script
+
+The easiest way to compile or sync the Android application is using the root script:
 
 ```bash
-# 1. Build the shared web app (once, or after web changes)
-cd ../web
-npm run build          # outputs apps/web/out
+# Debug APK compilation (outputs to release/Exia-debug.apk)
+./scripts/android.sh
 
-# 2. Copy web build + sync into the native project
+# Release APK compilation (outputs to release/Exia-release.apk)
+./scripts/android.sh --release
+
+# Sync web assets to Android project without running Gradle
+./scripts/android.sh --sync-only
+
+# Sync assets and open project directly in Android Studio
+./scripts/android.sh --open
+```
+
+---
+
+## 3. Manual Workflow
+
+```bash
+# 1. Build the shared web application
+cd ../web
+npm run build          # outputs to ui/web/out
+
+# 2. Install dependencies & sync web build into Android shell
 cd ../android
 npm install
-npm run sync           # copies ../web/out -> www/, then cap sync android
+npm run sync           # copies ../web/out -> www/, then runs cap sync android
 
-# 3. Build an APK
-npm run apk:debug      # debug APK via Gradle
-npm run apk:release    # release APK (needs signing config)
+# 3. Build an APK using Gradle
+npm run apk:debug      # debug APK via Gradle wrapper
+npm run apk:release    # release APK (requires keystore signing config)
 
-# ...or open in Android Studio
+# Or launch in Android Studio
 npm run open
 ```
 
-## Notes
+---
 
-- `androidScheme: https` is set in `capacitor.config.ts` so LiveKit WebRTC (mic/camera) runs in a secure context.
-- Permissions `INTERNET`, `RECORD_AUDIO`, `CAMERA` are declared in `android/app/src/main/AndroidManifest.xml`.
-- The backend API base URL is injected at web build time via `NEXT_PUBLIC_API_URL` (see the deployment plan).
+## 4. Key Configuration Notes
+
+- **Secure Origin (`androidScheme: 'https'`)**: Configured in `capacitor.config.ts` so LiveKit WebRTC microphone and camera streams execute in a secure browser context.
+- **Hardware Permissions**: `INTERNET`, `RECORD_AUDIO`, and `CAMERA` permissions are declared in the Android native manifest.
+- **Backend API URL**: Configurable at build time via `NEXT_PUBLIC_API_URL` or dynamically in the in-app Settings view.

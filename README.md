@@ -1,151 +1,187 @@
-# HomeAssistant - Private Desktop AI Assistant
+# Exia — Multimodal AI Assistant & Voice Platform
 
-A 100% private, local-first Desktop AI Assistant built as an alternative to ChatGPT for your daily tasks, agenda, long-term memory, and local device control. Powered by **LiveKit WebRTC**, **Model Context Protocol (MCP)**, **Local LLMs**, and **SQLite**.
+A private, real-time multimodal personal AI assistant and voice agent platform. Powered by **LiveKit WebRTC**, **Google Gemini Live / Local LLMs**, **Model Context Protocol (MCP)**, **Mem0 Universal Memory**, and **MongoDB Atlas**.
 
 ---
 
 ## 1. System Architecture & How It Works
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│               Local Desktop Application (Frontend)                     │
-│               React 19 + TypeScript + Tailwind CSS                     │
-│                                                                        │
-│  ┌─────────────────────────┐  ┌──────────────────────────────────────┐ │
-│  │   LiveKit Voice Stage   │  │       Assistant Control Hub          │ │
-│  │  • LiveKit Visualizer   │  │  • Daily Tasks & Routines (SQLite)   │ │
-│  │  • RoomAudioRenderer    │  │  • Long-Term Memory (FTS5 Search)    │ │
-│  │  • Mic & State Controls │  │  • MCP Server Registry & Tools       │ │
-│  │  • Realtime Transcript  │  │  • Local LLM Settings (Ollama/etc.)  │ │
-│  └────────────▲────────────┘  └──────────────────▲───────────────────┘ │
-└───────────────┼──────────────────────────────────┼─────────────────────┘
-                │ WebRTC Audio & Data Channel      │ Local IPC / HTTP / SQLite
-                ▼                                  ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                 LiveKit Server (Local / Cloud)                         │
-│             ws://localhost:7880  or  LiveKit Cloud                     │
-└───────────────────────────────┬────────────────────────────────────────┘
-                                │
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                      Client Ecosystem (ui/ Monorepo)                          │
+│        React 19 + TypeScript + Next.js 15 + Tailwind CSS v4                   │
+│                                                                               │
+│  ┌─────────────────────────┐  ┌─────────────────────────────────────────────┐ │
+│  │   LiveKit Voice Stage   │  │             Mission Control Hub             │ │
+│  │  • 5 Reactive Waveforms │  │  • Direct in-browser Token Studio (JWT)     │ │
+│  │  • RoomAudioRenderer    │  │  • MCP Server Registry (Stdio / SSE)        │ │
+│  │  • Vision & Screen Cam  │  │  • Model Config (Gemini Live / Ollama)      │ │
+│  │  • Realtime Transcript  │  │  • Directive Matrix & Custom Prompts        │ │
+│  └────────────▲────────────┘  └──────────────────────▲──────────────────────┘ │
+└───────────────┼──────────────────────────────────────┼────────────────────────┘
+                │ WebRTC Opus Audio & Video Track      │ HTTPS REST (JWT Bearer)
+                ▼                                      ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                 LiveKit Realtime Server (Local / Cloud SFU)                   │
+│             ws://localhost:7880  or  wss://<project>.livekit.cloud            │
+└───────────────────────────────┬───────────────────────────────────────────────┘
+                                │ WebRTC Room Protocol
                                 ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                   Backend Agent Worker (Python)                        │
-│                                                                        │
-│  ┌───────────────────────┐   ┌──────────────────────────────────────┐  │
-│  │  Local / Private LLM  │   │  SQLite Database (`assistant.db`)    │  │
-│  │  • Ollama (Llama 3.2) │   │  • `tasks`: Daily agenda & reminders │  │
-│  │  • DeepSeek R1 / Qwen │   │  • `memories`: Facts & preferences   │  │
-│  │  • Gemini Flash API   │   │  • `mcp_servers`: Tool configurations│  │
-│  └───────────────────────┘   └──────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │  Model Context Protocol (MCP) Client Engine                      │  │
-│  │  • Local Filesystem (`@modelcontextprotocol/server-filesystem`)  │  │
-│  │  • Windows Desktop Automation (Notifications, Apps, Stats)       │  │
-│  │  • Custom Stdio / SSE MCP Servers                                │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                   LiveKit Voice Agent Worker (agent/agent.py)                 │
+│                                                                               │
+│  ┌───────────────────────┐   ┌─────────────────────────────────────────────┐  │
+│  │  Multimodal Voice     │   │  Mem0 Adaptive Memory Engine                │  │
+│  │  • Gemini Live / LLMs │   │  • User facts, preferences, entities        │  │
+│  │  • Silero VAD         │   │  • SQLite + Vector store retrieval          │  │
+│  │  • Visual Feed Vision │   │  • Injects past context dynamically         │  │
+│  └───────────────────────┘   └─────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Model Context Protocol (MCP) Client Engine                             │  │
+│  │  • Dynamic 2-step tool calling (search_mcp_tools & execute_mcp_tool)    │  │
+│  │  • Local filesystem CLI (`@modelcontextprotocol/server-filesystem`)     │  │
+│  │  • Custom Stdio / SSE MCP Servers registered in MongoDB                 │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+└───────────────────────────────────────────────────────────────────────────────┘
+                                ▲
+                                │ Direct Database Queries
+                                ▼
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                     FastAPI Gateway Server (backend/)                         │
+│       Single Writer of all UI data to MongoDB Atlas / Local MongoDB           │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-> 🗺️ **Editable architecture diagrams (draw.io):** [`docs/architecture/exia-high-level-architecture.drawio`](docs/architecture/) — main architecture, plus `exia-backend-server.drawio` and `exia-voice-agent.drawio` with cloud icons. See [`docs/architecture/README.md`](docs/architecture/README.md).
+> 🗺️ **Editable Architecture Diagrams (draw.io):** [`docs/architecture/exia-high-level-architecture.drawio`](docs/architecture/) — includes backend server (`exia-backend-server.drawio`) and voice agent (`exia-voice-agent.drawio`). See [`docs/architecture/README.md`](docs/architecture/README.md).
 
 ---
 
-## 2. Research: UI & Database Architecture
+## 2. Core Architecture Rules
 
-### A. LiveKit UI Components
-- **`@livekit/components-react` & `@livekit/components-styles`**: Integrated for native WebRTC room management:
-  - `<LiveKitRoom>` manages the WebRTC session, tracks, and data channel.
-  - `<RoomAudioRenderer>` automatically decodes and renders incoming assistant audio.
-  - `<BarVisualizer>` and custom reactive visualizers animate dynamically based on whether the assistant is **Listening**, **Thinking**, or **Speaking**.
-  - Interactive stage handles both live WebRTC connections and instant local testing.
-
-### B. Local Database Selection: Why SQLite?
-1. **Zero External Daemon**: Runs in-process on your desktop; no heavy Docker/Postgres service required just for daily notes and tasks.
-2. **Microsecond Latency**: Instantaneous read/write for assistant context injection during voice queries.
-3. **Built-in Full-Text Search (FTS5)**: Enables instant keyword and phrase search over past memories and notes.
-4. **Vector Ready**: Can be paired with `sqlite-vec` or Chroma for local semantic embeddings.
-5. **Portability**: All data stays in a single file (`backend/assistant.db`), ensuring 100% privacy and easy backup.
-
-*Database Schema is available at: `backend/schema.sql`.*
-
-### C. Model Context Protocol (MCP) & MongoDB Atlas Direct Storage
-- **Check Connect & Direct Save**: In the UI, adding an MCP server tests connectivity and stores the server record and its tool schemas directly into MongoDB Atlas (`mcp_servers` collection).
-- **No Token Metadata Bloat**: Because tool specifications reside directly in MongoDB Atlas, they are **not** stuffed into the LiveKit JWT token metadata. The agent queries MongoDB Atlas dynamically.
-- Supports both **`stdio`** (CLI tools like `npx`, `python`, `uvx`) and **`sse`** (HTTP endpoints).
-
-### D. Lightweight LiveKit Token Studio (Session ID & Identity)
-- **Compact Token (~300 Bytes)**: Passes only `session_id` and `identity` (plus model & memory partition references) in the token metadata. Eliminates token bloat and avoids JWT header limits.
-- **Direct In-Browser Token Minting**: Uses native Web Crypto API (`window.crypto.subtle`) to sign authentic LiveKit HS256 JWT access tokens directly on the client side with zero server dependency.
-- **Backend Token Server Integration**: Calls `POST http://localhost:8000/api/token` to record the session in MongoDB Atlas `sessions` collection.
-- **One-Click Connect**: Press **"Join Voice Room with Token"** to immediately activate the LiveKit audio session.
-
-### E. Session History from MongoDB Atlas
-- **UI History Browser**: In the Token Studio view, users can click the **"Session History"** tab to view past sessions fetched directly from MongoDB Atlas (`sessions` collection via `GET /api/sessions`).
-- **Session Inspector**: Inspect session ID, participant identity, room name, model used, and timestamp.
+1. **UI → Backend → Database**: The UI never communicates directly with the database. All account registrations, MCP servers, prompt directives, and model configurations pass through the FastAPI backend with JWT authentication.
+2. **Agent Holds Zero UI State**: The voice agent worker connects to LiveKit WebRTC for audio/video streaming and reads configuration and tools dynamically from MongoDB.
+3. **No JWT Token Bloat**: Large tool schemas reside in MongoDB Atlas rather than bloating LiveKit JWT tokens; the agent resolves tools dynamically using a 2-step search and execute pipeline.
+4. **Three Native Client Surfaces**: A single Next.js 15 UI codebase powers the Web application, the Android native shell, and the Windows desktop shell.
 
 ---
 
-## 3. Directory Structure
+## 3. Repository Directory Structure
 
 ```
-HomeAsstant/
-├── ui/                             # UI applications (monorepo)
-│   ├── web/                        # Web UI — Next.js 15 + React 19 (source of all 3 clients)
-│   ├── android/                    # Android shell — Capacitor (wraps ui/web build)
-│   └── windows/                    # Windows shell — Tauri 2 (wraps ui/web build)
-│   ├── electron/                 # Desktop Window wrapper (Electron)
-│   │   ├── main.cjs
-│   │   └── preload.cjs
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.tsx        # Top status bar (LiveKit, SQLite, MCP badges)
-│   │   │   ├── Sidebar.tsx       # Navigation tabs (Voice, Tasks, Memory, MCP, Token Studio, Settings)
-│   │   │   ├── VoiceAssistantView.tsx  # Voice visualizer stage & transcript
-│   │   │   ├── LiveKitVoiceWrapper.tsx # @livekit/components-react integration
-│   │   │   ├── TasksView.tsx     # Daily task manager & routines
-│   │   │   ├── MemoryView.tsx    # Long-term memory browser & FTS search
-│   │   │   ├── MCPView.tsx       # MCP Server Hub & tool manager
-│   │   │   ├── TokenStudioView.tsx # In-UI LiveKit Token Creator & JWT Inspector
-│   │   │   └── SettingsView.tsx  # MongoDB Atlas, Models, Mem0 & MCP settings
-│   │   ├── services/
-│   │   │   └── tokenService.ts   # In-UI Web Crypto JWT minting & token server client
-│   │   ├── store/
-│   │   │   └── initialData.ts    # Seed data & localStorage persistence
-│   │   ├── types/
-│   │   │   └── index.ts          # TypeScript type definitions
-│   │   ├── App.tsx               # Root view orchestrator
-│   │   ├── index.css             # Tailwind CSS & custom styling
-│   │   └── main.tsx
-│   ├── package.json
-│   └── vite.config.ts
-└── backend/                      # Assistant Agent & Database
-    ├── README.md                 # Backend architecture guide
-    ├── token_server.py           # FastAPI LiveKit token server + MongoDB recorder
-    ├── agent.py                  # LiveKit voice worker with Mem0 SQLite & MCP
-    ├── db.py                     # Motor/MongoDB schemas (sessions, mcp_servers, token_metadata)
-    ├── mcp_manager.py            # 2-step tool pipeline: search_mcp_tools & execute_mcp_tool
-    └── schema.sql                # Complete SQLite database schema
+Exia/
+├── ui/                             # Frontend Client Monorepo
+│   ├── web/                        # Core Web Application — Next.js 15, React 19, Tailwind CSS v4
+│   ├── android/                    # Android Shell — Capacitor 8 (compiles native APK / AAB)
+│   └── windows/                    # Windows Desktop Shell — Tauri 2 + Rust (WebView2 native app)
+│
+├── backend/                        # Central FastAPI Server Gateway
+│   ├── main.py                     # Primary FastAPI application gateway (local & production)
+│   ├── main_vercel.py              # Serverless entrypoint for Vercel deployment
+│   ├── pyproject.toml / uv.lock    # Python dependencies (managed via Astral uv)
+│   ├── dist/                       # Static production SPA export fallback
+│   └── src/
+│       ├── constants/              # Application settings, Pydantic schemas, collection names
+│       ├── routes/                 # REST routers (auth, token, sessions, mcp, prompts, models)
+│       ├── services/               # Database pooling, query cache, security, auto-seeder
+│       └── utils/                  # Authentication dependencies and cryptography helpers
+│
+├── agent/                          # Realtime Voice & Vision Agent Worker
+│   ├── agent.py                    # Voice worker: Silero VAD, Gemini Live/LLMs, Vision, Mem0
+│   ├── db.py                       # MongoDB connection & document queries
+│   ├── mcp_manager.py              # Dynamic MCP tool search and execution engine
+│   ├── token_server.py             # Standalone token utility server
+│   ├── requirements.txt            # Python dependencies (livekit-agents, mem0ai, motor)
+│   └── schema.sql                  # SQLite schema for tasks and memories
+│
+├── scripts/                        # Centralized Build & Deployment Automation
+│   ├── desktop.sh                  # Tauri 2 Windows desktop compile pipeline
+│   ├── android.sh                  # Capacitor Android APK/AAB compile pipeline
+│   ├── compile.sh                  # Unified multi-target build dispatcher
+│   └── vercel.sh                   # Vercel serverless cloud deployment script
+│
+├── docs/                           # Technical Specifications & Documentation
+│   ├── project-overview.md         # Comprehensive project architecture & roadmap
+│   ├── desktop-architecture.md     # Tauri 2 Windows client technical guide
+│   ├── web-architecture.md         # Vercel serverless architecture guide
+│   ├── database-schema.md          # MongoDB collection schemas & validation
+│   └── architecture/               # Editable draw.io system diagrams
+│
+├── mongodb_schema.json             # MongoDB JSON schema definitions
+├── .env.example                    # Environment configuration template
+└── README.md                       # This document
 ```
 
 ---
 
-## 4. How to Run the Frontend Right Now
+## 4. Development Quick Start
 
-1. Navigate to the `ui/web` folder:
-   ```bash
-   cd ui/web
-   ```
+### Step 1: Start the Backend Gateway
+```bash
+cd backend
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+*Interactive API docs available at: `http://localhost:8000/api/docs`.*
 
-2. Start the local development server:
-   ```bash
-   npm run dev
-   ```
+### Step 2: Start the Voice Agent Worker
+```bash
+cd agent
+pip install -r requirements.txt
+python agent.py dev
+```
 
-3. Open your browser or desktop window at:
-   ```
-   http://localhost:5173
-   ```
+### Step 3: Run the Web Client
+```bash
+cd ui/web
+pnpm install
+pnpm dev
+```
+*Open your browser at `http://localhost:3000`.*
 
-4. Build for production:
-   ```bash
-   npm run build
-   ```
+---
+
+## 5. Client & Cloud Build Pipelines (`scripts/`)
+
+Build and packaging scripts are centralized in the [`scripts/`](file:///e:/potfolio/Exia/scripts) directory:
+
+### A. Windows Desktop Application (Tauri 2)
+```bash
+# Production release build (NSIS installer & binary mirrored to release/)
+./scripts/desktop.sh
+
+# Fast debug build
+./scripts/desktop.sh --debug
+
+# Build Tauri shell using existing web export without rebuilding Next.js
+./scripts/desktop.sh --skip-web
+```
+
+### B. Android Native Application (Capacitor)
+```bash
+# Debug APK compilation (mirrored to release/Exia-debug.apk)
+./scripts/android.sh
+
+# Production release APK compilation
+./scripts/android.sh --release
+
+# Sync web assets to Android shell without running Gradle
+./scripts/android.sh --sync-only
+
+# Sync assets and open project directly in Android Studio
+./scripts/android.sh --open
+```
+
+### C. Unified Compilation Dispatcher
+```bash
+# Compile specific target
+./scripts/compile.sh desktop --release
+./scripts/compile.sh android --debug
+./scripts/compile.sh web
+
+# Compile all client targets
+./scripts/compile.sh all
+```
+
+### D. Deploy Backend to Vercel
+```bash
+./scripts/vercel.sh --prod
+```

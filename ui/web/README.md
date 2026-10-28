@@ -1,150 +1,72 @@
-# Agent Starter for React
+# Exia — Web Client (Next.js 15 & React 19)
 
-This is a starter template for [LiveKit Agents](https://docs.livekit.io/agents) that provides a simple voice interface using [Agents UI](https://livekit.io/ui) components and [LiveKit JavaScript SDK](https://github.com/livekit/client-sdk-js). It supports [voice](https://docs.livekit.io/agents/start/voice-ai), [transcriptions](https://docs.livekit.io/agents/build/text/), and [virtual avatars](https://docs.livekit.io/agents/integrations/avatar).
+The modern, responsive web application for **Exia**, the AI-powered Home Assistant and Voice Agent platform. This package is the single source of truth for the user interface across all three client form factors:
+- **Web Browser** (`ui/web` directly deployed or statically exported)
+- **Android App** (`ui/android` Capacitor native shell)
+- **Windows Desktop App** (`ui/windows` Tauri 2 native shell)
 
-Also available for:
-[Android](https://github.com/livekit-examples/agent-starter-android) • [Flutter](https://github.com/livekit-examples/agent-starter-flutter) • [Swift](https://github.com/livekit-examples/agent-starter-swift) • [React Native](https://github.com/livekit-examples/agent-starter-react-native)
+---
 
-<picture>
-  <source srcset="./.github/assets/readme-hero-dark.webp" media="(prefers-color-scheme: dark)">
-  <source srcset="./.github/assets/readme-hero-light.webp" media="(prefers-color-scheme: light)">
-  <img src="./.github/assets/readme-hero-light.webp" alt="App screenshot">
-</picture>
+## 1. Key Capabilities & Features
 
-### Features:
+- **LiveKit Realtime Voice Stage**: Sub-second bidirectional WebRTC voice streaming powered by `@livekit/components-react` and `@agents-ui`.
+- **Dynamic Audio Visualizers**: 5 reactive visualizer styles (`wave`, `bar`, `grid`, `radial`, `aura`) adapting to agent listening, thinking, and speaking states.
+- **Multimodal Video & Screen Share**: Camera and screen-sharing pipelines for visual perception.
+- **Token Studio**: Direct in-browser cryptographic JWT minting and session registration with MongoDB Atlas.
+- **MCP Server Hub**: In-app management, testing, and connection validation for Model Context Protocol servers (`stdio` & `sse`).
+- **Model Selection & Parameters**: Configuration for Gemini Live, OpenAI, Ollama local models, voice personas, and temperature settings.
+- **Prompt Library**: Customizable persona directives, task templates, and system prompts.
+- **Session History & Analytics**: Session inspector displaying historical transcripts, token usage, latency, and participant metadata.
+- **Dual-Theme Tactical UI**: High-contrast tactical dark mode (`#07090e`) with GN emerald accents, and crisp solar light mode.
 
-- Real-time voice interaction with LiveKit Agents
-- Camera video streaming support
-- Screen sharing capabilities
-- Multiple audio visualizer styles (`bar`, `grid`, `radial`, `wave`, `aura`)
-- Virtual avatar integration
-- Light/dark theme switching with system preference detection
-- Customizable branding, colors, and UI text
+---
 
-This template is built with Next.js and is free for you to use or modify as you see fit.
+## 2. Tech Stack
 
-## Getting started
+- **Framework**: Next.js 15 (App Router, Turbopack, static output mode)
+- **Library**: React 19 & TypeScript
+- **Styling**: Tailwind CSS v4, Lucide React, Phosphor Icons
+- **Realtime**: LiveKit Client SDK (`livekit-client`, `@livekit/components-react`)
+- **UI Primitives**: Radix UI primitives & `@shadcn/ui` components
 
-Clone this template, install dependencies, and run the app:
+---
 
-```bash
-git clone https://github.com/livekit-examples/agent-starter-react.git
-cd agent-starter-react
-pnpm install
-pnpm dev
-```
-
-Then open http://localhost:3000 in your browser.
-
-The app is configured to connect to the LiveKit homepage agent by default, which you can also try at [livekit.com](https://www.livekit.com). That agent takes voice and text input only, so video and screen sharing are hidden until you point the app at your own agent (see [Connect to your agent](#connect-to-your-agent)).
-
-## Connect to your agent
-
-To switch from the default agent to your own, you first need a LiveKit agent to speak with. For a no-code setup, use the [Agent Builder](https://docs.livekit.io/agents/start/builder/). For more customization, try our starter agent for [Python](https://github.com/livekit-examples/agent-starter-python), [Node.js](https://github.com/livekit-examples/agent-starter-node), or [create your own from scratch](https://docs.livekit.io/agents/start/voice-ai/).
-
-Second, you need a token server. For development, the easiest option is the [development token server](https://docs.livekit.io/frontends/build/authentication/development-token-server/): switch on the **Development token server** toggle on your project's [Settings](https://cloud.livekit.io/projects/p_/settings/project) page in LiveKit Cloud and copy the **Token server ID** below it. Then copy `.env.example` to `.env.local` and fill it in:
-
-```env
-LIVEKIT_TOKEN_SERVER_ID=<your-token-server-id>
-```
-
-Alternatively, use the token endpoint included in this app at [`app/api/token/route.ts`](./app/api/token/route.ts). It needs your project's LiveKit credentials in `.env.local`, which the LiveKit CLI fills in for you when it clones the template:
-
-```bash
-lk app create --template agent-starter-react
-```
-
-Or copy them from your project's Settings page yourself:
-
-```env
-LIVEKIT_URL=wss://<project-subdomain>.livekit.cloud
-LIVEKIT_API_KEY=<your_api_key>
-LIVEKIT_API_SECRET=<your_api_secret>
-```
-
-Leave `AGENT_NAME` blank for automatic dispatch, or set it to your agent's name for [explicit dispatch](https://docs.livekit.io/agents/server/agent-dispatch).
-
-> [!NOTE]
-> Both options are for development only — any client can request a token. See [Token generation in production](#token-generation-in-production) before you ship.
-
-## Token generation in production
-
-In production, you will be responsible for developing a solution to [generate tokens for your users](https://docs.livekit.io/home/server/generating-tokens/) that integrates with your authentication system. Add an authentication layer to [`app/api/token/route.ts`](./app/api/token/route.ts), or point `tokenEndpoint` in [`app/page.tsx`](./app/page.tsx) at your own token server and drop the development token server.
-
-## Project structure
-
-This starter uses the [Agents UI](https://livekit.io/ui) components for core UI elements like media controls, audio visualizers, chat transcripts, and providing session data. Shadcn installs components into `components/` folder so you can customize them like any other local component.
+## 3. Directory Layout
 
 ```
-agent-starter-react/
-├── app/
-│   ├── api/
+ui/web/
+├── app/                    # Next.js App Router entrypoint and layouts
+│   ├── layout.tsx          # Root HTML layout with font declarations & ThemeProvider
+│   └── page.tsx            # Main application orchestrator & view state router
 ├── components/
-│   ├── agents-ui/     - Agents UI components
-│   ├── app/           - App-specific components
-│   ├── ui/            - Primitive shadcn/ui components
-├── fonts/
-├── hooks/
-├── lib/
-├── public/
-└── package.json
+│   ├── agents-ui/          # LiveKit visualizers, control bars, session indicators
+│   ├── app/                # Application state, view controller, welcome screen, theme toggle
+│   ├── layout/             # Responsive AppShell, collapsible sidebar, mobile bottom dock
+│   ├── screens/            # Screen views (voice, login, history, mcp, prompts, models, settings)
+│   └── ui/                 # Accessible primitives (button, alert, bubble, toggle, select, sonner)
+├── context/                # Authentication & session context
+├── hooks/                  # Custom hooks (appearance, visualizers, debug telemetry)
+├── lib/                    # Strongly typed API client (`api.ts`), constants, and types
+├── public/                 # Static branding assets, icons, and favicon
+└── styles/                 # Tailwind CSS v4 design tokens and theme variables
 ```
 
-Business logic lives within the `components/app` folder. It's here where the application's state and behavior is managed and the various Shadcn UI components are composed together.
+---
 
-| File                  | Description                                                                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `session-view.tsx`    | Initializes the application, and LiveKit session. Renders the view controller and session UI including chat transcript, media tiles, and control bar. |
-| `view-controller.tsx` | Manages the transitions between the welcome and session views based on the LiveKit session state.                                                     |
-| `welcome-view.tsx`    | Renders the welcome UI when the LiveKit session is not connected.                                                                                     |
-| `chat-transcript.tsx` | Manages the chat transcript transitions.                                                                                                              |
-| `tile-layout.tsx`     | Manages the layout and transition of media tiles in various application states.                                                                       |
-
-### Component usage
-
-Most Agents UI components require access to a LiveKit session object for access to values like agent state or audio tracks. A Session object can be created from a [TokenSource](/reference/client-sdk-js/variables/TokenSource.html), and provided by wrapping the component in an [AgentSessionProvider](/reference/components/shadcn/component/agent-session-provider).
-
-See [`components/app/app.tsx`](./components/app/app.tsx) for an example of how this is done in this app.
-
-### Customizing components
-
-Agents UI components, like most Shadcn components, take as many primitive attributes as possible. For example, the [AgentControlBar](/reference/components/shadcn/component/agent-control-bar/page.mdoc) component extends `HTMLAttributes<HTMLDivElement>`, so you can pass any props that a div supports. This makes it easy to extend the component with your own styles or functionality.
-
-You can edit any Agents UI component's source code in the `components/agents-ui` directory. For style changes, we recommend passing in tailwind classes to override the default styles. Take a look at the source code to get a sense of how to override a component's default styles.
-
-### Updating components
-
-To update the Agents UI components to the latest publication, run the following command:
+## 4. Development & Build Commands
 
 ```bash
-pnpm shadcn:install
+# 1. Install dependencies
+pnpm install # or npm install
+
+# 2. Start development server with HMR (Turbopack)
+pnpm dev # runs on http://localhost:3000
+
+# 3. Compile production static export (outputs to ui/web/out)
+pnpm run build
 ```
 
-> [!NOTE]
-> The CLI will ask before overwriting any modified files so you can avoid losing any customizations you might have made.
-
-### Installing components
-
-```bash
-pnpm dlx shadcn@latest add @agents-ui/{component-name-a} @agents-ui/{component-name-b}
-```
-
-## Configuration
-
-This starter is designed to be flexible so you can adapt it to your specific agent use case. Branding, feature toggles, and UI text are set directly in the components that use them — see [`app/layout.tsx`](./app/layout.tsx) for branding (logo, colors, page title/description) and [`components/app/view-controller.tsx`](./components/app/view-controller.tsx) for feature toggles and the audio visualizer. Video and screen share input follow the connected agent; override `isVideoInputSupported` in [`app/page.tsx`](./app/page.tsx) to force them on or off.
-
-#### Audio visualizer presets
-
-Set `audioVisualizerType` in [`components/app/view-controller.tsx`](./components/app/view-controller.tsx) to switch visualizer styles:
-
-- `bar` (default): vertical bars with optional `audioVisualizerBarCount`
-- `grid`: dot grid with `audioVisualizerGridRowCount` and `audioVisualizerGridColumnCount`
-- `radial`: circular bars with `audioVisualizerRadialBarCount` and `audioVisualizerRadialRadius`
-- `wave`: oscilloscope-style wave with `audioVisualizerWaveLineWidth`
-- `aura`: shader-based aura with `audioVisualizerAuraColorShift`
-
-Use `audioVisualizerColor` to set a shared accent color across all visualizer modes.
-
-## Contributing
-
-This template is open source and we welcome contributions! Please open a PR or issue through GitHub, and don't forget to join us in the [LiveKit Community Slack](https://livekit.io/join-slack)!
+The static export generated in `ui/web/out` is automatically consumed by:
+- `backend/dist` (static SPA fallback in FastAPI)
+- `ui/android` (Capacitor www distribution via `node scripts/copy-web.mjs`)
+- `ui/windows` (Tauri 2 `frontendDist: "../../web/out"`)

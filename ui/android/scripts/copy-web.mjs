@@ -9,7 +9,7 @@ const dest = join(here, '..', 'www');
 
 if (!existsSync(src)) {
   console.error(`[copy-web] Web build not found at: ${src}`);
-  console.error('[copy-web] Build it first:  cd apps/web && npm run build');
+  console.error('[copy-web] Build it first:  cd ui/web && npm run build');
   process.exit(1);
 }
 

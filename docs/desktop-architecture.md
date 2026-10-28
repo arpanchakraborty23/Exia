@@ -38,8 +38,24 @@ flowchart TD
 
 ## 2. Desktop Workflow & Build Pipeline
 
-The desktop client is packaged using Tauri CLI:
+The desktop client can be packaged using the automated root build script or manual workflow:
 
+### Automated Script (Recommended)
+```bash
+# Production release build (mirrored to release/Exia-Setup.exe)
+./scripts/desktop.sh
+
+# Fast debug compilation
+./scripts/desktop.sh --debug
+
+# Build Tauri shell using existing web export without rebuilding Next.js
+./scripts/desktop.sh --skip-web
+
+# Clean target caches before compiling
+./scripts/desktop.sh --clean
+```
+
+### Manual Workflow
 ```bash
 # 1. Build the shared frontend static export
 cd ui/web
@@ -50,7 +66,7 @@ cd ui/windows
 npm run build
 ```
 
-* Output: Standalone installer generated in `ui/windows/src-tauri/target/release/bundle/nsis/`.
+* Output: Standalone installer generated in `ui/windows/src-tauri/target/release/bundle/nsis/` and mirrored to `release/`.
 
 ---
 
