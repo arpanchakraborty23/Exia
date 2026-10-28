@@ -188,9 +188,11 @@ Build and packaging scripts are centralized in the [`scripts/`](file:///e:/potfo
 
 ### E. Deploy Backend to Render
 
-Keep the Render service's Root Directory set to the repository root and use:
+Configure the Render web service to use Docker:
 
-- **Build Command:** `pip install -r requirements.txt`
-- **Start Command:** `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **Root Directory:** `backend`
+- **Runtime:** Docker
+- **Dockerfile Path:** `./Dockerfile`
+- **Docker Build Context Directory:** `.`
 
-The root `requirements.txt` installs the backend project and its dependencies from `backend/pyproject.toml`.
+The multi-stage Dockerfile installs the backend dependencies and starts the FastAPI server on Render's assigned port. No separate Render build or start command is needed.

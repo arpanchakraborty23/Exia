@@ -154,7 +154,21 @@ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 uv run python main.py
 ```
 
-### B. Deploy to Vercel via Vercel CLI
+### B. Run the Backend with Docker
+
+From the `backend/` directory, build the image and pass your local `.env` file
+to the container at runtime:
+
+```bash
+docker build -t exia-backend .
+docker run --rm --name exia-backend -p 8000:8000 --env-file .env exia-backend
+```
+
+The image installs the locked production dependencies from `pyproject.toml`
+and `uv.lock` using uv. The `.env` file is not copied into the image. Create it
+from `.env.example` and fill in the required values before running the container.
+
+### C. Deploy to Vercel via Vercel CLI
 ```bash
 # Deploy preview build
 ./scripts/vercel.sh
