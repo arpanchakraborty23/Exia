@@ -3,7 +3,17 @@
  * Non-route code lives outside src/app/ (AGENTS.md rule).
  */
 import React from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Image,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TextInputProps,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing } from '@exia/design-tokens';
@@ -69,6 +79,71 @@ export function Badge({ label, tone = 'muted' }: { label: string; tone?: BadgeTo
 // ---------------------------------------------------------------------------
 // Loading / empty / error states (every screen has all four)
 // ---------------------------------------------------------------------------
+
+export function Skeleton({
+  width,
+  height = 16,
+  borderRadius = radius.md,
+  style,
+}: {
+  width?: number | `${number}%` | 'auto';
+  height?: number;
+  borderRadius?: number;
+  style?: ViewStyle;
+}) {
+  const t = useTheme();
+  const opacity = React.useRef(new Animated.Value(0.3)).current;
+
+  React.useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.75,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: width ?? '100%',
+          height,
+          backgroundColor: t.muted,
+          borderRadius,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+}
+
+export function SkeletonCard({
+  lines = 3,
+  style,
+}: {
+  lines?: number;
+  style?: ViewStyle;
+}) {
+  return (
+    <ExiaCard style={[styles.skeletonCard, style]}>
+      <Skeleton width="45%" height={18} />
+      <Skeleton width="90%" height={14} />
+      {lines > 2 ? <Skeleton width="65%" height={14} /> : null}
+    </ExiaCard>
+  );
+}
 
 export function Loading({ label = 'Loading…' }: { label?: string }) {
   const t = useTheme();
@@ -281,6 +356,7 @@ const styles = StyleSheet.create({
   },
   centered: { alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxxl },
   centeredCaption: { textAlign: 'center' },
+  skeletonCard: { gap: spacing.sm, padding: spacing.lg, marginVertical: spacing.xs },
   stateCard: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xl },
   stateTitle: { fontWeight: '600' },
   stateMessage: { textAlign: 'center' },

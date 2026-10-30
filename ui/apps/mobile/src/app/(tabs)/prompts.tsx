@@ -168,7 +168,6 @@ type LibraryFilter = 'all' | 'system' | 'quick';
  * backend's /models/config document (full-merge PUT).
  */
 export default function Prompts() {
-  const t = useTheme();
   const queryClient = useQueryClient();
 
   const [tab, setTab] = useState<StudioTab>('base');
@@ -497,6 +496,7 @@ function SkillsTab({
   onToggle: (id: string) => void;
   onSave: () => void;
 }) {
+  const t = useTheme();
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
       <ExiaText variant="caption">

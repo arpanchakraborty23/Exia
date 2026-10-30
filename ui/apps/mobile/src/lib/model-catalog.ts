@@ -32,6 +32,8 @@ interface CatalogProvider {
   voices?: CatalogVoice[];
 }
 
+export type { CatalogProvider };
+
 // 1. REALTIME S2S PROVIDERS ---------------------------------------------------
 
 export const REALTIME_PROVIDERS: CatalogProvider[] = [

@@ -982,7 +982,7 @@ function VoiceProfilesCard() {
     <SectionCard title="Voice Profiles" badge="SPEAKER ID">
       <ExiaText variant="caption">
         Enrolled speaker signatures used by Speechmatics speaker identification
-        and the voice skill's role permissions.
+        and for voice-skill role permissions.
       </ExiaText>
 
       {profiles.isLoading ? <Loading label="Loading profiles…" /> : null}

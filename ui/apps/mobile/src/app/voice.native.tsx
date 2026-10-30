@@ -18,6 +18,7 @@ import {
   BarVisualizer,
   isTrackReference,
   LiveKitRoom,
+  registerGlobals,
   useChat,
   useConnectionState,
   useIsSpeaking,
@@ -51,6 +52,8 @@ import { VoiceControlBar } from '@/components/voice/voice-controls';
  * selection via AudioSession, and disconnect with backend session cleanup.
  * Route: /voice (immersive, no header).
  */
+registerGlobals();
+
 export default function Voice() {
   const token = useQuery({
     queryKey: ['livekit-token'],
@@ -205,7 +208,11 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
   const handleDisconnect = useCallback(() => {
     // Backend cleanup — mirrors the legacy app's disconnect effect.
     void api.livekit.endSession(sessionId).catch(() => undefined);
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   }, [sessionId]);
 
   const entries: ChatEntry[] = chatMessages.map((message) => ({

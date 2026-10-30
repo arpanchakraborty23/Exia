@@ -15,7 +15,6 @@ import {
   StyleSheet,
   Switch,
   View,
-  type ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -37,15 +36,13 @@ export function SectionCard({
   title,
   badge,
   children,
-  style,
 }: {
   title: string;
   badge?: string;
   children: React.ReactNode;
-  style?: ViewStyle;
 }) {
   return (
-    <ExiaCard style={[styles.section, style]}>
+    <ExiaCard style={styles.section}>
       <View style={styles.sectionHeader}>
         <ExiaText style={styles.sectionTitle}>{title}</ExiaText>
         {badge ? <BadgePill label={badge} /> : null}
