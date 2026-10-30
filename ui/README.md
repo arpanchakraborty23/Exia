@@ -29,8 +29,13 @@
 >   model-config settings screen — all through the shared `@exia/*` packages
 >   with React Query. Gates: `pnpm -r run typecheck`, `pnpm test` (19 unit
 >   tests), ESLint, and `expo-doctor` (20/20) all green; production exports
->   for web and Android succeed. Remaining: voice session screen (needs
->   `@livekit/react-native`), Milestone 5 (Windows — blocked on the Visual
+>   for web and Android succeed. The voice session screen is implemented
+>   (`apps/mobile` route `/voice`) with `@livekit/react-native` 3.1 +
+>   `livekit-client` 2.23, following the official LiveKit React Native
+>   example: mic toggle, camera toggle + flip, screen share, chat over the
+>   `lk.chat` topic, speaker selection, and backend session cleanup. It
+>   requires a native dev build (Expo Go cannot load the WebRTC module).
+>   Remaining: Milestone 5 (Windows — blocked on the Visual
 >   Studio 2022 C++ toolchain, see `apps/windows/README.md`), and
 >   Milestone 6 (CI).
 > - **Build & run commands:** see **[`BUILD.md`](./BUILD.md)** — per-app

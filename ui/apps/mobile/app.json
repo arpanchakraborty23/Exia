@@ -9,7 +9,9 @@
     "scheme": "exia",
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc"
     ],
     "experiments": {
       "typedRoutes": true
@@ -20,6 +22,10 @@
     },
     "android": {
       "package": "com.exia.app",
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_MEDIA_PROJECTION"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#090909",
         "foregroundImage": "./assets/android-icon-foreground.png",

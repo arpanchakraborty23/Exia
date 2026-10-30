@@ -17,6 +17,40 @@ import type {
 import type { RequestFn } from './client';
 
 // ---------------------------------------------------------------------------
+// Backend analytics wire shape (GET /api/analytics — ported 1:1 from the
+// legacy AnalyticsData interface in analytics-view.tsx).
+// ---------------------------------------------------------------------------
+
+export interface AnalyticsMetrics {
+  total_sessions: number;
+  completed_sessions: number;
+  total_duration_seconds: number;
+  formatted_duration: string;
+  total_turns: number;
+  total_tool_calls: number;
+  total_tokens: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  avg_latency: {
+    stt_ms: number;
+    llm_ttft_ms: number;
+    tts_ms: number;
+    e2e_ms: number;
+  };
+  model_breakdown: { model: string; sessions: number; percentage: number }[];
+  recent_activity: {
+    session_id: string;
+    room_name: string;
+    timestamp: string;
+    duration_seconds: number;
+    turns: number;
+    status: string;
+  }[];
+}
+
+// ---------------------------------------------------------------------------
 // Backend MCP wire shapes (POST /api/add, GET /api/list, GET /api/{name}/tools, ...)
 // ---------------------------------------------------------------------------
 
@@ -98,6 +132,37 @@ export interface LiveKitOverrides {
   apiKey?: string;
   apiSecret?: string;
   roomName?: string;
+}
+
+/**
+ * Backend wire shape for voice profiles (FastAPI VoiceProfileSchema —
+ * see backend/src/constants + users.json seed data). Note: the wire uses
+ * `profile_id` / `speaker_name` / `voice_signature`, NOT the shared-types
+ * `VoiceUserProfile` field names, so this screen maps between the two.
+ */
+export interface VoiceProfileWire {
+  profile_id: string;
+  user_id: string;
+  speaker_name: string;
+  voice_signature?: string | null;
+  enrolled_at: string;
+  sample_count: number;
+  notes?: string | null;
+  role?: string;
+  confidence_threshold?: number;
+  pitch_hz?: number | null;
+  sample_status?: string;
+}
+
+/** Payload for POST /api/voice-profiles (FastAPI VoiceProfileCreateRequest). */
+export interface VoiceProfileCreatePayload {
+  speaker_name: string;
+  voice_signature?: string;
+  notes?: string;
+  role?: string;
+  confidence_threshold?: number;
+  pitch_hz?: number;
+  sample_status?: string;
 }
 
 export function createApi(request: RequestFn) {
@@ -241,8 +306,8 @@ export function createApi(request: RequestFn) {
 
     // 3.5. Analytics & Observability ------------------------------------------
     analytics: {
-      async getMetrics(): Promise<unknown> {
-        return await request('/analytics');
+      async getMetrics(): Promise<AnalyticsMetrics> {
+        return await request<AnalyticsMetrics>('/analytics');
       },
     },
 
@@ -381,6 +446,26 @@ export function createApi(request: RequestFn) {
         return await request<ModelConfig>('/models/config', {
           method: 'PUT',
           body: JSON.stringify(config),
+        });
+      },
+    },
+
+    // 7. Voice Recognition Profiles (Backend: GET/POST /api/voice-profiles, DELETE /api/voice-profiles/{id})
+    voiceProfiles: {
+      async list(): Promise<{ profiles: VoiceProfileWire[]; total: number }> {
+        return await request<{ profiles: VoiceProfileWire[]; total: number }>('/voice-profiles');
+      },
+
+      async create(profile: VoiceProfileCreatePayload): Promise<VoiceProfileWire> {
+        return await request<VoiceProfileWire>('/voice-profiles', {
+          method: 'POST',
+          body: JSON.stringify(profile),
+        });
+      },
+
+      async delete(id: string): Promise<{ success: boolean }> {
+        return await request<{ success: boolean }>(`/voice-profiles/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
         });
       },
     },

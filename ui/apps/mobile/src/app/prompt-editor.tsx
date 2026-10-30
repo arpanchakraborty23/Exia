@@ -27,7 +27,8 @@ interface PromptForm {
 export default function PromptEditor() {
   const t = useTheme();
   const queryClient = useQueryClient();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, title: prefillTitle, prompt_text: prefillText, type: prefillTypeParam } =
+    useLocalSearchParams<{ id?: string; title?: string; prompt_text?: string; type?: string }>();
 
   const existing = useQuery({
     queryKey: ['prompts'],
@@ -40,10 +41,11 @@ export default function PromptEditor() {
   const set = (patch: Partial<PromptForm>) => setDraft((d) => ({ ...d, ...patch }));
 
   const p = existing.data;
+  const prefillType = prefillTypeParam === 'quick' ? 'quick' : 'system';
   const form: PromptForm = {
-    title: draft.title ?? p?.title ?? '',
-    type: draft.type ?? p?.type ?? 'system',
-    promptText: draft.promptText ?? p?.prompt_text ?? '',
+    title: draft.title ?? p?.title ?? (id ? '' : (prefillTitle ?? '')),
+    type: draft.type ?? p?.type ?? (id ? 'system' : prefillType),
+    promptText: draft.promptText ?? p?.prompt_text ?? (id ? '' : (prefillText ?? '')),
     tags: draft.tags ?? p?.tags?.join(', ') ?? '',
   };
 

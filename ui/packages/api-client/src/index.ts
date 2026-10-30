@@ -7,7 +7,15 @@ export {
   type TokenStorage,
 } from './client';
 
-export { createApi, DEFAULT_MODEL_CONFIG, type Api, type LiveKitOverrides } from './endpoints';
+export {
+  createApi,
+  DEFAULT_MODEL_CONFIG,
+  type AnalyticsMetrics,
+  type Api,
+  type LiveKitOverrides,
+  type VoiceProfileCreatePayload,
+  type VoiceProfileWire,
+} from './endpoints';
 
 import { createRequestFn, type ApiClientOptions } from './client';
 import { createApi } from './endpoints';

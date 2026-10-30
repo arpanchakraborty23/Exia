@@ -55,7 +55,9 @@ function RootNavigator() {
     >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="register" options={{ presentation: 'modal' }} />
       <Stack.Screen name="session/[id]" />
+      <Stack.Screen name="voice" options={{ headerShown: false }} />
       <Stack.Screen name="mcp-editor" options={{ presentation: 'modal' }} />
       <Stack.Screen name="prompt-editor" options={{ presentation: 'modal' }} />
     </Stack>

@@ -14,7 +14,7 @@
 |---|---|
 | All UI apps | **Node.js ≥ 20**, **pnpm 12.16.1** (`npm i -g pnpm@12.16.1`) |
 | Backend | **Python + [uv](https://docs.astral.sh/uv/)**, a MongoDB instance (Atlas or local), LiveKit credentials for voice |
-| Android dev | Android Studio (emulator + SDK) **or** a physical device with USB debugging; Expo Go for quick tests |
+| Android dev | Android Studio (emulator + SDK) **or** a physical device with USB debugging; Expo Go for quick tests — **but the voice session (`/voice`) needs a dev build** (`npx expo run:android`), since LiveKit's WebRTC module has native code Expo Go can't load |
 | Android production | Same as dev (local Gradle build) **or** an Expo account for EAS cloud builds |
 | Web | Nothing beyond Node — the dev server and static export need no browser tooling |
 | Windows | **Visual Studio 2022** with the *Desktop development with C++* workload + a compatible **Windows SDK** (see `apps/windows/README.md`) |

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { ApiError } from '@exia/api-client';
 import { spacing } from '@exia/design-tokens';
@@ -9,7 +9,7 @@ import { ExiaButton, ExiaCard, ExiaScreen, ExiaText, useTheme } from '@exia/shar
 
 import { api, tokenStorage } from '@/lib/api';
 import { AUTH_TOKEN_KEY } from '@/lib/auth';
-import { ExiaInput, Field } from '@/components/ui';
+import { ExiaAvatar, ExiaInput, Field } from '@/components/ui';
 
 /**
  * Sign-in screen — first ported screen (Milestone 3 of ui/README.md).
@@ -54,10 +54,11 @@ export default function Login() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
-        <ExiaText variant="title">Sign in</ExiaText>
-        <ExiaText variant="caption" style={styles.subtitle}>
-          Your private home AI assistant
-        </ExiaText>
+        <View style={styles.header}>
+          <ExiaAvatar />
+          <ExiaText variant="title">Welcome back</ExiaText>
+          <ExiaText variant="caption">Sign in to access your Exia workspace</ExiaText>
+        </View>
 
         <ExiaCard>
           <Field label="Email">
@@ -97,6 +98,12 @@ export default function Login() {
             label={submitting ? 'Signing in…' : 'Sign in'}
             onPress={handleSignIn}
           />
+
+          <ExiaButton
+            label="Create account"
+            variant="secondary"
+            onPress={() => router.push('/register')}
+          />
         </ExiaCard>
       </KeyboardAvoidingView>
     </ExiaScreen>
@@ -105,6 +112,6 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, marginTop: spacing.xxxl },
-  subtitle: { marginBottom: spacing.xl },
+  header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xl },
   error: { marginBottom: spacing.md },
 });

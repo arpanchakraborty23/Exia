@@ -50,6 +50,8 @@ app.json            # app config (scheme "exia", typed routes, com.exia.app)
 | `/prompt-editor` | Add/edit prompt (modal, `?id=` prefills) |
 | `/settings` | Model config, LiveKit credentials, sign out |
 | `/login` | Sign in (modal; shown when no token is stored) |
+| `/register` | Create account (modal; auto sign-in on success) |
+| `/voice` | LiveKit voice session (immersive, no header) |
 
 Auth flow: the root layout gates on token hydration (`src/lib/auth.ts`),
 redirects to `/login` when no token exists, and tabs render `null` while
@@ -90,7 +92,16 @@ Never hardcode secrets into the bundle (see `../README.md` §8).
 
 ## Known gaps
 
-- **Voice session screen** — needs `@livekit/react-native` (the web
-  `@livekit/components-react` stack doesn't run on native). Planned next.
+- **Voice session requires a native build** — `@livekit/react-native` ships
+  native WebRTC code, so Expo Go cannot run `/voice`. Use a development
+  build (`npx expo run:android`) or EAS; the rest of the app runs in
+  Expo Go. Controls follow the official LiveKit React Native example
+  (`client-sdk-react-native/example`): mic toggle, camera toggle + flip,
+  screen share (Android media projection / iOS broadcast picker), chat over
+  the `lk.chat` text-stream topic, speaker selection via `AudioSession`,
+  and disconnect with backend session cleanup (`POST /sessions/{id}/end`).
+- **iOS screen share broadcast extension** is not provisioned yet — the
+  in-app system picker works, but a full broadcast extension target is
+  future work (iOS only; Android needs no extra target).
 - Legacy seed/demo sessions are intentionally not ported — lists show a
   designed empty state instead of fake data.

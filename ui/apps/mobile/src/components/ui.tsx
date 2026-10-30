@@ -3,7 +3,7 @@
  * Non-route code lives outside src/app/ (AGENTS.md rule).
  */
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing } from '@exia/design-tokens';
@@ -215,6 +215,49 @@ export function Segmented<T extends string>({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Brand avatar (login/register identity block — ported from the legacy login)
+// ---------------------------------------------------------------------------
+
+export function ExiaAvatar({ size = 64 }: { size?: number }) {
+  const t = useTheme();
+  return (
+    <View
+      accessibilityRole="image"
+      accessibilityLabel="Exia"
+      style={styles.avatarWrap}
+    >
+      <View
+        style={[
+          styles.avatarFrame,
+          {
+            borderColor: t.border,
+            width: size,
+            height: size,
+            borderRadius: Math.round(size * 0.3),
+          },
+        ]}
+      >
+        <Image
+          source={require('../../assets/icon.png')}
+          style={styles.avatarImage}
+        />
+      </View>
+      {/* Online status indicator (liveEmerald — live status only) */}
+      <View
+        style={[
+          styles.avatarDot,
+          {
+            borderColor: t.background,
+            width: Math.max(10, size * 0.22),
+            height: Math.max(10, size * 0.22),
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
@@ -255,4 +298,24 @@ const styles = StyleSheet.create({
   segmented: { flexDirection: 'row', gap: spacing.sm },
   segmentOption: { flex: 1 },
   segmentButton: { minHeight: 40, paddingVertical: spacing.sm },
+  avatarWrap: { alignSelf: 'center', marginBottom: spacing.lg },
+  avatarFrame: {
+    alignItems: 'center',
+    borderRadius: radius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 64,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    width: 64,
+  },
+  avatarImage: { height: '100%', width: '100%' },
+  avatarDot: {
+    backgroundColor: '#10b981', // liveEmerald
+    borderColor: '#090909', // dark background ring
+    borderRadius: radius.full,
+    borderWidth: 2,
+    bottom: -2,
+    position: 'absolute',
+    right: -2,
+  },
 });
