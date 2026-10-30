@@ -1,8 +1,6 @@
 # Exia — Backend Service Architecture & Reference
 
-Welcome to the backend service for **Exia**, the AI-powered Home Assistant and Voice Agent platform. This directory contains the complete Python backend engine designed to execute as:
-1. **The Core FastAPI Server Gateway (`main.py`)** serving all UI clients (Next.js Web, Capacitor Android, and Tauri Windows).
-2. **A Serverless Cloud Application on Vercel (`main_vercel.py`)** via `@vercel/python`.
+Welcome to the backend service for **Exia**, the AI-powered Home Assistant and Voice Agent platform. This directory contains the complete Python backend engine designed to execute as the **Core FastAPI Server Gateway (`main.py`)** serving all UI clients (Expo Android, Expo Web, and React Native Windows — see `ui/README.md`).
 
 ---
 
@@ -69,10 +67,10 @@ Below is the directory structure of `backend/`:
 ```
 backend/
 ├── main.py                     # Main FastAPI Server Gateway (local development & production)
-├── main_vercel.py              # Pure Vercel serverless ASGI application
-├── vercel.json                 # Vercel serverless routing and builder definition
+├── vercel.json                 # Vercel routing definition (serverless entry was removed —
+│                               #   cloud deployment pending a product decision)
 ├── requirements.txt            # Auto-synced runtime dependencies
-├── requirements-vercel.txt     # Clean serverless dependencies for Vercel
+├── requirements-vercel.txt     # Clean serverless dependencies (unused while Vercel is retired)
 ├── pyproject.toml / uv.lock    # Project dependencies & lockfile (managed with uv)
 ├── .env / .env.example         # Environment variable configuration templates
 │
@@ -149,10 +147,15 @@ sequenceDiagram
 ```bash
 # Start backend server with uvicorn
 cd backend
-uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 12568
 # Or directly with python
 uv run python main.py
 ```
+
+> The UI clients default to `http://127.0.0.1:12568/api` (see
+> `ui/apps/mobile/src/lib/api.ts` and the legacy web client), so use port
+> **12568** in development or override the clients' base URL env var
+> (`EXPO_PUBLIC_API_URL` / `NEXT_PUBLIC_API_URL`).
 
 ### B. Run the Backend with Docker
 
@@ -169,10 +172,7 @@ and `uv.lock` using uv. The `.env` file is not copied into the image. Create it
 from `.env.example` and fill in the required values before running the container.
 
 ### C. Deploy to Vercel via Vercel CLI
-```bash
-# Deploy preview build
-./scripts/vercel.sh
 
-# Deploy directly to production
-./scripts/vercel.sh --prod
-```
+> **Retired:** the serverless entrypoint (`main_vercel.py`) was removed and
+> `scripts/vercel.sh` no longer exists. The Vercel deployment path is pending
+> a product decision — run the backend locally (§A) or with Docker (§B).

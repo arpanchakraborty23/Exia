@@ -5,15 +5,16 @@
  * backend when testing on a physical device, e.g.
  *   EXPO_PUBLIC_API_URL=http://192.168.1.10:12568/api npx expo start
  */
-import { createApiClient, InMemoryTokenStorage } from '@exia/api-client';
+import { createApiClient } from '@exia/api-client';
+
+import { SecureTokenStorage } from './secure-token-storage';
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:12568/api';
 
 /**
- * Session token storage. In-memory for now — the secure-storage adapter
- * (expo-secure-store on Android) lands with the settings milestone; per
- * ui/README.md §9, shared code never imports platform storage directly.
+ * Session token storage. Metro picks the platform file automatically:
+ * Keystore/Keychain on native, localStorage on web (see secure-token-storage*).
  */
-export const tokenStorage = new InMemoryTokenStorage();
+export const tokenStorage = new SecureTokenStorage();
 
 export const api = createApiClient({ baseUrl: API_BASE_URL, tokenStorage });

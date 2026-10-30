@@ -20,15 +20,19 @@
 >   monorepo guide states duplicate React Native versions in one workspace
 >   are unsupported — therefore `ui/apps/windows` is intentionally **outside
 >   the pnpm workspace** and will carry its own install. See its README.
-> - **Progress:** Milestones 0-3 complete and Milestone 4's export gate
->   proven: workspace baseline, six shared `@exia/*` packages (with unit
->   tests via vitest at the workspace root), an Expo Android app whose
->   sign-in screen is the first ported screen, and successful production
->   exports for both targets (`expo export --platform web` and
->   `--platform android`). Gates: `pnpm -r run typecheck`, `pnpm test`,
->   ESLint, and `expo-doctor` (20/20) all green. Milestone 5 (Windows) is
->   blocked on the Visual Studio 2022 C++ toolchain — see
->   `apps/windows/README.md`. Milestone 6 (CI) pending.
+> - **Progress:** Milestones 0-3 substantially complete and Milestone 4's
+>   export gate proven. The Expo app is now a real client: five-tab
+>   navigation (Home / History / MCP / Prompts / Settings), sign-in with
+>   persisted secure token storage (Keystore on Android, localStorage on
+>   web), session list + session detail with transcript and tool calls, MCP
+>   server management (add/edit/toggle/delete), prompt management, and the
+>   model-config settings screen — all through the shared `@exia/*` packages
+>   with React Query. Gates: `pnpm -r run typecheck`, `pnpm test` (19 unit
+>   tests), ESLint, and `expo-doctor` (20/20) all green; production exports
+>   for web and Android succeed. Remaining: voice session screen (needs
+>   `@livekit/react-native`), Milestone 5 (Windows — blocked on the Visual
+>   Studio 2022 C++ toolchain, see `apps/windows/README.md`), and
+>   Milestone 6 (CI).
 >
 > **Original repository instruction (historical):** Rename the existing
 > top-level UI folder named `app` to `ui` if it is the project/application

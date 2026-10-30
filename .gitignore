@@ -17,3 +17,4 @@ wheels/
 .agents/
 skills-lock.json
 *.exe
+opencode.json
