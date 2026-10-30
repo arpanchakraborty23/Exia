@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { radius, spacing } from '@exia/design-tokens';
+import { brand, radius, spacing } from '@exia/design-tokens';
 import { ExiaCard, ExiaText, useTheme } from '@exia/shared-ui';
 
 export interface SelectOption {
@@ -64,7 +64,7 @@ export function BadgePill({
   const palette = {
     info: { bg: 'rgba(31, 213, 249, 0.14)', fg: t.primary },
     muted: { bg: t.muted, fg: t.mutedForeground },
-    ok: { bg: 'rgba(16, 185, 129, 0.16)', fg: '#10b981' }, // liveEmerald
+    ok: { bg: 'rgba(16, 185, 129, 0.16)', fg: brand.liveEmerald },
   } as const;
   const c = palette[tone];
   return (

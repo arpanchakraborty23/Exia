@@ -12,13 +12,22 @@ import {
   PressableProps,
   StyleSheet,
   Text as RNText,
+  TextInput,
+  TextInputProps,
   TextProps,
   TextStyle,
   View,
   ViewStyle,
 } from 'react-native';
 
-import { colors, radius, spacing, typography, type ThemeMode } from '@exia/design-tokens';
+import {
+  brand,
+  colors,
+  radius,
+  spacing,
+  typography,
+  type ThemeMode,
+} from '@exia/design-tokens';
 
 export function useTheme(mode: ThemeMode = 'dark') {
   return colors[mode];
@@ -162,6 +171,108 @@ export function ExiaCard({ mode = 'dark', children, style }: ExiaCardProps) {
       ]}
     >
       {children}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Input (Text field)
+// ---------------------------------------------------------------------------
+
+export interface ExiaInputProps extends TextInputProps {
+  mode?: ThemeMode;
+}
+
+export function ExiaInput({
+  mode = 'dark',
+  style,
+  placeholderTextColor,
+  selectionColor,
+  onFocus,
+  onBlur,
+  multiline,
+  ...rest
+}: ExiaInputProps) {
+  const t = colors[mode];
+  const [focused, setFocused] = React.useState(false);
+
+  return (
+    <TextInput
+      {...rest}
+      multiline={multiline}
+      placeholderTextColor={placeholderTextColor ?? t.mutedForeground}
+      selectionColor={selectionColor ?? t.primary}
+      onFocus={(e) => {
+        setFocused(true);
+        onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        setFocused(false);
+        onBlur?.(e);
+      }}
+      style={[
+        {
+          backgroundColor: t.input,
+          borderColor: focused ? t.ring : t.border,
+          borderWidth: focused ? 1.5 : StyleSheet.hairlineWidth,
+          borderRadius: radius.md,
+          color: t.foreground,
+          fontSize: typography.fontSizes.base,
+          minHeight: 44, // touch-target minimum
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.md,
+          textAlignVertical: multiline ? 'top' : 'center',
+        },
+        style,
+      ]}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Badge (Status indicator)
+// ---------------------------------------------------------------------------
+
+export type ExiaBadgeTone = 'ok' | 'muted' | 'warn' | 'info';
+
+export interface ExiaBadgeProps {
+  mode?: ThemeMode;
+  label: string;
+  tone?: ExiaBadgeTone;
+  style?: ViewStyle;
+}
+
+export function ExiaBadge({
+  mode = 'dark',
+  label,
+  tone = 'muted',
+  style,
+}: ExiaBadgeProps) {
+  const t = colors[mode];
+  const palette: Record<ExiaBadgeTone, { bg: string; fg: string }> = {
+    ok: { bg: 'rgba(16, 185, 129, 0.16)', fg: t.liveEmerald ?? brand.liveEmerald }, // liveEmerald — live status only
+    muted: { bg: t.muted, fg: t.mutedForeground },
+    warn: { bg: 'rgba(245, 158, 11, 0.16)', fg: '#f59e0b' },
+    info: { bg: 'rgba(31, 213, 249, 0.16)', fg: t.primary },
+  };
+  const colorsConfig = palette[tone];
+
+  return (
+    <View
+      style={[
+        {
+          backgroundColor: colorsConfig.bg,
+          borderRadius: radius.full,
+          paddingHorizontal: spacing.sm + 2,
+          paddingVertical: 3,
+          alignSelf: 'flex-start',
+        },
+        style,
+      ]}
+    >
+      <RNText style={{ color: colorsConfig.fg, fontSize: 11, fontWeight: '600' }}>
+        {label}
+      </RNText>
     </View>
   );
 }

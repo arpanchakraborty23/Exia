@@ -9,6 +9,7 @@ import {
   findNodeHandle,
   NativeModules,
   Platform,
+  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
@@ -31,6 +32,7 @@ import {
 } from '@livekit/react-native';
 import { ScreenCapturePickerView, mediaDevices } from '@livekit/react-native-webrtc';
 import { Track } from 'livekit-client';
+import { Ionicons } from '@expo/vector-icons';
 import { brand, radius, spacing } from '@exia/design-tokens';
 import { ExiaScreen, ExiaText, useTheme } from '@exia/shared-ui';
 
@@ -45,7 +47,7 @@ import { VoiceControlBar } from '@/components/voice/voice-controls';
 /**
  * Voice session — full-screen LiveKit room.
  *
- * Native port of the legacy web voice stage using the official LiveKit
+ * Native port of the LiveKit Agent UI following the official LiveKit
  * React Native SDK example flows (`client-sdk-react-native/example`):
  * mic toggle, camera toggle + flip, screen share (iOS picker / Android
  * media projection), chat over the `lk.chat` text-stream topic, speaker
@@ -139,11 +141,25 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
 
   const [chatOpen, setChatOpen] = useState(false);
   const [isFrontFacing, setIsFrontFacing] = useState(true);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const connected = connectionState === 'connected';
   const agent = participants.find((p) => p.isAgent);
 
-  // Stage video: local camera / screen share / remote video, first available.
+  // Call duration counter
+  useEffect(() => {
+    if (!connected) return;
+    const timer = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [connected]);
+
+  const formattedDuration = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(
+    elapsedSeconds % 60,
+  ).padStart(2, '0')}`;
+
+  // Stage video: Screen share first, then remote camera, then local camera
   const videoTracks = useTracks(
     [
       { source: Track.Source.Camera, withPlaceholder: true },
@@ -151,7 +167,13 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
     ],
     { onlySubscribed: false },
   );
-  const stageTrack = videoTracks.find(isTrackReference);
+
+  const stageTrack =
+    videoTracks.find((tr) => isTrackReference(tr) && tr.source === Track.Source.ScreenShare) ??
+    videoTracks.find(
+      (tr) => isTrackReference(tr) && !tr.participant.isLocal && tr.source === Track.Source.Camera,
+    ) ??
+    videoTracks.find((tr) => isTrackReference(tr) && tr.source === Track.Source.Camera);
 
   // Agent audio drives the bar visualizer (subscribed remote microphone).
   const micTracks = useTracks(
@@ -181,6 +203,31 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
     }
   }, [localParticipant]);
 
+  // Mutual track exclusivity: Camera vs Screen Share
+  const handleSetCamera = useCallback(
+    async (enabled: boolean) => {
+      if (enabled && isScreenShareEnabled) {
+        await localParticipant.setScreenShareEnabled(false);
+      }
+      await localParticipant.setCameraEnabled(enabled);
+    },
+    [isScreenShareEnabled, localParticipant],
+  );
+
+  const handleSetScreenShare = useCallback(
+    async (enabled: boolean) => {
+      if (enabled) {
+        if (isCameraEnabled) {
+          await localParticipant.setCameraEnabled(false);
+        }
+        await startBroadcast();
+      } else {
+        await localParticipant.setScreenShareEnabled(false);
+      }
+    },
+    [isCameraEnabled, localParticipant, startBroadcast],
+  );
+
   // Camera flip — enumerate videoinput devices and switch (official example).
   const flipCamera = useCallback(async () => {
     if (!cameraTrack) return;
@@ -206,6 +253,11 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
   );
 
   const handleDisconnect = useCallback(() => {
+    try {
+      void room.disconnect();
+    } catch {
+      // Disconnect safe-catch
+    }
     // Backend cleanup — mirrors the legacy app's disconnect effect.
     void api.livekit.endSession(sessionId).catch(() => undefined);
     if (router.canGoBack()) {
@@ -213,73 +265,187 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
     } else {
       router.replace('/');
     }
-  }, [sessionId]);
+  }, [sessionId, room]);
 
   const entries: ChatEntry[] = chatMessages.map((message) => ({
     id: message.id,
     text: message.message,
     mine: message.from?.isLocal ?? false,
+    timestamp: message.timestamp,
   }));
 
   return (
     <View style={styles.flex}>
-      {/* Status row */}
+      {/* Status Bar */}
       <View style={styles.statusRow}>
-        <Badge
-          label={connected ? 'LIVE' : 'CONNECTING'}
-          tone={connected ? 'ok' : 'muted'}
-        />
-        <ExiaText variant="caption" style={styles.statusText}>
-          {connected
-            ? agent
-              ? `Agent ${agent.identity || agent.name || 'connected'}`
-              : 'Waiting for the agent to join…'
-            : 'Connecting to the voice room…'}
-        </ExiaText>
+        <View style={styles.statusLeft}>
+          <Pressable
+            accessibilityLabel="Back to sessions"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={handleDisconnect}
+            style={({ pressed }) => [styles.backBtn, { opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Ionicons name="arrow-back" size={20} color={t.foreground} />
+          </Pressable>
+          <Badge
+            label={connected ? 'LIVE' : 'CONNECTING'}
+            tone={connected ? 'ok' : 'muted'}
+          />
+          <ExiaText numberOfLines={1} variant="caption" style={styles.statusText}>
+            {connected
+              ? agent
+                ? agentSpeaking
+                  ? 'Agent speaking…'
+                  : 'Listening…'
+                : 'Waiting for agent…'
+              : 'Connecting to room…'}
+          </ExiaText>
+        </View>
+
+        {connected ? (
+          <View style={[styles.durationPill, { backgroundColor: t.input, borderColor: t.border }]}>
+            <View style={styles.durationDot} />
+            <ExiaText variant="mono" style={styles.durationText}>
+              {formattedDuration}
+            </ExiaText>
+          </View>
+        ) : null}
       </View>
 
-      {/* Stage: video when available, agent audio visualizer otherwise */}
-      {stageTrack ? (
-        <View style={[styles.stage, { backgroundColor: t.card, borderColor: t.border }]}>
-          <VideoTrack
-            mirror={stageTrack.participant.isLocal && stageTrack.source === Track.Source.Camera}
-            trackRef={stageTrack}
-            style={styles.video}
+      {/* When Chat is open, show a compact Stage header above ChatPanel */}
+      {chatOpen ? (
+        <View style={styles.chatOpenLayout}>
+          {/* Compact stage banner */}
+          <View
+            style={[
+              styles.compactStageBanner,
+              { backgroundColor: t.card, borderColor: t.border },
+            ]}
+          >
+            {stageTrack ? (
+              <View style={styles.compactVideoWrap}>
+                <VideoTrack
+                  mirror={
+                    stageTrack.participant.isLocal &&
+                    stageTrack.source === Track.Source.Camera
+                  }
+                  trackRef={stageTrack}
+                  style={styles.compactVideo}
+                />
+              </View>
+            ) : (
+              <View style={styles.compactStageInfo}>
+                <ExiaAvatar size={36} />
+                <View style={styles.compactStageTextWrap}>
+                  <ExiaText style={styles.compactStageTitle}>
+                    {agent?.name || agent?.identity || 'Exia Assistant'}
+                  </ExiaText>
+                  <ExiaText variant="caption" style={{ color: brand.liveEmerald }}>
+                    {agentSpeaking ? 'Speaking…' : 'Listening…'}
+                  </ExiaText>
+                </View>
+                {agentAudio ? (
+                  <View style={styles.compactVisualizerBox}>
+                    <BarVisualizer
+                      barCount={5}
+                      options={{ barColor: brand.electricCyan }}
+                      state={agentSpeaking ? 'speaking' : 'listening'}
+                      trackRef={agentAudio}
+                    />
+                  </View>
+                ) : null}
+              </View>
+            )}
+          </View>
+
+          {/* Chat transcript */}
+          <ChatPanel
+            entries={entries}
+            isAgentThinking={agentSpeaking}
+            onClose={() => setChatOpen(false)}
+            onSend={(text) => {
+              void handleSend(text);
+            }}
+            style={styles.chatPanel}
           />
         </View>
       ) : (
-        <View style={[styles.stage, { backgroundColor: t.card, borderColor: t.border }]}>
-          <ExiaAvatar size={72} />
-          <View style={styles.visualizerBox}>
-            {agentAudio ? (
-              <BarVisualizer
-                barCount={7}
-                options={{ barColor: t.primary }}
-                state={agentSpeaking ? 'speaking' : 'listening'}
-                trackRef={agentAudio}
+        /* Full Stage when chat is closed */
+        <View style={styles.stageContainer}>
+          {stageTrack ? (
+            <View style={[styles.stage, { backgroundColor: t.card, borderColor: t.border }]}>
+              <VideoTrack
+                mirror={
+                  stageTrack.participant.isLocal &&
+                  stageTrack.source === Track.Source.Camera
+                }
+                trackRef={stageTrack}
+                style={styles.video}
               />
-            ) : null}
-          </View>
-          <ExiaText variant="caption" style={styles.stageHint}>
-            {agentAudio
-              ? agentSpeaking
-                ? 'Agent is speaking…'
-                : 'Listening — speak naturally'
-              : 'Voice room live — the agent will join in a moment.'}
-          </ExiaText>
+
+              {/* Video source pill overlay */}
+              <View style={styles.videoTrackBadge}>
+                <Ionicons
+                  name={
+                    stageTrack.source === Track.Source.ScreenShare ? 'tv' : 'videocam'
+                  }
+                  size={13}
+                  color={brand.electricCyan}
+                />
+                <ExiaText style={styles.videoTrackBadgeText}>
+                  {stageTrack.source === Track.Source.ScreenShare
+                    ? 'Screen Share'
+                    : stageTrack.participant.isLocal
+                      ? 'Camera'
+                      : 'Agent Video'}
+                </ExiaText>
+              </View>
+
+              {/* In-stage camera flip button when camera is active */}
+              {isCameraEnabled && stageTrack.participant.isLocal ? (
+                <Pressable
+                  accessibilityLabel="Flip camera"
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() => {
+                    void flipCamera();
+                  }}
+                  style={styles.floatingFlipBtn}
+                >
+                  <Ionicons name="camera-reverse" size={18} color="#ffffff" />
+                </Pressable>
+              ) : null}
+            </View>
+          ) : (
+            <View style={[styles.stage, { backgroundColor: t.card, borderColor: t.border }]}>
+              {/* Linear / Perplexity subtle ambient aura glow */}
+              <View style={styles.ambientAura} />
+
+              <ExiaAvatar size={80} />
+
+              <View style={styles.visualizerBox}>
+                {agentAudio ? (
+                  <BarVisualizer
+                    barCount={7}
+                    options={{ barColor: brand.electricCyan }}
+                    state={agentSpeaking ? 'speaking' : 'listening'}
+                    trackRef={agentAudio}
+                  />
+                ) : null}
+              </View>
+
+              <ExiaText variant="caption" style={styles.stageHint}>
+                {agentAudio
+                  ? agentSpeaking
+                    ? 'Agent is speaking…'
+                    : 'Listening — speak naturally'
+                  : 'Voice room live — the agent will join in a moment.'}
+              </ExiaText>
+            </View>
+          )}
         </View>
       )}
-
-      {/* Chat transcript (toggled) */}
-      {chatOpen ? (
-        <ChatPanel
-          entries={entries}
-          onSend={(text) => {
-            void handleSend(text);
-          }}
-          style={styles.chatPanel}
-        />
-      ) : null}
 
       {/* Controls */}
       <VoiceControlBar
@@ -292,20 +458,17 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
           void flipCamera();
         }}
         onSetCamera={(enabled) => {
-          void localParticipant.setCameraEnabled(enabled);
+          void handleSetCamera(enabled);
         }}
         onSetMic={(enabled) => {
           void localParticipant.setMicrophoneEnabled(enabled);
         }}
         onSetScreenShare={(enabled) => {
-          if (enabled) {
-            void startBroadcast();
-          } else {
-            void localParticipant.setScreenShareEnabled(false);
-          }
+          void handleSetScreenShare(enabled);
         }}
         onToggleChat={() => setChatOpen((open) => !open)}
         screenShareEnabled={isScreenShareEnabled}
+        style={styles.controlBar}
       />
 
       {screenCapturePickerView}
@@ -318,10 +481,45 @@ const styles = StyleSheet.create({
   statusRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
     marginBottom: spacing.md,
   },
-  statusText: { flex: 1 },
+  statusLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  backBtn: {
+    padding: spacing.xs,
+  },
+  statusText: {
+    flex: 1,
+    fontSize: 12,
+  },
+  durationPill: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 3,
+  },
+  durationDot: {
+    backgroundColor: brand.liveEmerald,
+    borderRadius: radius.full,
+    height: 6,
+    width: 6,
+  },
+  durationText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  stageContainer: {
+    flex: 1,
+    marginBottom: spacing.md,
+  },
   stage: {
     alignItems: 'center',
     borderRadius: radius.xl,
@@ -331,9 +529,99 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     justifyContent: 'center',
     overflow: 'hidden',
+    position: 'relative',
   },
-  video: { flex: 1, width: '100%' },
-  visualizerBox: { height: 120, width: '80%' },
-  stageHint: { textAlign: 'center', color: brand.liveEmerald },
-  chatPanel: { flex: 1, marginTop: spacing.md },
+  ambientAura: {
+    backgroundColor: 'rgba(31, 213, 249, 0.08)',
+    borderRadius: 9999,
+    height: 180,
+    position: 'absolute',
+    width: 180,
+  },
+  video: {
+    flex: 1,
+    width: '100%',
+  },
+  videoTrackBadge: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: radius.full,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    left: spacing.md,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 4,
+    position: 'absolute',
+    top: spacing.md,
+  },
+  videoTrackBadgeText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  floatingFlipBtn: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: radius.full,
+    height: 38,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: spacing.md,
+    top: spacing.md,
+    width: 38,
+  },
+  visualizerBox: {
+    height: 120,
+    width: '80%',
+  },
+  stageHint: {
+    color: brand.liveEmerald,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  chatOpenLayout: {
+    flex: 1,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  compactStageBanner: {
+    borderRadius: radius.lg,
+    borderCurve: 'continuous',
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 64,
+    overflow: 'hidden',
+    paddingHorizontal: spacing.md,
+  },
+  compactVideoWrap: {
+    flex: 1,
+    width: '100%',
+  },
+  compactVideo: {
+    flex: 1,
+    width: '100%',
+  },
+  compactStageInfo: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  compactStageTextWrap: {
+    flex: 1,
+    marginLeft: spacing.sm,
+  },
+  compactStageTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  compactVisualizerBox: {
+    height: 32,
+    width: 80,
+  },
+  chatPanel: {
+    flex: 1,
+  },
+  controlBar: {
+    marginTop: 'auto',
+  },
 });

@@ -9,15 +9,29 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  TextInput,
-  TextInputProps,
   View,
   ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { radius, spacing } from '@exia/design-tokens';
-import { ExiaButton, ExiaCard, ExiaText, useTheme } from '@exia/shared-ui';
+import { brand, radius, spacing } from '@exia/design-tokens';
+import {
+  ExiaBadge,
+  type ExiaBadgeProps,
+  type ExiaBadgeTone,
+  ExiaButton,
+  ExiaCard,
+  ExiaInput,
+  type ExiaInputProps,
+  ExiaScreen,
+  ExiaText,
+  useTheme,
+} from '@exia/shared-ui';
+
+export { ExiaInput, type ExiaInputProps };
+export { ExiaBadge, type ExiaBadgeProps, type ExiaBadgeTone };
+export type BadgeTone = ExiaBadgeTone;
+export const Badge = ExiaBadge;
 
 // ---------------------------------------------------------------------------
 // Screen header (title + optional back)
@@ -54,27 +68,7 @@ export function ScreenHeader({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Status badge
-// ---------------------------------------------------------------------------
 
-export type BadgeTone = 'ok' | 'muted' | 'warn' | 'info';
-
-export function Badge({ label, tone = 'muted' }: { label: string; tone?: BadgeTone }) {
-  const t = useTheme();
-  const palette: Record<BadgeTone, { bg: string; fg: string }> = {
-    ok: { bg: 'rgba(16, 185, 129, 0.16)', fg: '#10b981' }, // liveEmerald — live status only
-    muted: { bg: t.muted, fg: t.mutedForeground },
-    warn: { bg: 'rgba(245, 158, 11, 0.16)', fg: '#f59e0b' },
-    info: { bg: 'rgba(31, 213, 249, 0.16)', fg: t.primary },
-  };
-  const colors = palette[tone];
-  return (
-    <View style={[styles.badge, { backgroundColor: colors.bg }]}>
-      <ExiaText style={{ color: colors.fg, fontSize: 11, fontWeight: '600' }}>{label}</ExiaText>
-    </View>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Loading / empty / error states (every screen has all four)
@@ -240,22 +234,8 @@ export function DeleteButton({ onPress, label = 'Delete' }: { onPress: () => voi
 }
 
 // ---------------------------------------------------------------------------
-// Themed text input + segmented control (form primitives)
+// Segmented control (form primitive)
 // ---------------------------------------------------------------------------
-
-export function ExiaInput({ style, ...rest }: TextInputProps) {
-  const t = useTheme();
-  return (
-    <TextInput
-      {...rest}
-      style={[
-        styles.input,
-        { backgroundColor: t.input, borderColor: t.border, color: t.foreground },
-        style,
-      ]}
-    />
-  );
-}
 
 export function Segmented<T extends string>({
   options,
@@ -386,7 +366,7 @@ const styles = StyleSheet.create({
   },
   avatarImage: { height: '100%', width: '100%' },
   avatarDot: {
-    backgroundColor: '#10b981', // liveEmerald
+    backgroundColor: brand.liveEmerald,
     borderColor: '#090909', // dark background ring
     borderRadius: radius.full,
     borderWidth: 2,

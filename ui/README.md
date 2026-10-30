@@ -250,9 +250,11 @@ file.
     platform-specific secure-storage implementation.
 -   Domain rules, calculations, validation schemas, formatters, and
     feature flags.
--   Shared design tokens.
--   Portable components built with React Native primitives such as
-    `View`, `Text`, `Pressable`, `TextInput`, and `ScrollView`.
+-   Shared design tokens (`@exia/design-tokens`: colors, Electric Cyan `#1fd5f9`, Live Emerald `#10b981`, surface ladders `lkSurface1`..`lkSurface5`, 4pt spacing scale, radius, typography).
+-   Portable components built with React Native primitives in `@exia/shared-ui`:
+    `ExiaScreen`, `ExiaCard`, `ExiaText`, `ExiaButton`, `ExiaInput`, and `ExiaBadge`. These
+    primitives are used identically across Android, Web (via Expo Web / React Native Web),
+    and native Windows desktop (React Native Windows).
 -   State management that is not coupled to browser or native APIs.
 
 ### Keep platform-specific

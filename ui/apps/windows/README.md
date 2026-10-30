@@ -45,3 +45,32 @@ and the packaging/publishing workflow for the chosen distribution format
 - [ ] Mouse, keyboard, focus, and accessibility tested
 - [ ] All native dependencies support the selected RNW version
 - [ ] Packaging, signing, and clean-machine installation verified
+
+## Cross-Platform UI Pattern Alignment Contract
+
+To maintain visual parity and behavioral consistency across Android, Web, and native Windows desktop, the Windows client follows the **EXACT SAME** UI architecture:
+
+### 1. Design Tokens (`@exia/design-tokens`)
+- **Theme**: Dark mode default (`#090909` canvas background, `#111111` card surface).
+- **Brand Colors**:
+  - Primary / Focus Ring: Electric Cyan (`#1fd5f9` in dark mode).
+  - Live Status: Live Emerald (`#10b981` — strictly reserved for active/connected indicators).
+- **Surface Ladder**: LiveKit surface elevation (`lkSurface1` `#111111` .. `lkSurface5` `#2e2e2e`).
+- **Spacing Scale**: 4pt-based scale (`xs: 4`, `sm: 8`, `md: 12`, `lg: 16`, `xl: 24`, `xxl: 32`, `xxxl: 48`).
+- **Radius Scale**: Multi-tiered curves (`sm: 6`, `base`/`md: 10`, `lg: 14`, `xl: 20`, `full: 9999`).
+- **Typography Scale**: Clean sans scale (`xs: 12` .. `xxl: 32`), reserving tabular mono for data, latencies, and tokens.
+
+### 2. Portable Primitives (`@exia/shared-ui`)
+The Windows app imports identical primitives from `@exia/shared-ui`:
+- **`ExiaScreen`**: Root window canvas container applying tokenized background and safe padding.
+- **`ExiaCard`**: Elevated surface card with subtle border (`t.border`) and corner radius (`radius.lg`).
+- **`ExiaText`**: Semantic typography component with `title`, `body`, `caption`, and `mono` variants.
+- **`ExiaButton`**: Accessible interactive control supporting `primary`, `secondary`, and `destructive` variants, full hover (`onHoverIn`/`onHoverOut`) and keyboard focus (`onFocus`/`onBlur`) states, and 44pt touch/click hit targets.
+- **`ExiaInput`**: Unified input field with tokenized colors (`t.input`, `t.border`), focus ring (`t.ring`), multiline support with top vertical alignment, and accessible labels.
+- **`ExiaBadge`**: Semantic status indicator with `ok` (Live Emerald), `info` (Electric Cyan), `warn`, and `muted` tones.
+
+### 3. Component & Screen Patterns
+- **Headers**: Title with optional caption and back button (`ScreenHeader` pattern).
+- **Form Fields**: Accessible labeled wrappers (`Field` pattern) combining `ExiaText` caption and `ExiaInput`.
+- **States**: Every screen provides all four states — Loading (`Loading` indicator / `SkeletonCard`), Empty (`EmptyState` with call-to-action), Error (`ErrorState` with retry action), and Populated data.
+- **Desktop Adaptation**: While preserving shared primitives and tokens, Windows leverages wide desktop real-estate via multi-column grids or side navigation rather than narrow mobile phone constraints.

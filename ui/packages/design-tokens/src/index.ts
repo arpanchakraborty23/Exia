@@ -46,6 +46,8 @@ export interface ColorTokens {
   lkSurface3: string;
   lkSurface4: string;
   lkSurface5: string;
+  /** Emerald (#10b981) — reserved for live status only */
+  liveEmerald: string;
 }
 
 export const colors: Record<ThemeMode, ColorTokens> = {
@@ -83,6 +85,7 @@ export const colors: Record<ThemeMode, ColorTokens> = {
     lkSurface3: '#e8e8e8',
     lkSurface4: '#dcdcdc',
     lkSurface5: '#d0d0d0',
+    liveEmerald: '#10b981',
   },
   dark: {
     background: '#090909',
@@ -118,6 +121,7 @@ export const colors: Record<ThemeMode, ColorTokens> = {
     lkSurface3: '#1c1c1c',
     lkSurface4: '#242424',
     lkSurface5: '#2e2e2e',
+    liveEmerald: '#10b981',
   },
 };
 
@@ -130,6 +134,17 @@ export const brand = {
   /** Emerald — live status ONLY */
   liveEmerald: '#10b981',
   chart: ['#002cf2', '#1fd5f9', '#10b981', '#f59e0b', '#ec4899'],
+} as const;
+
+export type StatusTone = 'ok' | 'muted' | 'warn' | 'info';
+
+/** Semantic status indicators conforming to the Exia design system */
+export const status = {
+  /** Emerald — live status ONLY */
+  ok: '#10b981',
+  warn: '#f59e0b',
+  error: '#ef4444',
+  info: '#1fd5f9',
 } as const;
 
 /** Base corner radius (globals.css --radius: 0.625rem) */
@@ -171,4 +186,4 @@ export const typography = {
   } as const,
 };
 
-export const tokens = { colors, brand, radius, spacing, typography } as const;
+export const tokens = { colors, brand, status, radius, spacing, typography } as const;

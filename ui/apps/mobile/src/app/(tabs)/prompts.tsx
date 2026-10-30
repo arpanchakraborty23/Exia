@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Switch, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing } from '@exia/design-tokens';
@@ -9,7 +9,14 @@ import { ExiaButton, ExiaCard, ExiaScreen, ExiaText, useTheme } from '@exia/shar
 import type { AgentSkill } from '@exia/shared-types';
 
 import { api } from '@/lib/api';
-import { Badge, DeleteButton, ExiaInput, Loading, ScreenHeader, Segmented } from '@/components/ui';
+import {
+  Badge,
+  DeleteButton,
+  ExiaInput,
+  ScreenHeader,
+  Segmented,
+  SkeletonCard,
+} from '@/components/ui';
 
 // ---------------------------------------------------------------------------
 // Constants — ported 1:1 from the legacy prompts-view.tsx (lines 46-180)
@@ -210,7 +217,11 @@ export default function Prompts() {
       />
 
       {config.isLoading || !config.data ? (
-        <Loading label="Loading prompt configuration…" />
+        <View style={styles.scroll}>
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={3} />
+        </View>
       ) : tab === 'base' ? (
         <BaseTab
           basePrompt={basePrompt}
@@ -237,6 +248,27 @@ export default function Prompts() {
       )}
     </ExiaScreen>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getSkillIcon(category: string): keyof typeof Ionicons.glyphMap {
+  switch (category) {
+    case 'automation':
+      return 'hardware-chip-outline';
+    case 'search':
+      return 'globe-outline';
+    case 'code':
+      return 'code-slash-outline';
+    case 'memory':
+      return 'albums-outline';
+    case 'voice':
+      return 'mic-outline';
+    default:
+      return 'extension-puzzle-outline';
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -269,41 +301,62 @@ function BaseTab({
 
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      {/* Base prompt presets */}
+      {/* Base prompt presets with active indicator */}
       <ExiaText style={styles.tabSectionTitle}>Base prompt presets</ExiaText>
-      {BASE_PROMPT_PRESETS.map((preset) => {
-        const active = basePrompt === preset.text;
-        return (
-          <Pressable
-            key={preset.title}
-            accessibilityLabel={`Apply preset ${preset.title}`}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
-            onPress={() => onApplyPreset(preset.text)}
-            style={({ pressed }) => [
-              styles.presetCard,
-              {
-                borderColor: active ? t.primary : t.border,
-                backgroundColor: active ? t.input : t.card,
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}
-          >
-            <View style={styles.presetHeader}>
-              <ExiaText style={styles.presetTitle}>{preset.title}</ExiaText>
-              <Badge label={preset.badge} tone={active ? 'info' : 'muted'} />
-            </View>
-            <ExiaText variant="caption" numberOfLines={3}>
-              {preset.text}
-            </ExiaText>
-          </Pressable>
-        );
-      })}
+      <View style={styles.presetList}>
+        {BASE_PROMPT_PRESETS.map((preset) => {
+          const active = basePrompt === preset.text;
+          return (
+            <Pressable
+              key={preset.title}
+              accessibilityLabel={`Apply preset ${preset.title}`}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              onPress={() => onApplyPreset(preset.text)}
+              style={({ pressed }) => [
+                styles.presetCard,
+                {
+                  borderColor: active ? t.primary : t.border,
+                  backgroundColor: active
+                    ? t.background === '#090909'
+                      ? 'rgba(31, 213, 249, 0.08)'
+                      : '#f0f9ff'
+                    : t.card,
+                  borderWidth: active ? 1.5 : StyleSheet.hairlineWidth,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={styles.presetHeader}>
+                <View style={styles.presetTitleRow}>
+                  <Ionicons
+                    name={active ? 'checkmark-circle' : 'radio-button-off'}
+                    size={18}
+                    color={active ? t.primary : t.mutedForeground}
+                  />
+                  <ExiaText
+                    style={[
+                      styles.presetTitle,
+                      active && { color: t.foreground, fontWeight: '700' },
+                    ]}
+                  >
+                    {preset.title}
+                  </ExiaText>
+                </View>
+                <Badge label={preset.badge} tone={active ? 'info' : 'muted'} />
+              </View>
+              <ExiaText variant="caption" numberOfLines={3} style={styles.presetSnippet}>
+                {preset.text}
+              </ExiaText>
+            </Pressable>
+          );
+        })}
+      </View>
 
-      {/* Variable pills */}
+      {/* Variable pills with icon */}
       <ExiaText style={styles.tabSectionTitle}>Runtime variables</ExiaText>
       <ExiaText variant="caption">
-        Tap to append a variable the backend resolves at request time.
+        Tap to insert a dynamic runtime variable into your directive.
       </ExiaText>
       <View style={styles.pillRow}>
         {VARIABLE_PILLS.map((pill) => (
@@ -314,9 +367,14 @@ function BaseTab({
             onPress={() => insertVariable(pill)}
             style={({ pressed }) => [
               styles.variablePill,
-              { backgroundColor: t.input, borderColor: t.border, opacity: pressed ? 0.7 : 1 },
+              {
+                backgroundColor: t.input,
+                borderColor: t.border,
+                opacity: pressed ? 0.7 : 1,
+              },
             ]}
           >
+            <Ionicons name="add" size={13} color={t.primary} />
             <ExiaText variant="mono" style={styles.variableText}>
               {pill}
             </ExiaText>
@@ -324,13 +382,20 @@ function BaseTab({
         ))}
       </View>
 
-      {/* Editable base prompt */}
-      <ExiaText style={styles.tabSectionTitle}>Base system prompt</ExiaText>
+      {/* Editable base prompt with character counter */}
+      <View style={styles.textareaHeaderRow}>
+        <ExiaText style={styles.tabSectionTitle}>Base system prompt</ExiaText>
+        <ExiaText variant="caption" style={styles.charCount}>
+          {basePrompt.length} characters
+        </ExiaText>
+      </View>
       <ExiaInput
         multiline
         style={styles.basePromptInput}
         value={basePrompt}
         onChangeText={onChange}
+        placeholder="Enter base system instructions for the agent…"
+        placeholderTextColor={t.mutedForeground}
       />
 
       {error ? (
@@ -378,65 +443,117 @@ function LibraryTab() {
                 styles.filterChip,
                 {
                   backgroundColor: filter === f ? t.primary : t.input,
+                  borderColor: filter === f ? t.primary : t.border,
                   opacity: pressed ? 0.8 : 1,
                 },
               ]}
             >
               <ExiaText
-                style={{ color: filter === f ? t.primaryForeground : t.foreground, fontSize: 12 }}
+                style={{
+                  color: filter === f ? t.primaryForeground : t.foreground,
+                  fontSize: 12,
+                  fontWeight: filter === f ? '600' : '500',
+                }}
               >
-                {f}
+                {f.toUpperCase()}
               </ExiaText>
             </Pressable>
           ))}
         </View>
-        <ExiaButton
-          label="New prompt"
-          variant="secondary"
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="New prompt"
           onPress={() => router.push('/prompt-editor')}
-          style={styles.newButton}
-        />
+          style={({ pressed }) => [
+            styles.newButton,
+            { backgroundColor: t.primary, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Ionicons name="add" size={16} color={t.primaryForeground} />
+          <ExiaText style={[styles.newButtonText, { color: t.primaryForeground }]}>
+            New Prompt
+          </ExiaText>
+        </Pressable>
       </View>
 
-      {prompts.isLoading ? <Loading label="Loading prompts…" /> : null}
+      {/* Skeleton cards placeholder when loading */}
+      {prompts.isLoading ? (
+        <View style={styles.skeletonList}>
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={3} />
+        </View>
+      ) : null}
+
       {prompts.isError && !prompts.data ? (
         <ExiaText variant="caption" style={{ color: t.destructive }}>
           Failed to load prompts.
         </ExiaText>
       ) : null}
 
+      {/* Render prompt cards */}
       {items.map((p) => (
         <ExiaCard key={p.id} style={styles.libraryCard}>
           <View style={styles.presetHeader}>
-            <ExiaText style={styles.presetTitle} numberOfLines={1}>
-              {p.title}
-            </ExiaText>
-            <Badge label={p.type} tone={p.type === 'system' ? 'info' : 'muted'} />
+            <View style={styles.presetTitleRow}>
+              <Ionicons
+                name={p.type === 'system' ? 'terminal-outline' : 'flash-outline'}
+                size={16}
+                color={p.type === 'system' ? t.primary : '#f59e0b'}
+              />
+              <ExiaText style={styles.libraryCardTitle} numberOfLines={1}>
+                {p.title}
+              </ExiaText>
+            </View>
+            <View style={styles.badgeRow}>
+              <Badge label={p.type.toUpperCase()} tone={p.type === 'system' ? 'info' : 'warn'} />
+              {p.tags?.map((tag) => (
+                <Badge key={tag} label={tag} tone="muted" />
+              ))}
+            </View>
           </View>
-          <ExiaText variant="caption" numberOfLines={4}>
-            {p.prompt_text}
-          </ExiaText>
-          <View style={styles.libraryActions}>
-            <Pressable
-              accessibilityLabel={`Share prompt ${p.title}`}
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => {
-                void Share.share({ message: p.prompt_text });
-              }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            >
-              <Ionicons name="copy-outline" size={18} color={t.mutedForeground} />
-            </Pressable>
-            <Pressable
-              accessibilityLabel={`Edit prompt ${p.title}`}
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => router.push({ pathname: '/prompt-editor', params: { id: p.id } })}
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            >
-              <Ionicons name="create-outline" size={18} color={t.primary} />
-            </Pressable>
+
+          {/* Subtle mono preview snippet */}
+          <View style={[styles.codePreview, { backgroundColor: t.input, borderColor: t.border }]}>
+            <ExiaText variant="mono" numberOfLines={4} style={styles.codePreviewText}>
+              {p.prompt_text}
+            </ExiaText>
+          </View>
+
+          {/* Action icon buttons: share, edit, delete */}
+          <View style={[styles.libraryActions, { borderTopColor: t.border }]}>
+            <View style={styles.actionIconGroup}>
+              <Pressable
+                accessibilityLabel={`Share prompt ${p.title}`}
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => {
+                  void Share.share({ message: p.prompt_text });
+                }}
+                style={({ pressed }) => [
+                  styles.actionIconButton,
+                  { backgroundColor: t.input, borderColor: t.border, opacity: pressed ? 0.6 : 1 },
+                ]}
+              >
+                <Ionicons name="share-outline" size={15} color={t.foreground} />
+                <ExiaText variant="caption" style={styles.actionBtnLabel}>Share</ExiaText>
+              </Pressable>
+
+              <Pressable
+                accessibilityLabel={`Edit prompt ${p.title}`}
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => router.push({ pathname: '/prompt-editor', params: { id: p.id } })}
+                style={({ pressed }) => [
+                  styles.actionIconButton,
+                  { backgroundColor: t.input, borderColor: t.border, opacity: pressed ? 0.6 : 1 },
+                ]}
+              >
+                <Ionicons name="pencil-outline" size={15} color={t.primary} />
+                <ExiaText variant="caption" style={[styles.actionBtnLabel, { color: t.primary }]}>Edit</ExiaText>
+              </Pressable>
+            </View>
+
             <DeleteButton label="Delete" onPress={() => api.prompts.delete(p.id)} />
           </View>
         </ExiaCard>
@@ -452,12 +569,23 @@ function LibraryTab() {
           {CURATED_DIRECTIVES.map((d) => (
             <ExiaCard key={d.title} style={styles.libraryCard}>
               <View style={styles.presetHeader}>
-                <ExiaText style={styles.presetTitle}>{d.title}</ExiaText>
+                <View style={styles.presetTitleRow}>
+                  <Ionicons
+                    name={d.type === 'system' ? 'terminal-outline' : 'flash-outline'}
+                    size={16}
+                    color={d.type === 'system' ? t.primary : '#f59e0b'}
+                  />
+                  <ExiaText style={styles.libraryCardTitle}>{d.title}</ExiaText>
+                </View>
                 <Badge label={d.badge} tone="muted" />
               </View>
-              <ExiaText variant="caption" numberOfLines={3}>
-                {d.prompt_text}
-              </ExiaText>
+
+              <View style={[styles.codePreview, { backgroundColor: t.input, borderColor: t.border }]}>
+                <ExiaText variant="mono" numberOfLines={3} style={styles.codePreviewText}>
+                  {d.prompt_text}
+                </ExiaText>
+              </View>
+
               <ExiaButton
                 label="Use directive"
                 variant="secondary"
@@ -500,34 +628,94 @@ function SkillsTab({
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
       <ExiaText variant="caption">
-        Modular capabilities the agent can invoke. Toggles apply after saving.
+        Modular capabilities the agent can invoke. Toggle and save to update.
       </ExiaText>
 
       {skills.map((skill) => (
-        <ExiaCard key={skill.id} style={styles.skillCard}>
+        <ExiaCard
+          key={skill.id}
+          style={[styles.skillCard, !skill.enabled && styles.skillCardDisabled]}
+        >
+          {/* Header with Icon, Name, Category Badges & Switch */}
           <View style={styles.skillHeader}>
-            <ExiaText style={styles.presetTitle} numberOfLines={2}>
-              {skill.name}
-            </ExiaText>
-            <Badge label={skill.category} tone={skill.enabled ? 'ok' : 'muted'} />
-          </View>
-          <ExiaText variant="caption">{skill.description}</ExiaText>
-          <View style={styles.triggerRow}>
-            {skill.triggers.slice(0, 4).map((trigger) => (
-              <View key={trigger} style={styles.triggerChip}>
-                <ExiaText variant="mono" style={styles.triggerText}>
-                  {trigger}
+            <View style={styles.skillTitleBlock}>
+              <View style={styles.skillNameRow}>
+                <Ionicons
+                  name={getSkillIcon(skill.category)}
+                  size={18}
+                  color={skill.enabled ? t.primary : t.mutedForeground}
+                />
+                <ExiaText
+                  style={[
+                    styles.skillName,
+                    !skill.enabled && { color: t.mutedForeground },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {skill.name}
                 </ExiaText>
               </View>
-            ))}
+              <View style={styles.badgeRow}>
+                <Badge label={skill.category.toUpperCase()} tone={skill.enabled ? 'info' : 'muted'} />
+                <Badge label={skill.enabled ? 'ACTIVE' : 'INACTIVE'} tone={skill.enabled ? 'ok' : 'muted'} />
+              </View>
+            </View>
+
+            <Switch
+              accessibilityLabel={`Toggle skill ${skill.name}`}
+              value={skill.enabled}
+              onValueChange={() => onToggle(skill.id)}
+              trackColor={{ false: t.muted, true: t.primary }}
+              thumbColor="#ffffff"
+            />
           </View>
-          <ExiaButton
-            accessibilityLabel={`${skill.enabled ? 'Disable' : 'Enable'} skill ${skill.name}`}
-            label={skill.enabled ? 'Enabled' : 'Disabled'}
-            variant={skill.enabled ? 'primary' : 'secondary'}
-            onPress={() => onToggle(skill.id)}
-            style={styles.skillToggle}
-          />
+
+          {/* Description */}
+          <ExiaText
+            variant="caption"
+            style={[
+              styles.skillDescription,
+              !skill.enabled && { color: t.mutedForeground },
+            ]}
+          >
+            {skill.description}
+          </ExiaText>
+
+          {/* Trigger Chips */}
+          <View style={styles.triggerSection}>
+            <ExiaText variant="caption" style={styles.triggerLabel}>
+              Voice Triggers
+            </ExiaText>
+            <View style={styles.triggerRow}>
+              {skill.triggers.map((trigger) => (
+                <View
+                  key={trigger}
+                  style={[
+                    styles.triggerChip,
+                    {
+                      backgroundColor: skill.enabled ? 'rgba(31, 213, 249, 0.10)' : t.input,
+                      borderColor: skill.enabled ? 'rgba(31, 213, 249, 0.22)' : t.border,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="sparkles-outline"
+                    size={11}
+                    color={skill.enabled ? t.primary : t.mutedForeground}
+                  />
+                  <ExiaText
+                    variant="mono"
+                    style={[
+                      styles.triggerText,
+                      { color: skill.enabled ? t.primary : t.mutedForeground },
+                    ]}
+                  >
+                    "{trigger}"
+                  </ExiaText>
+                </View>
+              ))}
+            </View>
+          </View>
         </ExiaCard>
       ))}
 
@@ -538,7 +726,7 @@ function SkillsTab({
       ) : null}
       <ExiaButton
         disabled={saving || !dirty}
-        label={saving ? 'Saving…' : 'Save skills'}
+        label={saving ? 'Saving…' : dirty ? 'Save skills (unsaved changes)' : 'Save skills'}
         onPress={onSave}
       />
     </ScrollView>
@@ -546,8 +734,9 @@ function SkillsTab({
 }
 
 const styles = StyleSheet.create({
-  scroll: { gap: spacing.sm, paddingBottom: spacing.xxl, paddingTop: spacing.md },
-  tabSectionTitle: { fontWeight: '600', marginTop: spacing.sm },
+  scroll: { gap: spacing.md, paddingBottom: spacing.xxl, paddingTop: spacing.md },
+  tabSectionTitle: { fontSize: 15, fontWeight: '600', marginTop: spacing.xs },
+  presetList: { gap: spacing.sm },
   presetCard: {
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
@@ -560,53 +749,113 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: 'space-between',
   },
-  presetTitle: { flexShrink: 1, fontWeight: '600' },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  presetTitleRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs, flex: 1 },
+  presetTitle: { fontSize: 15, fontWeight: '600' },
+  presetSnippet: { lineHeight: 18, marginTop: 2 },
+  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   variablePill: {
+    alignItems: 'center',
     borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 4,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: 6,
   },
-  variableText: { fontSize: 12 },
-  basePromptInput: { minHeight: 140, textAlignVertical: 'top' },
+  variableText: { fontSize: 12, fontWeight: '500' },
+  textareaHeaderRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.xs,
+  },
+  charCount: { fontSize: 11 },
+  basePromptInput: {
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 160,
+    padding: spacing.md,
+    textAlignVertical: 'top',
+  },
   error: { marginBottom: spacing.sm },
   libraryToolbar: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  filterChip: {
-    borderRadius: radius.full,
-    minHeight: 36,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  newButton: { minHeight: 36, paddingVertical: spacing.xs },
-  libraryCard: { gap: spacing.sm },
-  libraryActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.lg,
-    justifyContent: 'flex-end',
-  },
-  useButton: { minHeight: 36, paddingVertical: spacing.xs },
-  skillCard: { gap: spacing.sm },
-  skillHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
     gap: spacing.sm,
     justifyContent: 'space-between',
+    marginBottom: spacing.xs,
   },
+  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  filterChip: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    justifyContent: 'center',
+    minHeight: 34,
+    paddingHorizontal: spacing.md,
+  },
+  newButton: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    gap: 4,
+    minHeight: 36,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  newButtonText: { fontSize: 13, fontWeight: '600' },
+  skeletonList: { gap: spacing.md },
+  libraryCard: { gap: spacing.sm },
+  libraryCardTitle: { flex: 1, fontSize: 15, fontWeight: '600' },
+  badgeRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs },
+  codePreview: {
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: spacing.md,
+  },
+  codePreviewText: { fontSize: 12, lineHeight: 18 },
+  libraryActions: {
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: spacing.sm,
+  },
+  actionIconGroup: { flexDirection: 'row', gap: spacing.xs },
+  actionIconButton: {
+    alignItems: 'center',
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 4,
+    minHeight: 32,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 4,
+  },
+  actionBtnLabel: { fontSize: 12, fontWeight: '500' },
+  useButton: { minHeight: 36, paddingVertical: spacing.xs },
+  skillCard: { gap: spacing.sm },
+  skillCardDisabled: { opacity: 0.7 },
+  skillHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  skillTitleBlock: { flex: 1, gap: spacing.xs, marginRight: spacing.sm },
+  skillNameRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs },
+  skillName: { flex: 1, fontSize: 15, fontWeight: '600' },
+  skillDescription: { lineHeight: 18 },
+  triggerSection: { gap: 4, marginTop: 2 },
+  triggerLabel: { fontSize: 11, fontWeight: '600' },
   triggerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   triggerChip: {
-    backgroundColor: 'rgba(31, 213, 249, 0.10)',
+    alignItems: 'center',
     borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 4,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: 3,
   },
   triggerText: { fontSize: 11 },
-  skillToggle: { minHeight: 36, paddingVertical: spacing.xs },
 });
