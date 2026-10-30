@@ -164,7 +164,8 @@ to the container at runtime:
 
 ```bash
 docker build -t exia-backend .
-docker run --rm --name exia-backend -p 8000:8000 --env-file .env exia-backend
+# Map host port 12568 (the UI clients' default) to the container's 8000
+docker run --rm --name exia-backend -p 12568:8000 --env-file .env exia-backend
 ```
 
 The image installs the locked production dependencies from `pyproject.toml`

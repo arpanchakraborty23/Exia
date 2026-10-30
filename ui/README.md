@@ -33,6 +33,20 @@
 >   `@livekit/react-native`), Milestone 5 (Windows — blocked on the Visual
 >   Studio 2022 C++ toolchain, see `apps/windows/README.md`), and
 >   Milestone 6 (CI).
+> - **Build & run commands:** see **[`BUILD.md`](./BUILD.md)** — per-app
+>   prerequisites, dev/production build steps, environment variables, and
+>   troubleshooting.
+> - **Definition of Done (§14) status:**
+>   - ✅ Top-level UI folder is `ui/`; all references updated.
+>   - ✅ Expo Router routes work (verified via production web export).
+>   - ⏳ Android device/emulator run — bundle compiles (`expo export
+>     --platform android`); on-device run awaits a local emulator/device.
+>   - ✅ Web development + production export succeed.
+>   - ⏳ Native Windows build — blocked on the VS 2022 C++ toolchain.
+>   - ✅ Shared API/domain logic is not copied into platform apps.
+>   - ✅ Platform-specific dependencies and gaps are documented.
+>   - ✅ Type checks, tests, and lint checks pass.
+>   - ✅ README instructions match the repository (no placeholders).
 >
 > **Original repository instruction (historical):** Rename the existing
 > top-level UI folder named `app` to `ui` if it is the project/application

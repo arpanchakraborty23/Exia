@@ -8,6 +8,9 @@
   "scripts": {
     "mobile:start": "pnpm --dir apps/mobile start",
     "mobile:android": "pnpm --dir apps/mobile android",
+    "mobile:lint": "pnpm --dir apps/mobile lint",
+    "web:start": "pnpm --dir apps/mobile web",
+    "web:build": "pnpm --dir apps/mobile exec expo export --platform web",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run"
   },
