@@ -13,13 +13,13 @@ The backend acts as the central orchestrator connecting the frontend client surf
 ```mermaid
 flowchart TB
     subgraph Clients ["Client Surfaces"]
-        TauriClient["Windows Desktop Shell<br/>(ui/windows - Tauri 2)"]
-        CapacitorClient["Android Shell<br/>(ui/android - Capacitor)"]
-        WebBrowser["Modern Web Browsers<br/>(ui/web - Next.js / React 19)"]
+        WindowsClient["Windows Desktop App<br/>(ui/apps/windows - React Native Windows, planned)"]
+        MobileClient["Android App<br/>(ui/apps/mobile - Expo / React Native)"]
+        WebBrowser["Modern Web Browsers<br/>(ui/apps/web - Next.js legacy during migration)"]
     end
 
     subgraph BackendCore ["Exia Backend (FastAPI Engine)"]
-        Gateway["API Server Gateway<br/>(main.py / main_vercel.py)"]
+        Gateway["API Server Gateway<br/>(main.py)"]
         
         subgraph APILayer ["REST & Realtime API Routes"]
             AuthRoute["/api/auth/* (Registration & JWT Auth)"]
@@ -38,7 +38,7 @@ flowchart TB
             AutoSeed["Background Database Auto-Seeder"]
         end
 
-        StaticServer["Static SPA Fallback Server<br/>(backend/dist or ui/web/out)"]
+        StaticServer["Static SPA Fallback Server<br/>(backend/dist or ui/apps/web/out)"]
     end
 
     subgraph ExternalEcosystem ["External Services & Infrastructure"]

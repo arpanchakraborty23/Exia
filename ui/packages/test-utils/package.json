@@ -1,0 +1,18 @@
+{
+  "name": "@exia/test-utils",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reusable test helpers for Exia UI packages and apps",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@exia/api-client": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -69,14 +69,15 @@ A private, real-time multimodal personal AI assistant and voice agent platform. 
 
 ```
 Exia/
-├── ui/                             # Frontend Client Monorepo
-│   ├── web/                        # Core Web Application — Next.js 15, React 19, Tailwind CSS v4
-│   ├── android/                    # Android Shell — Capacitor 8 (compiles native APK / AAB)
-│   └── windows/                    # Windows Desktop Shell — Tauri 2 + Rust (WebView2 native app)
+├── ui/                             # UI Workspace (pnpm monorepo — see ui/README.md)
+│   ├── apps/
+│   │   ├── mobile/                 # Expo (React Native) — Android app, universal codebase
+│   │   ├── web/                    # [LEGACY] Next.js 15 web client — kept running during Expo migration
+│   │   └── windows/                # React Native Windows (planned — RNW 0.85 pairing)
+│   └── packages/                   # @exia/* shared packages (shared-types, api-client, design-tokens, …)
 │
 ├── backend/                        # Central FastAPI Server Gateway
 │   ├── main.py                     # Primary FastAPI application gateway (local & production)
-│   ├── main_vercel.py              # Serverless entrypoint for Vercel deployment
 │   ├── pyproject.toml / uv.lock    # Python dependencies (managed via Astral uv)
 │   ├── dist/                       # Static production SPA export fallback
 │   └── src/
@@ -94,10 +95,9 @@ Exia/
 │   └── schema.sql                  # SQLite schema for tasks and memories
 │
 ├── scripts/                        # Centralized Build & Deployment Automation
-│   ├── desktop.sh                  # Tauri 2 Windows desktop compile pipeline
-│   ├── android.sh                  # Capacitor Android APK/AAB compile pipeline
-│   ├── compile.sh                  # Unified multi-target build dispatcher
-│   └── vercel.sh                   # Vercel serverless cloud deployment script
+│   ├── desktop.sh                  # [LEGACY] Tauri 2 pipeline — obsolete after the RN Windows decision
+│   ├── android.sh                  # [LEGACY] Capacitor pipeline — obsolete after the Expo decision
+│   └── compile.sh                  # Unified multi-target build dispatcher
 │
 ├── docs/                           # Technical Specifications & Documentation
 │   ├── project-overview.md         # Comprehensive project architecture & roadmap
@@ -131,7 +131,7 @@ python agent.py dev
 
 ### Step 3: Run the Web Client
 ```bash
-cd ui/web
+cd ui/apps/web
 pnpm install
 pnpm dev
 ```

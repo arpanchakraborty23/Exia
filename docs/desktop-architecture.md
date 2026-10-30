@@ -1,5 +1,10 @@
 # Exia Desktop Application — Architecture & Workflow
 
+> **⚠️ OBSOLETE (2026-10-29):** The Windows client is moving from the Tauri 2
+> WebView shell to **native React Native Windows** (product-owner decision —
+> see `ui/README.md`). The Tauri shell described here has been removed. This
+> document is retained for reference only until the RN Windows guide replaces it.
+
 This document explains the architecture, execution lifecycle, and build workflow of the **Exia Windows Desktop Application**, built with **Tauri 2** in [`ui/windows`](file:///e:/potfolio/Exia/ui/windows).
 
 ---

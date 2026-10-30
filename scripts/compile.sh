@@ -42,7 +42,7 @@ case "$TARGET" in
         ;;
     web)
         ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-        cd "$ROOT_DIR/ui/web"
+        cd "$ROOT_DIR/ui/apps/web"
         PKG="npm"
         if command -v pnpm >/dev/null 2>&1; then
             PKG="pnpm"

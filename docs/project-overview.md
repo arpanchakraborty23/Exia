@@ -9,10 +9,10 @@ Welcome to the central documentation for **Exia**, a next-generation, private mu
 Exia is engineered to serve as a private, autonomous, and extensible personal companion for daily productivity, home control, and task automation:
 
 - **Real-Time Voice & Vision (WebRTC)**: Bidirectional, sub-second latency audio streaming using Opus 48kHz via LiveKit, paired with live camera and screen share visual inspection.
-- **Unified Multi-Platform Client Ecosystem**:
-  1. **Web Client** ([`ui/web`](file:///e:/potfolio/Exia/ui/web)): Responsive Next.js 15 & React 19 interface accessible across modern browsers.
-  2. **Android Native Client** ([`ui/android`](file:///e:/potfolio/Exia/ui/android)): Capacitor shell compiling to native Android APK and Google Play AAB.
-  3. **Windows Desktop Client** ([`ui/windows`](file:///e:/potfolio/Exia/ui/windows)): Native Tauri 2 + Rust desktop shell utilizing Microsoft Edge WebView2.
+- **Unified Multi-Platform Client Ecosystem** (Expo / React Native — see [`ui/README.md`](file:///e:/potfolio/Exia/ui/README.md)):
+  1. **Android App** ([`ui/apps/mobile`](file:///e:/potfolio/Exia/ui/apps/mobile)): Expo (React Native 0.88) universal app with Expo Router and shared `@exia/*` packages.
+  2. **Web Client** ([`ui/apps/web`](file:///e:/potfolio/Exia/ui/apps/web)): Legacy Next.js 15 & React 19 interface — remains the production web UI during the Expo migration.
+  3. **Windows Desktop Client** ([`ui/apps/windows`](file:///e:/potfolio/Exia/ui/apps/windows)): Native React Native Windows app (planned — RNW 0.85 pairing; see its README).
 - **Dynamic Tool Execution (MCP)**: Extensible tool calling via Model Context Protocol supporting both local `stdio` CLI processes and remote `sse` endpoints without token metadata bloat.
 - **Adaptive Long-Term Memory**: Mem0 memory engine backed by local SQLite and vector storage to recall user preferences, facts, and past conversations across sessions.
 - **Central Mission Control**: Integrated UI for managing active persona directives, voice pipeline parameters, MCP server registries, and detailed session history telemetry.
@@ -21,38 +21,36 @@ Exia is engineered to serve as a private, autonomous, and extensible personal co
 
 ## 2. Supported Formats & Delivery Models
 
-Exia operates across three client runtime targets driven by a single unified Next.js 15 UI codebase:
+Exia's clients are being migrated to the Expo / React Native stack defined in [`ui/README.md`](file:///e:/potfolio/Exia/ui/README.md). Current state:
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │                             EXIA CLIENT RUNTIMES                              │
 ├───────────────────────┬───────────────────────────────┬───────────────────────┤
-│    1. WEB CLIENT      │      2. WINDOWS DESKTOP       │      3. ANDROID       │
-│  (Next.js 15 / SPA)   │    (Tauri 2 + Edge WebView2)  │  (Capacitor Native)   │
+│  1. ANDROID (ACTIVE)  │   2. WEB (LEGACY → EXPO)      │  3. WINDOWS (PLANNED) │
+│  Expo · RN 0.88       │   Next.js 15 → Expo RN Web    │  RN Windows · RN 0.85 │
 ├───────────────────────┼───────────────────────────────┼───────────────────────┤
-│ • Universal browser   │ • Standalone NSIS installer   │ • Native Android APK  │
-│ • Zero installation   │ • Direct OS hardware binding  │ • Secure HTTPS scheme │
-│ • Responsive layout   │ • Native desktop performance  │ • Mobile dock layout  │
-│ • Floating dock mode  │ • Local filesystem MCP tools  │ • Camera & mic access │
+│ • Expo Router routes  │ • Production web UI today     │ • Native WinUI layer  │
+│ • Shared @exia/* pkgs │ • Static export / Vercel      │ • Own install (RN ver │
+│ • Expo Go / dev build │ • Replaced at Milestone 4     │   differs from Expo)  │
+│ • EAS or local build  │ • LiveKit components-react    │ • VS 2022 toolchain   │
 └───────────────────────┴───────────────────────────────┴───────────────────────┘
 ```
 
-### A. Web Client (`ui/web`)
+### A. Android App (`ui/apps/mobile`) — Milestone 3
+- **Stack**: Expo SDK 58, React Native 0.88, Expo Router (typed routes), TypeScript.
+- **Status**: Scaffolded inside the `ui/` pnpm workspace; consumes `@exia/shared-types`, `@exia/api-client`, `@exia/design-tokens`, `@exia/shared-ui`, `@exia/shared-logic`.
+- **Next**: port the legacy web screens (voice stage, history, MCP, prompts, models, settings) onto the shared primitives; builds via Expo Go (dev) or EAS/local Gradle (native).
+
+### B. Web Client (`ui/apps/web`) — legacy during migration
 - **Stack**: Next.js 15 (Turbopack, React 19, TypeScript, Tailwind CSS v4, Radix UI primitives, `@agents-ui`).
-- **Access**: Accessed over HTTP/HTTPS at `http://localhost:3000` (development) or served directly via the FastAPI high-performance static cache at `http://localhost:8000`.
-- **Responsive Layout**:
-  - **Desktop Viewport**: Collapsible tactical sidebar with edge-hover drawer trigger and keyboard shortcut (`Ctrl+B` / `Cmd+B`).
-  - **Mobile Viewport**: Compact top navigation header with an ergonomic bottom floating dock (`mobile-nav.tsx`) for one-handed operation.
+- **Access**: `http://localhost:3000` (development) or served via the FastAPI static cache at `http://localhost:8000`.
+- **Sunset plan**: replaced by the Expo web export (`npx expo export --platform web`) once screen parity is reached (Milestone 4).
 
-### B. Windows Desktop Client (`ui/windows`)
-- **Stack**: Tauri 2 (Rust core + Microsoft Edge WebView2).
-- **Packaging**: Compiles to standalone executable and Windows NSIS installer via [`scripts/desktop.sh`](file:///e:/potfolio/Exia/scripts/desktop.sh).
-- **Features**: Low memory footprint, native window frame, persistent window bounds, and hardware-accelerated WebRTC media rendering.
-
-### C. Android Client (`ui/android`)
-- **Stack**: Capacitor 8 wrapping the Next.js static export.
-- **Packaging**: Compiles to debug/release APK and Google Play AAB via [`scripts/android.sh`](file:///e:/potfolio/Exia/scripts/android.sh).
-- **Features**: Configured with `androidScheme: 'https'` for secure WebRTC origin context and hardware microphone/camera permission grants.
+### C. Windows Desktop Client (`ui/apps/windows`) — Milestone 5 (not initialized)
+- **Stack**: React Native Windows 0.85 (pairs with RN 0.85 — verified pairing required before init).
+- **Workspace note**: intentionally outside the pnpm workspace — Expo's monorepo guide forbids duplicate React Native versions in one workspace.
+- **Prerequisites & checklist**: see [`ui/apps/windows/README.md`](file:///e:/potfolio/Exia/ui/apps/windows/README.md).
 
 ---
 
@@ -150,7 +148,6 @@ Exia/
 │
 ├── backend/                       # Central FastAPI Application & REST Gateway
 │   ├── main.py                    # Standalone FastAPI Server Gateway (local dev & production)
-│   ├── main_vercel.py             # Vercel serverless ASGI application
 │   ├── pyproject.toml / uv.lock   # Python dependencies managed with uv
 │   ├── dist/                      # Production build static SPA fallback
 │   └── src/
@@ -160,15 +157,16 @@ Exia/
 │       └── utils/                 # Utility helpers (JWT validation, password hashing)
 │
 ├── ui/                            # Client Applications (Monorepo)
-│   ├── web/                       # Web UI — Next.js 15 + React 19 (source of all client UI)
-│   ├── android/                   # Android Shell — Capacitor (wraps ui/web build into native APK)
-│   └── windows/                   # Windows Desktop Shell — Tauri 2 (wraps ui/web build into native app)
+│   ├── apps/
+│   │   ├── mobile/                 # Expo (React Native) — Android app, universal codebase
+│   │   ├── web/                    # [LEGACY] Next.js 15 web client during Expo migration
+│   │   └── windows/                # React Native Windows (planned)
+│   └── packages/                   # @exia/* shared packages (shared-types, api-client, design-tokens, …)
 │
-├── scripts/                       # Centralized Build & Deployment Pipelines
-│   ├── desktop.sh                 # Tauri 2 Windows desktop compilation script
-│   ├── android.sh                 # Capacitor Android APK/AAB compilation script
-│   ├── compile.sh                 # Unified compilation dispatcher (desktop | android | web | all)
-│   └── vercel.sh                  # Vercel cloud deployment script
+├── scripts/                        # Centralized Build & Deployment Pipelines
+│   ├── desktop.sh                  # [LEGACY] Tauri 2 pipeline — obsolete after the RN Windows decision
+│   ├── android.sh                  # [LEGACY] Capacitor pipeline — obsolete after the Expo decision
+│   └── compile.sh                  # Unified compilation dispatcher
 │
 ├── docs/                          # In-Depth Documentation & Diagrams
 │   ├── project-overview.md        # Central project architecture and overview
@@ -199,12 +197,9 @@ python agent.py dev
 
 ### Step 3: Launch Clients
 ```bash
-# A. Web Client (Development)
-cd ui/web && pnpm dev
+# A. Web Client (legacy Next.js — still the production web UI during migration)
+cd ui/apps/web && pnpm dev
 
-# B. Compile Desktop Application (Tauri 2)
-./scripts/desktop.sh
-
-# C. Compile Android Application (Capacitor)
-./scripts/android.sh
+# B. Expo Android app (development — emulator, device, or Expo Go)
+cd ui/apps/mobile && pnpm start
 ```

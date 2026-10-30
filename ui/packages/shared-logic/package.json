@@ -1,0 +1,15 @@
+{
+  "name": "@exia/shared-logic",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Platform-agnostic domain logic, formatters, and validation shared by all UI targets",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vitest": "5.0.5"
+  }
+}

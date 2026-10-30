@@ -166,7 +166,7 @@ def health_check() -> Dict[str, str]:
 
 
 # ------------------------------------------------------------------------------
-# Static File & SPA Resolver (serves the built ui/web export when present)
+# Static File & SPA Resolver (serves the built ui/apps/web export when present)
 # ------------------------------------------------------------------------------
 
 BACKEND_DIR = Path(__file__).resolve().parent
