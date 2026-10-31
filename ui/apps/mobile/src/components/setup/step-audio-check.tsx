@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { brand, radius, spacing } from '@exia/design-tokens';
@@ -327,7 +327,7 @@ export function StepAudioCheck({ config, onChangeConfig }: StepAudioCheckProps) 
 
         {devices.length === 0 ? (
           <ExiaText variant="caption">
-            Click "Test Microphone" above to scan and list available audio recording devices.
+            Click &quot;Test Microphone&quot; above to scan and list available audio recording devices.
           </ExiaText>
         ) : (
           <View style={styles.deviceList}>

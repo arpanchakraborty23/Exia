@@ -92,7 +92,7 @@ export function StepWelcome() {
       <ExiaCard style={styles.card}>
         <View style={styles.sectionHeader}>
           <Ionicons name="list-outline" size={18} color={brand.electricCyan} />
-          <ExiaText style={styles.sectionTitle}>What We'll Configure</ExiaText>
+          <ExiaText style={styles.sectionTitle}>What We&apos;ll Configure</ExiaText>
         </View>
 
         <View style={styles.featureList}>
