@@ -25,7 +25,6 @@ import {
   ExiaCard,
   ExiaInput,
   type ExiaInputProps,
-  ExiaScreen,
   ExiaText,
   useTheme,
 } from '@exia/shared-ui';
@@ -92,7 +91,7 @@ export function Skeleton({
   style?: ViewStyle;
 }) {
   const t = useTheme();
-  const opacity = React.useRef(new Animated.Value(0.3)).current;
+  const [opacity] = React.useState(() => new Animated.Value(0.3));
 
   React.useEffect(() => {
     const animation = Animated.loop(

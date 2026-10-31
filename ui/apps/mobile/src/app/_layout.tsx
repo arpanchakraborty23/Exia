@@ -57,12 +57,10 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const [prefs, setPrefs] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
-  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     void getStoredPreferences().then((loaded) => {
       setPrefs(loaded);
-      setHydrated(true);
     });
   }, []);
 

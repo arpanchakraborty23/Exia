@@ -36,7 +36,6 @@ flowchart TB
             AutoSeed["Background Database Auto-Seeder"]
         end
 
-        StaticServer["Static SPA Fallback Server<br/>(backend/dist or ui/apps/web/out)"]
     end
 
     subgraph ExternalEcosystem ["External Services & Infrastructure"]
@@ -49,7 +48,6 @@ flowchart TB
     MobileClient <-->|HTTP /api/*| Gateway
     WebBrowser <-->|HTTP /api/*| Gateway
     Gateway --> APILayer
-    Gateway --> StaticServer
     APILayer --> ServiceLayer
     ServiceLayer <--> DBPool
     DBPool <--> QueryCache
@@ -67,18 +65,11 @@ Below is the directory structure of `backend/`:
 ```
 backend/
 ├── main.py                     # Main FastAPI Server Gateway (local development & production)
-├── vercel.json                 # Vercel routing definition (serverless entry was removed —
-│                               #   cloud deployment pending a product decision)
-├── requirements.txt            # Auto-synced runtime dependencies
-├── requirements-vercel.txt     # Clean serverless dependencies (unused while Vercel is retired)
+├── vercel.json                 # Vercel Python function and bundle exclusions
+├── .vercelignore               # Excludes local build and development artifacts
+├── requirements.txt            # Python runtime dependencies
 ├── pyproject.toml / uv.lock    # Project dependencies & lockfile (managed with uv)
 ├── .env / .env.example         # Environment variable configuration templates
-│
-├── dist/                       # Static production build export of frontend SPA
-│   ├── index.html              # Main HTML entrypoint
-│   ├── _next/                  # Bundled JavaScript, CSS, and asset chunks
-│   └── favicon.ico             # Web favicon
-│
 └── src/                        # Shared business logic, schemas, and routes
     ├── constants/
     │   ├── config.py           # Multi-path .env resolver & Pydantic application settings
@@ -172,8 +163,21 @@ The image installs the locked production dependencies from `pyproject.toml`
 and `uv.lock` using uv. The `.env` file is not copied into the image. Create it
 from `.env.example` and fill in the required values before running the container.
 
-### C. Deploy to Vercel via Vercel CLI
+### C. Deploy to Vercel
 
-> **Retired:** the serverless entrypoint (`main_vercel.py`) was removed and
-> `scripts/vercel.sh` no longer exists. The Vercel deployment path is pending
-> a product decision — run the backend locally (§A) or with Docker (§B).
+The GitHub Actions workflow at `.github/workflows/backend.yml` validates Python
+sources and deploys backend changes to Vercel. Pull requests from this repository
+receive preview deployments; pushes to `main` deploy production. The workflow
+only runs when `backend/` or the workflow itself changes.
+
+Configure these repository Actions secrets:
+
+- `VERCEL_BACKEND_TOKEN`
+- `VERCEL_BACKEND_ORG_ID`
+- `VERCEL_BACKEND_PROJECT_ID`
+
+Set the Vercel project's root directory to `backend` and configure the runtime
+environment variables from `.env.example` in Vercel Project Settings. Do not add
+credentials to the repository. Frontend build output in `backend/dist` is excluded
+from the serverless function bundle; the FastAPI function does not serve that UI
+build. To deploy manually, run `vercel link` and `vercel deploy` from `backend/`.

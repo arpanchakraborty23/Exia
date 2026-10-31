@@ -1,9 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "main.py"
+  "functions": {
+    "main.py": {
+      "excludeFiles": "{dist/**,.venv/**,node_modules/**,**/__pycache__/**,**/*.py[cod],**/*.egg-info/**,tests/**,docs/**}"
     }
-  ]
+  }
 }

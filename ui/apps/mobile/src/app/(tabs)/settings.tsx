@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { spacing } from '@exia/design-tokens';
-import { ExiaScreen, ExiaText, useTheme } from '@exia/shared-ui';
+import { ExiaScreen } from '@exia/shared-ui';
 
 import { ScreenHeader, Segmented } from '@/components/ui';
 import { GeneralSettings } from '@/components/settings/general-settings';
@@ -13,16 +13,23 @@ import { PromptsSettings } from '@/components/settings/prompts-settings';
 
 type SettingsSection = 'general' | 'models' | 'prompts' | 'mcp';
 
-export default function SettingsScreen() {
-  const t = useTheme();
-  const params = useLocalSearchParams<{ section?: string }>();
-  const [activeSection, setActiveSection] = useState<SettingsSection>('general');
+function isSettingsSection(section: unknown): section is SettingsSection {
+  return section === 'general' || section === 'models' || section === 'prompts' || section === 'mcp';
+}
 
-  useEffect(() => {
-    if (params.section && ['general', 'models', 'prompts', 'mcp'].includes(params.section)) {
-      setActiveSection(params.section as SettingsSection);
+export default function SettingsScreen() {
+  const params = useLocalSearchParams<{ section?: string }>();
+  const [activeSection, setActiveSection] = useState<SettingsSection>(() =>
+    isSettingsSection(params.section) ? params.section : 'general'
+  );
+  const [previousSectionParam, setPreviousSectionParam] = useState(params.section);
+
+  if (params.section !== previousSectionParam) {
+    setPreviousSectionParam(params.section);
+    if (isSettingsSection(params.section)) {
+      setActiveSection(params.section);
     }
-  }, [params.section]);
+  }
 
   const sectionTitles: Record<SettingsSection, { title: string; subtitle: string }> = {
     general: {

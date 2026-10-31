@@ -7,3 +7,10 @@ __pycache__
 .vscode
 .dockerignore
 Dockerfile
+dist/
+.venv/
+node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/

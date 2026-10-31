@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing } from '@exia/design-tokens';
 import { ExiaButton, ExiaCard, ExiaText, useTheme } from '@exia/shared-ui';
-import type { AgentSkill, PromptItem } from '@exia/shared-types';
+import type { AgentSkill } from '@exia/shared-types';
 
 import { api } from '@/lib/api';
 import {
@@ -15,7 +15,6 @@ import {
   ExiaInput,
   Loading,
   Segmented,
-  SkeletonCard,
 } from '@/components/ui';
 
 const VARIABLE_PILLS = [
