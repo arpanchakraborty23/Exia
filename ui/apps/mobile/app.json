@@ -16,8 +16,10 @@
         "expo-build-properties",
         {
           "android": {
-            "enableMinifyInReleaseBuilds": false,
-            "enableShrinkResourcesInReleaseBuilds": false,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "useLegacyPackaging": true,
+            "enableBundleCompression": true,
             "extraProguardRules": "-keep class livekit.org.jni_zero.** { *; }\n-dontwarn livekit.org.jni_zero.**\n-keep class org.jni_zero.** { *; }\n-dontwarn org.jni_zero.**\n-keep class livekit.org.webrtc.** { *; }\n-dontwarn livekit.org.webrtc.**\n-keep class com.oney.WebRTCModule.** { *; }\n-dontwarn com.oney.WebRTCModule.**\n-keep class io.livekit.android.** { *; }\n-dontwarn io.livekit.android.**\n-keepclasseswithmembernames,includedescriptorclasses class livekit.org.webrtc.** { native <methods>; }\n-keepclasseswithmembers,includedescriptorclasses class * { @livekit.**.CalledByNative <methods>; }\n-keepclasseswithmembers,includedescriptorclasses class * { @livekit.**.CalledByNativeUnchecked <methods>; }"
           }
         }

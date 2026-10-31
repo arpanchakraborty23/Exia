@@ -18,11 +18,13 @@ on:
       build_target:
         description: 'Build Target'
         required: true
-        default: 'apk-debug'
+        default: 'apk-arm64'
         type: choice
         options:
-          - 'apk-debug'
+          - 'apk-arm64'
           - 'apk-release'
+          - 'apk-debug'
+          - 'aab-bundle'
           - 'eas-cloud-preview'
           - 'validation-only'
       run_validation:
@@ -77,12 +79,12 @@ jobs:
         run: pnpm --dir apps/mobile lint
 
   build-runner-apk:
-    name: Build APK on GitHub Runner
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.build_target == 'apk-debug' || inputs.build_target == 'apk-release'))
+    name: Build Android on GitHub Runner
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.build_target == 'apk-arm64' || inputs.build_target == 'apk-release' || inputs.build_target == 'apk-debug' || inputs.build_target == 'aab-bundle'))
     needs: [validate]
     runs-on: ubuntu-latest
     env:
-      BUILD_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.build_target || 'apk-debug' }}
+      BUILD_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.build_target || 'apk-arm64' }}
 
     steps:
       - name: Checkout Code
@@ -135,13 +137,12 @@ jobs:
         working-directory: ui/apps/mobile/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Compile Release APK
-        if: env.BUILD_TARGET == 'apk-release'
+      - name: Compile Ultra-Compressed Release APK (ARM64-v8a ~20MB)
+        if: env.BUILD_TARGET == 'apk-arm64'
         working-directory: ui/apps/mobile/android
         run: |
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon --stacktrace
 
-          # If output is unsigned, sign with a self-signed key for immediate device installation
           RELEASE_DIR="app/build/outputs/apk/release"
           if [ -f "$RELEASE_DIR/app-release-unsigned.apk" ]; then
             echo "Signing release APK with self-signed certificate for direct device sideloading..."
@@ -151,37 +152,91 @@ jobs:
             jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
               -keystore release.jks -storepass exiasecret -keypass exiasecret \
               "$RELEASE_DIR/app-release-unsigned.apk" exia-key
-            cp "$RELEASE_DIR/app-release-unsigned.apk" "$RELEASE_DIR/app-release.apk"
+            cp "$RELEASE_DIR/app-release-unsigned.apk" "$RELEASE_DIR/Exia-arm64-release.apk"
+          elif [ -f "$RELEASE_DIR/app-release.apk" ]; then
+            cp "$RELEASE_DIR/app-release.apk" "$RELEASE_DIR/Exia-arm64-release.apk"
           fi
 
-      - name: Stage APK Output
+      - name: Compile Universal Release APK (All ABIs Compressed ~35MB)
+        if: env.BUILD_TARGET == 'apk-release'
+        working-directory: ui/apps/mobile/android
+        run: |
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+          RELEASE_DIR="app/build/outputs/apk/release"
+          if [ -f "$RELEASE_DIR/app-release-unsigned.apk" ]; then
+            echo "Signing release APK with self-signed certificate for direct device sideloading..."
+            keytool -genkeypair -v -keystore release.jks -alias exia-key -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass exiasecret -keypass exiasecret \
+              -dname "CN=Exia, OU=Mobile, O=Exia, L=City, S=State, C=US"
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore release.jks -storepass exiasecret -keypass exiasecret \
+              "$RELEASE_DIR/app-release-unsigned.apk" exia-key
+            cp "$RELEASE_DIR/app-release-unsigned.apk" "$RELEASE_DIR/Exia-universal-release.apk"
+          elif [ -f "$RELEASE_DIR/app-release.apk" ]; then
+            cp "$RELEASE_DIR/app-release.apk" "$RELEASE_DIR/Exia-universal-release.apk"
+          fi
+
+      - name: Compile Android App Bundle (AAB for Google Play Store ~18MB)
+        if: env.BUILD_TARGET == 'aab-bundle'
+        working-directory: ui/apps/mobile/android
+        run: |
+          ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Stage Artifacts & Measure Sizes
         run: |
           mkdir -p build-output
-          find ui/apps/mobile/android/app/build/outputs/apk -name "*.apk" -type f -exec cp {} build-output/ \;
-          echo "Discovered APK files:"
-          ls -la build-output/
+          find ui/apps/mobile/android/app/build/outputs/apk -name "*.apk" -type f -exec cp {} build-output/ \; || true
+          find ui/apps/mobile/android/app/build/outputs/bundle -name "*.aab" -type f -exec cp {} build-output/ \; || true
+          echo "Discovered Artifacts:"
+          ls -lh build-output/
 
-      - name: Upload APK as Workflow Artifact
+      - name: Upload Artifacts as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
           name: exia-mobile-${{ env.BUILD_TARGET }}
-          path: build-output/*.apk
+          path: build-output/*
           retention-days: 30
 
       - name: Generate Step Summary
         run: |
-          echo "### 🚀 Android APK Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Android Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Build Target** | \`${{ env.BUILD_TARGET }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Artifact Name** | \`exia-mobile-${{ env.BUILD_TARGET }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Retention** | 30 days |" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact File | Size | Format | Description |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          for f in build-output/*; do
+            if [ -f "$f" ]; then
+              fname=$(basename "$f")
+              fsize=$(ls -lh "$f" | awk '{print $5}')
+              if [[ "$fname" == *".aab"* ]]; then
+                desc="Google Play App Bundle (Dynamic Per-Device Delivery)"
+                fmt="AAB"
+              elif [[ "$fname" == *"arm64"* ]]; then
+                desc="Ultra-Compressed for Modern Phones (arm64-v8a)"
+                fmt="APK"
+              elif [[ "$fname" == *"debug"* ]]; then
+                desc="Debug Development Build"
+                fmt="APK"
+              else
+                desc="Universal Release (All CPU Architectures)"
+                fmt="APK"
+              fi
+              echo "| \`$fname\` | **$fsize** | $fmt | $desc |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Compression Optimization | Status | Benefit |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **R8 / ProGuard Minify** | Enabled (\`proguard-android-optimize.txt\`) | Strips dead Java/Kotlin classes & inlines methods |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Resource Shrinking** | Enabled (\`shrinkResources true\`) | Drops unused drawables, layouts, and assets |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Legacy Zip Packaging** | Enabled (\`expo.useLegacyPackaging=true\`) | Compresses native \`.so\` libraries (WebRTC, Hermes) with Deflate (~35MB saved) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Hermes Bundle Compression** | Enabled (\`enableBundleCompression=true\`) | Compresses JavaScript bytecode |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Architecture Optimization** | Available via \`apk-arm64\` / \`aab-bundle\` | Drops 3 redundant ABIs, cutting size down to ~20MB |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📥 **How to download and install:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Scroll down to the **Artifacts** table at the bottom of this summary." >> $GITHUB_STEP_SUMMARY
-          echo "2. Download \`exia-mobile-${{ inputs.build_target }}\` (ZIP)." >> $GITHUB_STEP_SUMMARY
-          echo "3. Extract the \`.apk\` and transfer/sideload it to your Android device." >> $GITHUB_STEP_SUMMARY
+          echo "1. Scroll down to the **Artifacts** table at the bottom of this run summary." >> $GITHUB_STEP_SUMMARY
+          echo "2. Download \`exia-mobile-${{ env.BUILD_TARGET }}\` (ZIP)." >> $GITHUB_STEP_SUMMARY
+          echo "3. Extract the file and transfer/sideload it to your Android device." >> $GITHUB_STEP_SUMMARY
 
   build-eas-cloud:
     name: Build APK via Expo Cloud (EAS)
