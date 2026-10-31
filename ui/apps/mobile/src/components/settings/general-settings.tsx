@@ -31,6 +31,7 @@ import {
 
 import { api, tokenStorage } from '@/lib/api';
 import { AUTH_TOKEN_KEY, useAuthToken } from '@/lib/auth';
+import { getStoredSetupConfigSync, resetSetupConfig } from '@/lib/desktop-config';
 import { saveStoredPreferences } from '@/lib/theme-storage';
 import { Badge, ExiaAvatar, Field, Segmented } from '@/components/ui';
 import { SelectField } from '@/components/models/controls';
@@ -451,6 +452,88 @@ export function GeneralSettings() {
             label="Reset Theme to Factory Defaults"
             variant="secondary"
             onPress={handleResetDefaults}
+          />
+        </View>
+      </ExiaCard>
+
+      {/* 5. Desktop & Environment Setup */}
+      <ExiaCard style={styles.card}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="desktop-outline" size={20} color={t.primary} />
+          <ExiaText variant="title" style={styles.sectionTitle}>
+            Desktop & Environment Setup
+          </ExiaText>
+        </View>
+
+        <ExiaText variant="caption">
+          Reconfigure your backend gateway endpoint, LiveKit WebRTC credentials, audio input device, and environment setup.
+        </ExiaText>
+
+        <View style={[styles.previewBox, { backgroundColor: t.input, borderColor: t.border }]}>
+          <View style={styles.profileRow}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <ExiaText variant="caption">Current API Gateway</ExiaText>
+              <ExiaText variant="mono" style={{ fontSize: 12 }}>
+                {getStoredSetupConfigSync().apiUrl}
+              </ExiaText>
+            </View>
+            <Badge
+              label={
+                getStoredSetupConfigSync().environmentType === 'cloud'
+                  ? 'Cloud'
+                  : getStoredSetupConfigSync().environmentType === 'local'
+                    ? 'Local'
+                    : 'Custom'
+              }
+              tone="accent"
+            />
+          </View>
+
+          <View style={[styles.separator, { backgroundColor: t.border }]} />
+
+          <View style={styles.profileRow}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <ExiaText variant="caption">LiveKit Voice Engine</ExiaText>
+              <ExiaText variant="mono" style={{ fontSize: 12 }}>
+                {getStoredSetupConfigSync().livekitUrl || 'Managed by Backend'}
+              </ExiaText>
+            </View>
+            <Badge
+              label={getStoredSetupConfigSync().livekitPreset === 'cloud' ? 'Cloud Cluster' : 'Custom'}
+              tone="neutral"
+            />
+          </View>
+
+          {getStoredSetupConfigSync().audioInputDeviceLabel ? (
+            <>
+              <View style={[styles.separator, { backgroundColor: t.border }]} />
+              <View style={styles.profileRow}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <ExiaText variant="caption">Audio Input Device</ExiaText>
+                  <ExiaText style={{ fontSize: 13 }} numberOfLines={1}>
+                    {getStoredSetupConfigSync().audioInputDeviceLabel}
+                  </ExiaText>
+                </View>
+                <Badge label="Hardware Active" tone="accent" />
+              </View>
+            </>
+          ) : null}
+        </View>
+
+        <View style={styles.dataActions}>
+          <ExiaButton
+            label="Launch Setup Wizard"
+            variant="primary"
+            onPress={() => router.push('/setup' as any)}
+          />
+
+          <ExiaButton
+            label="Reset Setup & Re-run From Start"
+            variant="secondary"
+            onPress={async () => {
+              await resetSetupConfig();
+              router.push('/setup' as any);
+            }}
           />
         </View>
       </ExiaCard>

@@ -1,16 +1,27 @@
 /**
- * The mobile app's Exia API client.
+ * The mobile/desktop app's Exia API client.
  *
- * EXPO_PUBLIC_API_URL is inlined at bundle time by Expo — point it at a LAN
- * backend when testing on a physical device, e.g.
- *   EXPO_PUBLIC_API_URL=http://192.168.1.10:12568/api npx expo start
+ * Supports dynamic runtime switching between Cloud backend (`https://exia-backend.vercel.app/api`),
+ * Local development backend (`http://127.0.0.1:8000/api`), and custom self-hosted endpoints.
  */
 import { createApiClient } from '@exia/api-client';
 
+import { getStoredSetupConfigSync, saveStoredSetupConfig, DEFAULT_CLOUD_API_URL } from './desktop-config';
 import { SecureTokenStorage } from './secure-token-storage';
 
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? 'https://exia-backend.vercel.app/api';
+let currentApiUrl = getStoredSetupConfigSync().apiUrl || DEFAULT_CLOUD_API_URL;
+
+export function getApiBaseUrl(): string {
+  return currentApiUrl;
+}
+
+export function setApiBaseUrl(url: string): void {
+  const normalized = url.trim().replace(/\/+$/, '');
+  currentApiUrl = normalized;
+  void saveStoredSetupConfig({ apiUrl: normalized });
+}
+
+export const API_BASE_URL = currentApiUrl;
 
 /**
  * Session token storage. Metro picks the platform file automatically:
@@ -18,4 +29,7 @@ export const API_BASE_URL =
  */
 export const tokenStorage = new SecureTokenStorage();
 
-export const api = createApiClient({ baseUrl: API_BASE_URL, tokenStorage });
+export const api = createApiClient({
+  baseUrl: () => getApiBaseUrl(),
+  tokenStorage,
+});

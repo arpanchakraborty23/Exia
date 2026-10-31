@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "start:no-sandbox": "electron . --no-sandbox",
     "sync": "node scripts/sync-dist.js",
     "build:exe": "node scripts/sync-dist.js && electron-builder --win --publish never",
     "build:portable": "node scripts/sync-dist.js && electron-builder --win portable --publish never",
@@ -15,6 +16,12 @@
     "productName": "Exia",
     "copyright": "Copyright © 2026 Exia",
     "publish": [],
+    "compression": "maximum",
+    "electronLanguages": [
+      "en-US",
+      "en"
+    ],
+    "asar": true,
     "directories": {
       "output": "dist-electron"
     },
@@ -22,7 +29,8 @@
       "main.js",
       "preload.js",
       "dist/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "!**/*.map"
     ],
     "win": {
       "target": [
@@ -47,7 +55,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Exia"
+      "shortcutName": "Exia",
+      "differentialPackage": false
     },
     "portable": {
       "artifactName": "Exia-portable-${version}.exe"

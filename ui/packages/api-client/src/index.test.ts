@@ -96,6 +96,19 @@ describe('createRequestFn', () => {
     expect((err as ApiError).message).toBe('Invalid credentials');
   });
 
+  it('supports dynamic baseUrl as a function', async () => {
+    const { calls, fetchImpl } = captureJsonFetch({ ok: true });
+    let dynamicUrl = 'http://first/api';
+    const request = createRequestFn({ baseUrl: () => dynamicUrl, fetchImpl });
+
+    await request('/health');
+    expect(calls[0].url).toBe('http://first/api/health');
+
+    dynamicUrl = 'http://second/api';
+    await request('/health');
+    expect(calls[1].url).toBe('http://second/api/health');
+  });
+
   it('falls back to a generic message when the error body is not JSON', async () => {
     const fetchImpl = (async () =>
       new Response('oops', { status: 500 }) as Response) as typeof fetch;

@@ -467,7 +467,15 @@ export function ExiaInput({
 // Badge (Status indicator)
 // ---------------------------------------------------------------------------
 
-export type ExiaBadgeTone = 'ok' | 'muted' | 'warn' | 'info';
+export type ExiaBadgeTone =
+  | 'ok'
+  | 'muted'
+  | 'warn'
+  | 'info'
+  | 'accent'
+  | 'neutral'
+  | 'destructive'
+  | 'secondary';
 
 export interface ExiaBadgeProps {
   mode?: ThemeMode;
@@ -487,10 +495,14 @@ export function ExiaBadge({
   const palette: Record<ExiaBadgeTone, { bg: string; fg: string }> = {
     ok: { bg: 'rgba(16, 185, 129, 0.16)', fg: t.liveEmerald ?? brand.liveEmerald }, // liveEmerald — live status only
     muted: { bg: t.muted, fg: t.mutedForeground },
+    neutral: { bg: t.muted, fg: t.mutedForeground },
     warn: { bg: 'rgba(245, 158, 11, 0.16)', fg: '#f59e0b' },
     info: { bg: 'rgba(31, 213, 249, 0.16)', fg: t.primary },
+    accent: { bg: 'rgba(31, 213, 249, 0.16)', fg: t.primary },
+    destructive: { bg: 'rgba(244, 63, 94, 0.16)', fg: t.destructive ?? '#f43f5e' },
+    secondary: { bg: t.muted, fg: t.foreground },
   };
-  const colorsConfig = palette[tone];
+  const colorsConfig = palette[tone] ?? palette.muted;
 
   return (
     <View

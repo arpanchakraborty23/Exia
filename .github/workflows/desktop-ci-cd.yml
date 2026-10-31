@@ -8,6 +8,7 @@ on:
       - 'ui/**'
       - 'desktop/**'
       - '.github/workflows/desktop-ci-cd.yml'
+      - 'package.json'
   pull_request:
     branches:
       - main
@@ -15,6 +16,7 @@ on:
       - 'ui/**'
       - 'desktop/**'
       - '.github/workflows/desktop-ci-cd.yml'
+      - 'package.json'
   workflow_dispatch:
     inputs:
       target_format:
@@ -35,6 +37,10 @@ on:
 permissions:
   contents: read
   actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
@@ -98,6 +104,8 @@ jobs:
 
       - name: Compile Expo Web Production Export
         working-directory: ui
+        env:
+          EXPO_PUBLIC_API_URL: https://exia-backend.vercel.app/api
         run: pnpm web:build
 
       - name: Synchronize Web Export to Desktop Shell
@@ -108,12 +116,14 @@ jobs:
         working-directory: desktop
         run: npm install
 
-      - name: Package Windows Executable (electron-builder)
+      - name: Package Windows Executable (electron-builder with Maximum Compression)
         working-directory: desktop
+        shell: pwsh
         run: |
-          if ("${{ inputs.target_format }}" -eq "portable") {
+          $format = "${{ inputs.target_format }}"
+          if ($format -eq "portable") {
             npx electron-builder --win portable --publish never
-          } elseif ("${{ inputs.target_format }}" -eq "nsis") {
+          } elseif ($format -eq "nsis") {
             npx electron-builder --win nsis --publish never
           } else {
             npx electron-builder --win --publish never
@@ -121,12 +131,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Stage Artifacts
+      - name: Stage Artifacts & Measure Sizes
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path build-output
           Copy-Item -Path "desktop/dist-electron/*.exe" -Destination "build-output"
-          Get-ChildItem -Path "build-output"
+          Get-ChildItem -Path "build-output" | Select-Object Name, @{Name="Size (MB)";Expression={[math]::Round($_.Length / 1MB, 2)}}
 
       - name: Upload Windows Desktop Artifacts
         uses: actions/upload-artifact@v4
@@ -140,11 +150,20 @@ jobs:
         run: |
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### 💻 Windows Desktop .EXE Build Completed Successfully!"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| Property | Value |"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| Executable File | Size | Format |"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "|---|---|---|"
+          Get-ChildItem -Path "build-output/*.exe" | ForEach-Object {
+            $sizeMb = [math]::Round($_.Length / 1MB, 2)
+            $fmt = if ($_.Name -like "*portable*") { "Portable Standalone" } else { "NSIS Installer" }
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| \`$($_.Name)\` | **$sizeMb MB** | $fmt |"
+          }
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| Optimization Applied | Setting |"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "|---|---|"
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **Platform** | Windows x64 |"
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **Artifact Name** | \`exia-windows-desktop-exe\` |"
-          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **Retention** | 30 days |"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **Compression Level** | Maximum (LZMA) |"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **Locales Filter** | \`en-US\`, \`en\` (~40MB stripped) |"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **ASAR Packaging** | Enabled |"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "| **Source Maps** | Excluded |"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "📥 **How to download and run:**"
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "1. Scroll down to the **Artifacts** table at the bottom of this summary."

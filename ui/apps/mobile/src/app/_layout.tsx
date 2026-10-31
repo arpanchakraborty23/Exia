@@ -5,7 +5,7 @@ import {
   QueryClientProvider,
   useQueryClient,
 } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +15,7 @@ import { ApiError } from '@exia/api-client';
 
 import { tokenStorage } from '@/lib/api';
 import { AUTH_TOKEN_KEY, useAuthToken } from '@/lib/auth';
+import { getStoredSetupConfigSync } from '@/lib/desktop-config';
 import {
   DEFAULT_USER_PREFERENCES,
   getStoredPreferences,
@@ -96,13 +97,25 @@ function RootNavigator() {
   const t = useTheme();
   const queryClient = useQueryClient();
   const { data: token, isLoading } = useAuthToken();
+  const segments = useSegments();
 
   useEffect(() => {
-    if (!isLoading && !token) {
+    if (isLoading) return;
+
+    const isSetupRoute = (segments[0] as string) === 'setup';
+    if (isSetupRoute) return;
+
+    const setupConfig = getStoredSetupConfigSync();
+    if (!setupConfig.setupCompleted) {
+      router.replace('/setup' as any);
+      return;
+    }
+
+    if (!token) {
       queryClient.setQueryData(AUTH_TOKEN_KEY, null);
       router.replace('/login');
     }
-  }, [isLoading, token, queryClient]);
+  }, [isLoading, token, queryClient, segments]);
 
   if (isLoading) return null;
 
@@ -114,6 +127,7 @@ function RootNavigator() {
       }}
     >
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="setup" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ presentation: 'modal' }} />
       <Stack.Screen name="register" options={{ presentation: 'modal' }} />
       <Stack.Screen name="session/[id]" />

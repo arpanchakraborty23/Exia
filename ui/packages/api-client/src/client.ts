@@ -44,8 +44,8 @@ export class InMemoryTokenStorage implements TokenStorage {
 }
 
 export interface ApiClientOptions {
-  /** API base URL including the /api suffix, e.g. "http://127.0.0.1:12568/api" */
-  baseUrl: string;
+  /** API base URL including the /api suffix, e.g. "http://127.0.0.1:12568/api", or a getter function */
+  baseUrl: string | (() => string);
   tokenStorage?: TokenStorage;
   fetchImpl?: typeof fetch;
 }
@@ -66,7 +66,8 @@ export function createRequestFn(options: ApiClientOptions): RequestFn {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const url = endpoint.startsWith('http') ? endpoint : `${options.baseUrl}${endpoint}`;
+    const base = typeof options.baseUrl === 'function' ? options.baseUrl() : options.baseUrl;
+    const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`;
 
     const res = await fetchImpl(url, { ...init, headers });
 

@@ -35,6 +35,10 @@ permissions:
   contents: read
   actions: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: Validate Code & Tests

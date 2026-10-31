@@ -104,6 +104,12 @@ export default function Login() {
             variant="secondary"
             onPress={() => router.push('/register')}
           />
+
+          <ExiaButton
+            label="Configure Environment (Setup Wizard)"
+            variant="secondary"
+            onPress={() => router.push('/setup' as any)}
+          />
         </ExiaCard>
       </KeyboardAvoidingView>
     </ExiaScreen>

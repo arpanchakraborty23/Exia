@@ -9,14 +9,32 @@ console.log(`[Desktop] Destination: ${destDir}`);
 
 if (!fs.existsSync(srcDir)) {
   console.error(`[Desktop Error] Web build directory not found at: ${srcDir}`);
-  console.error(`Please run 'pnpm --dir ui web:build' first.`);
+  console.error(`Please run 'pnpm --dir ui web:build' or 'pnpm --dir ui desktop:build' first.`);
   process.exit(1);
 }
 
-// Clean destination if exists
+const indexHtmlPath = path.join(srcDir, 'index.html');
+if (!fs.existsSync(indexHtmlPath)) {
+  console.error(`[Desktop Error] Source index.html not found at: ${indexHtmlPath}`);
+  process.exit(1);
+}
+
+// Clean destination if exists, with retry logic for Windows file system locks
 if (fs.existsSync(destDir)) {
-  fs.rmSync(destDir, { recursive: true, force: true });
+  try {
+    fs.rmSync(destDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  } catch (err) {
+    console.warn(`[Desktop] Notice: could not remove destination directly (${err.message}). Overwriting files.`);
+  }
 }
 
 fs.cpSync(srcDir, destDir, { recursive: true });
-console.log(`[Desktop] Successfully synchronized web export to desktop/dist!`);
+
+const copiedIndex = path.join(destDir, 'index.html');
+if (fs.existsSync(copiedIndex)) {
+  const stat = fs.statSync(copiedIndex);
+  console.log(`[Desktop] Successfully synchronized web export to desktop/dist! (index.html: ${stat.size} bytes)`);
+} else {
+  console.error(`[Desktop Error] Failed to verify desktop/dist/index.html after copy!`);
+  process.exit(1);
+}

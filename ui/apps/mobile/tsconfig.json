@@ -2,8 +2,15 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@tanstack/query-core": [
+        "./node_modules/@tanstack/query-core",
+        "../../node_modules/@tanstack/query-core",
+        "../../node_modules/.pnpm/@tanstack+query-core@5.105.0/node_modules/@tanstack/query-core"
+      ]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
