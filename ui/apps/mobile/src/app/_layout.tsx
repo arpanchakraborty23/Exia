@@ -1,18 +1,28 @@
-import { QueryClient, QueryClientProvider, useQueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { useTheme } from '@exia/shared-ui';
-
+import { ThemeProvider, useTheme, useThemeControl } from '@exia/shared-ui';
 import { ApiError } from '@exia/api-client';
-import { useAuthToken, AUTH_TOKEN_KEY } from '@/lib/auth';
+
 import { tokenStorage } from '@/lib/api';
+import { AUTH_TOKEN_KEY, useAuthToken } from '@/lib/auth';
+import {
+  DEFAULT_USER_PREFERENCES,
+  getStoredPreferences,
+  saveStoredPreferences,
+  type UserPreferences,
+} from '@/lib/theme-storage';
 
 async function handleUnauthorized(error: unknown, qc: QueryClient) {
-  // Only react to backend 401s when a session exists — failed credential
-  // submissions on /login and /register must surface as form errors, not a logout.
   const cached = qc.getQueryData<string | null>(AUTH_TOKEN_KEY);
   if (!cached) return;
   if (!(error instanceof ApiError) || error.status !== 401) return;
@@ -46,20 +56,44 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  const [prefs, setPrefs] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    void getStoredPreferences().then((loaded) => {
+      setPrefs(loaded);
+      setHydrated(true);
+    });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="light" />
-      <RootNavigator />
+      <ThemeProvider
+        initialMode={prefs.mode}
+        initialAccent={prefs.accent}
+        initialButtonRadius={prefs.buttonRadius}
+        initialButtonStyle={prefs.buttonStyle}
+        initialFontStyle={prefs.fontStyle}
+        onPreferencesChange={(updated) => {
+          void saveStoredPreferences(updated);
+        }}
+      >
+        <ThemedApp />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
 
-/**
- * Gates the navigator on token hydration: renders nothing while the secure
- * store is read, then redirects to /login when there is no session. Tabs
- * additionally render null while signed out (see (tabs)/_layout), so a cold
- * start never flashes the authenticated UI.
- */
+function ThemedApp() {
+  const { resolvedMode } = useThemeControl();
+  return (
+    <>
+      <StatusBar style={resolvedMode === 'light' ? 'dark' : 'light'} />
+      <RootNavigator />
+    </>
+  );
+}
+
 function RootNavigator() {
   const t = useTheme();
   const queryClient = useQueryClient();

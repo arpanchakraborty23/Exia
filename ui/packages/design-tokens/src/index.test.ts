@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { brand, colors, radius, spacing, status, typography } from './index';
+import {
+  ACCENT_PALETTES,
+  brand,
+  colors,
+  getThemeTokens,
+  radius,
+  spacing,
+  status,
+  typography,
+  type AccentColor,
+} from './index';
 
 describe('design-tokens: colors & brand', () => {
   it('defines dark theme palette conforming to Exia design system', () => {
@@ -22,6 +32,12 @@ describe('design-tokens: colors & brand', () => {
     expect(colors.light.lkSurface5).toBe('#d0d0d0');
   });
 
+  it('defines oled pure black theme palette', () => {
+    expect(colors.oled.background).toBe('#000000');
+    expect(colors.oled.card).toBe('#080808');
+    expect(colors.oled.liveEmerald).toBe('#10b981');
+  });
+
   it('exports brand and status tokens', () => {
     expect(brand.electricCyan).toBe('#1fd5f9');
     expect(brand.liveEmerald).toBe('#10b981');
@@ -29,6 +45,25 @@ describe('design-tokens: colors & brand', () => {
     expect(status.warn).toBe('#f59e0b');
     expect(status.error).toBe('#ef4444');
     expect(status.info).toBe('#1fd5f9');
+  });
+
+  it('generates dynamic theme tokens across all 7 accents', () => {
+    const accents: AccentColor[] = ['cyan', 'emerald', 'violet', 'amber', 'crimson', 'blue', 'pink'];
+    for (const accent of accents) {
+      const def = ACCENT_PALETTES[accent];
+      expect(def).toBeDefined();
+
+      const darkTheme = getThemeTokens('dark', accent);
+      expect(darkTheme.primary).toBe(def.primary);
+      expect(darkTheme.ring).toBe(def.ring);
+
+      const lightTheme = getThemeTokens('light', accent);
+      expect(lightTheme.primary).toBe(def.lightPrimary);
+
+      const oledTheme = getThemeTokens('oled', accent);
+      expect(oledTheme.background).toBe('#000000');
+      expect(oledTheme.primary).toBe(def.primary);
+    }
   });
 });
 

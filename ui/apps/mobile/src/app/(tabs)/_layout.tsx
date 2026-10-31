@@ -52,30 +52,27 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="mcp"
-        options={{
-          title: 'MCP',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="hardware-chip-outline" size={size} color={typeof color === 'string' ? color : undefined} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="prompts"
-        options={{
-          title: 'Prompts',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-text-outline" size={size} color={typeof color === 'string' ? color : undefined} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings-outline" size={size} color={typeof color === 'string' ? color : undefined} />
           ),
+        }}
+      />
+      {/* Kept as registered routes for deep links, but hidden from the 4-tab bottom bar */}
+      <Tabs.Screen
+        name="mcp"
+        options={{
+          href: null,
+          title: 'MCP',
+        }}
+      />
+      <Tabs.Screen
+        name="prompts"
+        options={{
+          href: null,
+          title: 'Prompts',
         }}
       />
     </Tabs>

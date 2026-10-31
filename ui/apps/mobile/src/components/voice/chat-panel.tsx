@@ -110,7 +110,7 @@ export function ChatPanel({
                 Agent is thinking…
               </ExiaText>
             </View>
-          ) : null
+          ) : undefined
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>

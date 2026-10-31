@@ -168,12 +168,13 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
     { onlySubscribed: false },
   );
 
-  const stageTrack =
+  const stageTrack = (
     videoTracks.find((tr) => isTrackReference(tr) && tr.source === Track.Source.ScreenShare) ??
     videoTracks.find(
       (tr) => isTrackReference(tr) && !tr.participant.isLocal && tr.source === Track.Source.Camera,
     ) ??
-    videoTracks.find((tr) => isTrackReference(tr) && tr.source === Track.Source.Camera);
+    videoTracks.find((tr) => isTrackReference(tr) && tr.source === Track.Source.Camera)
+  ) as TrackReference | undefined;
 
   // Agent audio drives the bar visualizer (subscribed remote microphone).
   const micTracks = useTracks(

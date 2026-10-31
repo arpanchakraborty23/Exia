@@ -1,5 +1,13 @@
 # Exia — Multimodal AI Assistant & Voice Platform
 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.141+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Expo](https://img.shields.io/badge/Expo_SDK-58.0-000020.svg?logo=expo&logoColor=white)](https://expo.dev)
+[![React Native](https://img.shields.io/badge/React_Native-0.88-61DAFB.svg?logo=react&logoColor=black)](https://reactnative.dev)
+[![LiveKit](https://img.shields.io/badge/LiveKit-WebRTC-002CF2.svg?logo=webrtc&logoColor=white)](https://livekit.io)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas-47A248.svg?logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+[![Mem0](https://img.shields.io/badge/Mem0-Universal_Memory-FF4F00.svg)](https://mem0.ai)
+[![pnpm](https://img.shields.io/badge/pnpm-12.16-F69220.svg?logo=pnpm&logoColor=white)](https://pnpm.io)
+
 A private, real-time multimodal personal AI assistant and voice agent platform. Powered by **LiveKit WebRTC**, **Google Gemini Live / Local LLMs**, **Model Context Protocol (MCP)**, **Mem0 Universal Memory**, and **MongoDB Atlas**.
 
 ---
@@ -7,49 +15,53 @@ A private, real-time multimodal personal AI assistant and voice agent platform. 
 ## 1. System Architecture & How It Works
 
 ```
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                      Client Ecosystem (ui/ Monorepo)                          │
-│        React 19 + TypeScript + Next.js 15 + Tailwind CSS v4                   │
-│                                                                               │
-│  ┌─────────────────────────┐  ┌─────────────────────────────────────────────┐ │
-│  │   LiveKit Voice Stage   │  │             Mission Control Hub             │ │
-│  │  • 5 Reactive Waveforms │  │  • Direct in-browser Token Studio (JWT)     │ │
-│  │  • RoomAudioRenderer    │  │  • MCP Server Registry (Stdio / SSE)        │ │
-│  │  • Vision & Screen Cam  │  │  • Model Config (Gemini Live / Ollama)      │ │
-│  │  • Realtime Transcript  │  │  • Directive Matrix & Custom Prompts        │ │
-│  └────────────▲────────────┘  └──────────────────────▲──────────────────────┘ │
-└───────────────┼──────────────────────────────────────┼────────────────────────┘
-                │ WebRTC Opus Audio & Video Track      │ HTTPS REST (JWT Bearer)
-                ▼                                      ▼
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                 LiveKit Realtime Server (Local / Cloud SFU)                   │
-│             ws://localhost:7880  or  wss://<project>.livekit.cloud            │
-└───────────────────────────────┬───────────────────────────────────────────────┘
-                                │ WebRTC Room Protocol
-                                ▼
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                   LiveKit Voice Agent Worker (agent/agent.py)                 │
-│                                                                               │
-│  ┌───────────────────────┐   ┌─────────────────────────────────────────────┐  │
-│  │  Multimodal Voice     │   │  Mem0 Adaptive Memory Engine                │  │
-│  │  • Gemini Live / LLMs │   │  • User facts, preferences, entities        │  │
-│  │  • Silero VAD         │   │  • SQLite + Vector store retrieval          │  │
-│  │  • Visual Feed Vision │   │  • Injects past context dynamically         │  │
-│  └───────────────────────┘   └─────────────────────────────────────────────┘  │
-│  ┌─────────────────────────────────────────────────────────────────────────┐  │
-│  │  Model Context Protocol (MCP) Client Engine                             │  │
-│  │  • Dynamic 2-step tool calling (search_mcp_tools & execute_mcp_tool)    │  │
-│  │  • Local filesystem CLI (`@modelcontextprotocol/server-filesystem`)     │  │
-│  │  • Custom Stdio / SSE MCP Servers registered in MongoDB                 │  │
-│  └─────────────────────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────────────────────────┘
-                                ▲
-                                │ Direct Database Queries
-                                ▼
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                     FastAPI Gateway Server (backend/)                         │
-│       Single Writer of all UI data to MongoDB Atlas / Local MongoDB           │
-└───────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                           Universal Client Monorepo (ui/)                               │
+│      pnpm 12.16.1 Workspace · Expo SDK 58 · React Native 0.88 · React 19 · Vitest       │
+│                                                                                         │
+│  ┌─────────────────────────────────────────┐  ┌──────────────────────────────────────┐  │
+│  │   Universal Mobile & Web (apps/mobile)  │  │    Shared Monorepo Packages          │  │
+│  │  • 5-Tab Navigation (Home/History/MCP/   │  │  • @exia/shared-types (contracts)   │  │
+│  │    Prompts/Settings) & Analytics        │  │  • @exia/api-client (typed SDK)     │  │
+│  │  • Immersive LiveKit Room (/voice)      │  │  • @exia/shared-logic (utilities)   │  │
+│  │  • 7-Bar Reactive Audio Visualizer      │  │  • @exia/shared-ui (RN primitives)  │  │
+│  │  • Camera & Screen-Share Streaming      │  │  • @exia/design-tokens (palette)    │  │
+│  │  • Data-Stream Chat over lk.chat        │  │  • @exia/test-utils (mocks)         │  │
+│  └─────────────────────────────────────────┘  └──────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────┐  ┌──────────────────────────────────────┐  │
+│  │    Legacy Web Client (apps/web)         │  │    Windows Desktop (apps/windows)    │  │
+│  │  • Next.js 15 / Tailwind v4 Bridge      │  │  • Planned React Native Windows 0.85 │  │
+│  └─────────────────────────────────────────┘  └──────────────────────────────────────┘  │
+└───────────────────┬─────────────────────────────────────────────────┬───────────────────┘
+                    │ WebRTC Opus Audio & Video / Screen Tracks       │ HTTPS REST API
+                    ▼                                                 ▼ (Bearer JWT)
+┌──────────────────────────────────────────────────┐  ┌───────────────────────────────────┐
+│     LiveKit Realtime Server (Local/Cloud SFU)    │  │      FastAPI Gateway (backend/)   │
+│   ws://localhost:7880 or wss://<domain>.livekit  │  │  • Port 12568 (Local) / 8000 (CI) │
+└───────────────────┬──────────────────────────────┘  │  • LiveKit Token Generation       │
+                    │ WebRTC Room Protocol            │  • Non-blocking Auto-Seeding      │
+                    ▼                                 │  • Sessions, MCP, Prompts, Models │
+┌──────────────────────────────────────────────────┐  └─────────────────┬─────────────────┘
+│       LiveKit Voice Agent Worker (agent/)        │                    │
+│                                                  │                    │
+│  ┌────────────────────┐  ┌────────────────────┐  │                    │
+│  │  Multimodal Voice  │  │ Mem0 Memory Engine │  │                    │
+│  │  • Gemini Live/LLM │  │ • User Facts & Bio │  │                    │
+│  │  • Silero VAD      │  │ • Semantic Vector  │  │                    │
+│  │  • Vision Streams  │  │   Search (SQLite)  │  │                    │
+│  └────────────────────┘  └────────────────────┘  │                    │
+│  ┌────────────────────────────────────────────┐  │                    │
+│  │   Dynamic 2-Step MCP Tool Engine           │  │                    │
+│  │   • search_mcp_tools & execute_mcp_tool    │  │                    │
+│  │   • Reads definitions directly from DB     │  │                    │
+│  └────────────────────────────────────────────┘  │                    │
+└───────────────────┬──────────────────────────────┘                    │
+                    │ Direct Queries (Async Motor Client)               │ Motor / PyMongo
+                    ▼                                                   ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 MongoDB Atlas Database                                  │
+│   Collections: users · sessions · mcp_servers · prompts · model_config · token_blacklist│
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 > 🗺️ **Editable Architecture Diagrams (draw.io):** [`docs/architecture/exia-high-level-architecture.drawio`](docs/architecture/) — includes backend server (`exia-backend-server.drawio`) and voice agent (`exia-voice-agent.drawio`). See [`docs/architecture/README.md`](docs/architecture/README.md).
@@ -58,10 +70,11 @@ A private, real-time multimodal personal AI assistant and voice agent platform. 
 
 ## 2. Core Architecture Rules
 
-1. **UI → Backend → Database**: The UI never communicates directly with the database. All account registrations, MCP servers, prompt directives, and model configurations pass through the FastAPI backend with JWT authentication.
-2. **Agent Holds Zero UI State**: The voice agent worker connects to LiveKit WebRTC for audio/video streaming and reads configuration and tools dynamically from MongoDB.
-3. **No JWT Token Bloat**: Large tool schemas reside in MongoDB Atlas rather than bloating LiveKit JWT tokens; the agent resolves tools dynamically using a 2-step search and execute pipeline.
-4. **Three Native Client Surfaces**: A single Next.js 15 UI codebase powers the Web application, the Android native shell, and the Windows desktop shell.
+1. **UI → Backend → Database (Strict Single Writer)**: The client applications never interact directly with MongoDB. All user registrations, session summaries, MCP configurations, prompt directives, and model settings pass through the authenticated FastAPI gateway (`backend/`).
+2. **Agent Holds Zero UI State**: The voice worker (`agent/agent.py`) connects to LiveKit WebRTC for real-time media streams and reads user configuration and tools directly from MongoDB via asynchronous `motor`.
+3. **Zero JWT Bloat via Dynamic 2-Step MCP Tool Calling**: Large tool schemas reside in MongoDB Atlas rather than bloating LiveKit JWT tokens. The agent resolves tools dynamically using a 2-step LLM discovery pipeline (`search_mcp_tools` and `execute_mcp_tool`).
+4. **Non-Blocking Instant Gateway Startup**: Database bootstrapping (`seed_database_if_empty()`) executes in a background daemon thread, guaranteeing instantaneous ASGI startup and immediate health check readiness on containerized platforms (Docker, Render, Vercel).
+5. **Universal Component & Design Token Foundation**: The universal client architecture shares cross-platform domain logic, API clients, and React Native primitives across Android, Web, and Windows desktop targets.
 
 ---
 
@@ -69,67 +82,133 @@ A private, real-time multimodal personal AI assistant and voice agent platform. 
 
 ```
 Exia/
-├── ui/                             # UI Workspace (pnpm monorepo — see ui/README.md)
+├── ui/                             # UI Monorepo Workspace (pnpm 12.16.1 — see ui/README.md)
 │   ├── apps/
-│   │   ├── mobile/                 # Expo (React Native) — Android app, universal codebase
-│   │   ├── web/                    # [LEGACY] Next.js 15 web client — kept running during Expo migration
-│   │   └── windows/                # React Native Windows (planned — RNW 0.85 pairing)
-│   └── packages/                   # @exia/* shared packages (shared-types, api-client, design-tokens, …)
+│   │   ├── mobile/                 # Universal Expo SDK 58 / React Native 0.88 app (Android & Expo Web)
+│   │   │   ├── src/app/            # Expo Router file-based routes (tabs, /voice, modals)
+│   │   │   ├── src/components/     # Voice controls, chat drawer, waveforms, telemetry tiles
+│   │   │   ├── app.json            # Expo configuration (WebRTC plugins, Android permissions)
+│   │   │   └── package.json
+│   │   ├── web/                    # [LEGACY] Next.js 15 client — migration bridge
+│   │   └── windows/                # Planned React Native Windows 0.85 desktop client
+│   ├── packages/                   # @exia/* shared monorepo packages
+│   │   ├── api-client/             # Typed HTTP client & authentication handlers
+│   │   ├── design-tokens/          # Colors (Electric Cyan, Live Emerald), spacing, typography
+│   │   ├── shared-logic/           # Formatting, mathematical clamps, URL validation
+│   │   ├── shared-types/           # TypeScript API schemas & contracts
+│   │   ├── shared-ui/              # Portable React Native primitives (ExiaScreen, ExiaButton, etc.)
+│   │   └── test-utils/             # Vitest test mocks & network fixtures
+│   ├── BUILD.md                    # Detailed per-app build and run instructions
+│   ├── package.json                # Monorepo scripts (mobile:start, web:build, typecheck, test)
+│   └── pnpm-workspace.yaml         # pnpm workspace definition
 │
 ├── backend/                        # Central FastAPI Server Gateway
-│   ├── main.py                     # Primary FastAPI application gateway (local & production)
-│   ├── pyproject.toml / uv.lock    # Python dependencies (managed via Astral uv)
-│   ├── dist/                       # Static production SPA export fallback
+│   ├── main.py                     # Application entry point, lifespan, CORS, and router registry
+│   ├── Dockerfile                  # Multi-stage production container build (Astral uv)
+│   ├── pyproject.toml / uv.lock    # Python dependencies (uv-managed, Python >= 3.12)
 │   └── src/
-│       ├── constants/              # Application settings, Pydantic schemas, collection names
-│       ├── routes/                 # REST routers (auth, token, sessions, mcp, prompts, models)
-│       ├── services/               # Database pooling, query cache, security, auto-seeder
-│       └── utils/                  # Authentication dependencies and cryptography helpers
+│       ├── constants/              # Pydantic models, schemas, and collection names
+│       ├── routes/                 # REST routers: auth, token, sessions, mcp, prompts, model_config
+│       ├── services/               # Connection pooling, query cache, security, auto-seeder
+│       └── utils/                  # Token authentication dependencies and password hashing
 │
 ├── agent/                          # Realtime Voice & Vision Agent Worker
-│   ├── agent.py                    # Voice worker: Silero VAD, Gemini Live/LLMs, Vision, Mem0
-│   ├── db.py                       # MongoDB connection & document queries
+│   ├── agent.py                    # LiveKit worker: Silero VAD, Gemini Live/LLM, vision, Mem0
+│   ├── db.py                       # Asynchronous MongoDB connection (Motor)
 │   ├── mcp_manager.py              # Dynamic MCP tool search and execution engine
-│   ├── token_server.py             # Standalone token utility server
+│   ├── token_server.py             # Standalone token utility and MCP hub server
 │   ├── requirements.txt            # Python dependencies (livekit-agents, mem0ai, motor)
 │   └── schema.sql                  # SQLite schema for tasks and memories
 │
-├── scripts/                        # Centralized Build & Deployment Automation
-│   ├── desktop.sh                  # [LEGACY] Tauri 2 pipeline — obsolete after the RN Windows decision
-│   ├── android.sh                  # [LEGACY] Capacitor pipeline — obsolete after the Expo decision
-│   └── compile.sh                  # Unified multi-target build dispatcher
+├── scripts/                        # Build & Deployment Automation
+│   ├── compile.sh                  # Multi-target compilation dispatcher
+│   ├── android.sh                  # [LEGACY] Capacitor pipeline (preserved for reference)
+│   └── desktop.sh                  # [LEGACY] Tauri 2 pipeline (preserved for reference)
 │
 ├── docs/                           # Technical Specifications & Documentation
 │   ├── project-overview.md         # Comprehensive project architecture & roadmap
-│   ├── desktop-architecture.md     # Tauri 2 Windows client technical guide
-│   ├── web-architecture.md         # Vercel serverless architecture guide
 │   ├── database-schema.md          # MongoDB collection schemas & validation
 │   └── architecture/               # Editable draw.io system diagrams
 │
 ├── mongodb_schema.json             # MongoDB JSON schema definitions
+├── users.json                      # Seed acoustic voiceprint profiles
 ├── .env.example                    # Environment configuration template
 └── README.md                       # This document
 ```
 
 ---
 
-## 4. Development Quick Start
+## 4. Features & Client Capabilities
+
+### Five-Tab Mission Control Navigation (`ui/apps/mobile`)
+1. **Home (`(tabs)/index.tsx`)**: Real-time telemetry dashboard polling backend health (`/api/health`) every 15 seconds, live status pills, latency metrics, workspace KPI tiles (active sessions, registered MCP tools, prompt count), and recent session shortcuts.
+2. **History (`(tabs)/history.tsx`)**: Paginated session archive with server-side infinite scroll (`useInfiniteQuery`, page size 10), full-text search across room names and conversation previews, and model filter chips.
+3. **Analytics (`(tabs)/analytics.tsx`)**: Granular MongoDB observability dashboard with four views:
+   - *Overview*: Total sessions, token volume (audio + text), tool invocation count, and multi-stage latency waterfall (STT, LLM TTFT, TTS, E2E turn).
+   - *Tools*: Registry matrix detailing tool execution counts per MCP server.
+   - *Models*: Token accounting comparing prompt vs. completion costs across model providers.
+   - *JSON*: Raw telemetry inspector with clipboard export.
+4. **MCP (`(tabs)/mcp.tsx`)**: Model Context Protocol management console. Active/inactive toggle switches with optimistic UI updates and error rollback, server creation modal (`stdio` or `sse`), live tool inspection, and server deletion.
+5. **Prompts (`(tabs)/prompts.tsx`)**: Persona and directive matrix. Live dynamic variable pills (`{user_name}`, `{current_time}`, `{active_room}`, `{home_temp}`), curated presets (Exia Standard, Coding Copilot, Ultra-Fast Voice Operator, Tactical Sentinel), and custom directive editor.
+6. **Settings (`(tabs)/settings.tsx`)**: Multi-engine model configuration. Switch between Realtime S2S and Modular architectures, configure LiveKit credentials, adjust STT (Speechmatics/Deepgram/Groq), LLMs (Gemini/OpenAI/Ollama), TTS (Cartesia/ElevenLabs), fallback cascade routing, and acoustic voice recognition profiles.
+
+### Immersive Voice & Vision Room (`/voice`)
+* **LiveKit WebRTC Integration**: Built with `@livekit/react-native` (3.1.0) and `@livekit/react-native-webrtc` (150.1.1).
+* **Audio Visualizer**: 7-bar dynamic `BarVisualizer` modulated in real time by the agent's incoming audio track.
+* **Camera & Screen Share**: Prioritized stage rendering with mutual exclusivity between camera and screen capture, hardware camera flipping, and Android foreground service capture.
+* **In-Call Chat**: Bi-directional text messaging streamed over the `lk.chat` topic with unread notification badges.
+* **Session Lifecycle**: Clean room disconnection with automated backend session finalization (`api.livekit.endSession()`).
+
+---
+
+## 5. Development Quick Start
 
 ### Step 1: Start the Backend Gateway
+The backend runs by default on port `12568` to pair seamlessly with mobile and web clients:
+
 ```bash
 cd backend
-uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Option A: With Astral uv (recommended)
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 12568
+
+# Option B: With virtualenv
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 12568
 ```
-*Interactive API docs available at: `http://localhost:8000/api/docs`.*
+* Interactive Swagger API Docs: `http://localhost:12568/docs` (or `http://localhost:12568/api/docs`)
+* Health Check: `http://localhost:12568/api/health`
 
 ### Step 2: Start the Voice Agent Worker
 ```bash
 cd agent
 pip install -r requirements.txt
+
+# Run worker in local dev mode (connects to LiveKit SFU)
 python agent.py dev
 ```
 
-### Step 3: Run the Web Client
+### Step 3: Run the Universal Client (`ui/apps/mobile`)
+```bash
+# 1. Install workspace dependencies
+cd ui
+pnpm install
+
+# 2. Start the Metro bundler
+pnpm mobile:start
+
+# 3. Launch on Android (device / emulator)
+pnpm mobile:android
+# Or directly from the app folder:
+cd apps/mobile && npx expo run:android
+
+# 4. Launch in Web mode (Expo Web)
+pnpm web:start
+```
+> [!NOTE]
+> Standard tabs (Home, History, MCP, Prompts, Settings) run in **Expo Go** or **Expo Web**. However, testing the immersive voice room (`/voice`) requires an **Expo Development Build** (`npx expo run:android`), as LiveKit's native WebRTC C++ drivers cannot run in standard Expo Go.
+
+### Step 4 (Optional): Run the Legacy Next.js Web Client
 ```bash
 cd ui/apps/web
 pnpm install
@@ -139,64 +218,104 @@ pnpm dev
 
 ---
 
-## 5. Client & Cloud Build Pipelines (`scripts/`)
+## 6. Verification Gates & Quality Checks
 
-Build and packaging scripts are centralized in the [`scripts/`](file:///e:/potfolio/Exia/scripts) directory:
+Run these gates before committing changes to ensure monorepo integrity:
 
-### A. Windows Desktop Application (Tauri 2)
 ```bash
-# Production release build (NSIS installer & binary mirrored to release/)
-./scripts/desktop.sh
+# From the ui/ directory:
+pnpm -r run typecheck                 # TypeScript check across all 7 workspace packages
+pnpm test                             # Run Vitest unit tests (19/19 passing)
 
-# Fast debug build
-./scripts/desktop.sh --debug
-
-# Build Tauri shell using existing web export without rebuilding Next.js
-./scripts/desktop.sh --skip-web
+# From ui/apps/mobile:
+npx expo lint                         # ESLint verification (eslint-config-expo)
+npx expo-doctor                       # Diagnostic health check (20/20 checks passing)
+npx expo export --platform web        # Validates production web bundle compilation
+npx expo export --platform android    # Validates production Android Hermes JS bundle
 ```
 
-### B. Android Native Application (Capacitor)
+---
+
+## 7. Production Builds & Deployment
+
+### A. Android Native APK / AAB Generation
+From `ui/apps/mobile`:
+
 ```bash
-# Debug APK compilation (mirrored to release/Exia-debug.apk)
-./scripts/android.sh
+# Generate Android native project via Continuous Native Generation (CNG)
+npx expo prebuild -p android
 
-# Production release APK compilation
-./scripts/android.sh --release
+# Build Release APK locally via Gradle
+cd android && ./gradlew assembleRelease
+# Output: android/app/build/outputs/apk/release/app-release.apk
 
-# Sync web assets to Android shell without running Gradle
-./scripts/android.sh --sync-only
-
-# Sync assets and open project directly in Android Studio
-./scripts/android.sh --open
+# Cloud Build via EAS (optional)
+npx eas build -p android --profile production
 ```
 
-### C. Unified Compilation Dispatcher
+### B. Production Web Export (Static SPA)
 ```bash
-# Compile specific target
-./scripts/compile.sh desktop --release
-./scripts/compile.sh android --debug
-./scripts/compile.sh web
+cd ui/apps/mobile
+npx expo export --platform web
+# Output: ui/apps/mobile/dist/
 
-# Compile all client targets
-./scripts/compile.sh all
+# Test locally with SPA fallback routing:
+npx serve -s dist
 ```
 
-### D. Deploy Backend to Vercel
+### C. Backend Containerization (Docker)
+Build and run the FastAPI backend gateway, mapping host port `12568` to internal container port `8000`:
+
 ```bash
-./scripts/vercel.sh --prod
+# Build Docker image
+docker build -t exia-backend backend/
+
+# Run container with environment configuration
+docker run -d \
+  --name exia-backend \
+  -p 12568:8000 \
+  --env-file backend/.env \
+  exia-backend
 ```
 
-### E. Deploy Backend to Render
+### D. Deploy Backend to Render
+1. Create a new **Web Service** on Render connected to this repository.
+2. Select **Runtime:** `Docker`.
+3. Set **Root Directory:** *(leave blank — repository root)*.
+4. Set **Dockerfile Path:** `backend/Dockerfile`.
+5. Set **Docker Build Context:** `backend`.
+6. Leave **Build Command** and **Start Command** blank (Render uses the Dockerfile's `CMD`).
+7. Add environment variables: `MONGODB_URI`, `MONGODB_DATABASE`, `JWT_SECRET`, `LIVEKIT_API_HOST`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`.
 
-Configure the Render web service to use Docker:
+---
 
-- **Language / Runtime:** Docker
-- **Root Directory:** repository root (leave blank)
-- **Dockerfile Path:** `backend/Dockerfile`
-- **Docker Build Context Directory:** `backend`
+## 8. Environment Configuration Matrix
 
-Do not enter `docker build` as a Render Build Command. Render builds the image
-from the Dockerfile. Clear any custom Build Command and Start Command so Render
-uses the Dockerfile's `CMD`. The multi-stage Dockerfile installs the backend
-dependencies and starts the FastAPI server on Render's assigned port. Configure
-secrets such as `MONGODB_URI` and `JWT_SECRET` in the Render dashboard.
+Create a `.env` file in `backend/` and `agent/` based on `.env.example`:
+
+| Variable | Required | Example / Default | Target | Purpose |
+|---|---|---|---|---|
+| `JWT_SECRET` | **Yes** | `super_secret_jwt_signing_key_exia_2026` | Backend | Cryptographic secret for signing JWT access & refresh tokens |
+| `JWT_ALGORITHM` | No | `HS256` | Backend | JWT algorithm |
+| `PORT` | No | `12568` (Local) / `8000` (Docker) | Backend | Network port for FastAPI server |
+| `MONGODB_URI` | **Yes** | `mongodb://localhost:27017` or Atlas URI | Backend & Agent | MongoDB connection string |
+| `MONGODB_DATABASE` | **Yes** | `exia_db` | Backend & Agent | Database name |
+| `LIVEKIT_URL` / `LIVEKIT_API_HOST` | **Yes** | `wss://<project>.livekit.cloud` | Backend & Agent | WebSocket endpoint for LiveKit SFU server |
+| `LIVEKIT_API_KEY` | **Yes** | `APIxxxxxxxxx` | Backend & Agent | LiveKit API Key for room tokens and management |
+| `LIVEKIT_API_SECRET` | **Yes** | `sec_yyyyyyyyyyyyyyyyyy` | Backend & Agent | LiveKit API Secret for HMAC signing |
+| `GEMINI_API_KEY` | Optional | `AIzaxxxxxxxxxxxxx` | Agent | Google Gemini Live API key |
+| `OPENAI_API_KEY` | Optional | `ollama` or `sk-xxxx` | Agent | OpenAI or local model key |
+| `OPENAI_BASE_URL` | Optional | `http://localhost:11434/v1` | Agent | Local Ollama / LM Studio endpoint |
+| `SPEECHMATICS_API_KEY` | Optional | `sm_xxxxxxxxxxxxx` | Agent | Speechmatics Ursa/Linden-1 STT and diarization |
+| `CARTESIA_API_KEY` | Optional | `car_xxxxxxxxxxxx` | Agent | Cartesia Sonic TTS provider key |
+| `MEM0_API_KEY` | Optional | `m0-xxxxxxxxxxxx` | Agent | Mem0 managed vector memory key (if cloud-hosted) |
+| `EXPO_PUBLIC_API_URL` | No | `http://127.0.0.1:12568/api` | Mobile/Web | Inlined frontend API base URL.<br>• **Android Emulator**: `http://10.0.2.2:12568/api`<br>• **Physical Device**: `http://<LAN_IP>:12568/api` |
+
+> [!WARNING]
+> `EXPO_PUBLIC_*` variables are inlined into the client bundle at build time. Never place database passwords, LiveKit secrets, or private API keys into frontend environment variables.
+
+---
+
+## 9. License
+
+Exia is open-source software licensed under the MIT License.

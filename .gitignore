@@ -18,3 +18,4 @@ wheels/
 skills-lock.json
 *.exe
 opencode.json
+node_modules/

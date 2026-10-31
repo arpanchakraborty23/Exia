@@ -241,7 +241,7 @@ export default function Home() {
             icon="hardware-chip-outline"
             label="MCP servers"
             description="Tools & integrations"
-            onPress={() => router.push('/mcp')}
+            onPress={() => router.push('/settings?section=mcp')}
           />
           <ActionTile
             icon="settings-outline"
