@@ -74,9 +74,11 @@ jobs:
 
   build-runner-apk:
     name: Build APK on GitHub Runner
-    if: github.event_name == 'workflow_dispatch' && (inputs.build_target == 'apk-debug' || inputs.build_target == 'apk-release')
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.build_target == 'apk-debug' || inputs.build_target == 'apk-release'))
     needs: [validate]
     runs-on: ubuntu-latest
+    env:
+      BUILD_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.build_target || 'apk-debug' }}
 
     steps:
       - name: Checkout Code
@@ -117,12 +119,12 @@ jobs:
         run: chmod +x gradlew
 
       - name: Compile Debug APK (Signed with Android Debug Key)
-        if: inputs.build_target == 'apk-debug'
+        if: env.BUILD_TARGET == 'apk-debug'
         working-directory: ui/apps/mobile/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Compile Release APK
-        if: inputs.build_target == 'apk-release'
+        if: env.BUILD_TARGET == 'apk-release'
         working-directory: ui/apps/mobile/android
         run: |
           ./gradlew assembleRelease --no-daemon --stacktrace
@@ -150,7 +152,7 @@ jobs:
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: exia-mobile-${{ inputs.build_target }}
+          name: exia-mobile-${{ env.BUILD_TARGET }}
           path: build-output/*.apk
           retention-days: 30
 
@@ -160,8 +162,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Build Target** | \`${{ inputs.build_target }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Artifact Name** | \`exia-mobile-${{ inputs.build_target }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Target** | \`${{ env.BUILD_TARGET }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Artifact Name** | \`exia-mobile-${{ env.BUILD_TARGET }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Retention** | 30 days |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📥 **How to download and install:**" >> $GITHUB_STEP_SUMMARY
