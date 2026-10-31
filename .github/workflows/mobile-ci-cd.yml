@@ -101,7 +101,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -113,6 +112,9 @@ jobs:
       - name: Generate Native Android Project (Expo Prebuild)
         working-directory: ui/apps/mobile
         run: npx expo prebuild --platform android --clean
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Grant Execute Permission to Gradle Wrapper
         working-directory: ui/apps/mobile/android
@@ -128,7 +130,7 @@ jobs:
         working-directory: ui/apps/mobile/android
         run: |
           ./gradlew assembleRelease --no-daemon --stacktrace
-          
+
           # If output is unsigned, sign with a self-signed key for immediate device installation
           RELEASE_DIR="app/build/outputs/apk/release"
           if [ -f "$RELEASE_DIR/app-release-unsigned.apk" ]; then
