@@ -1,0 +1,40 @@
+# Vercel Monorepo Ignore Rules
+# Ignore UI, Desktop, Mobile, and Python virtual environment files
+
+ui
+ui/**
+desktop
+desktop/**
+node_modules
+**/node_modules
+**/node_modules/**
+
+# Python Virtual Environments & Caches
+.venv
+**/.venv
+**/.venv/**
+__pycache__
+**/__pycache__
+**/__pycache__/**
+*.py[cod]
+*.egg-info
+.pytest_cache
+
+# Build outputs & native projects
+dist
+**/dist
+**/dist/**
+build
+**/build
+**/build/**
+build-output
+**/build-output/**
+android
+**/android
+**/android/**
+
+# Version control & environment
+.git
+.git/**
+.env*
+!.env.example

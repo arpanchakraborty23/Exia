@@ -92,7 +92,7 @@ jobs:
       - name: Deploy and Build on Vercel (Production)
         id: deploy
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --yes --prod --token="$VERCEL_TOKEN")
+          DEPLOYMENT_URL=$(vercel deploy --yes --prod --archive=tgz --token="$VERCEL_TOKEN")
           echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "Production Deployment URL: $DEPLOYMENT_URL"
 
