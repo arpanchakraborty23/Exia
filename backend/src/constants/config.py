@@ -52,12 +52,12 @@ class Settings(BaseSettings):
 
     # Mongodb
     mongodb_uri: str = ""
-    mongodb_database: str = ""
-    mongodb_user_collection: str = ""
-    mongodb_session_collection: str = ""
-    mongodb_sesison_summary: str = ""  # (Typo note: consider renaming to session_summary)
+    mongodb_database: str = "exia_db"
+    mongodb_user_collection: str = "users"
+    mongodb_session_collection: str = "sessions"
+    mongodb_sesison_summary: str = "session_summary"  # (Typo note: consider renaming to session_summary)
     mongodb_mcp_collection: str = Field(
-        default="",
+        default="mcp_servers",
         validation_alias=AliasChoices(
             "mongodb_mcp_collection", "mongodb_mcp_collections"
         ),

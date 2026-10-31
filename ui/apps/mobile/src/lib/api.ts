@@ -9,7 +9,8 @@ import { createApiClient } from '@exia/api-client';
 
 import { SecureTokenStorage } from './secure-token-storage';
 
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:12568/api';
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ?? 'https://exia-backend.vercel.app/api';
 
 /**
  * Session token storage. Metro picks the platform file automatically:

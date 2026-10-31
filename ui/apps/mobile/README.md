@@ -77,8 +77,9 @@ consistent. Revisit if a screen needs deep native integration.
 `src/lib/api.ts` instantiates the shared client:
 
 - Base URL: `process.env.EXPO_PUBLIC_API_URL`, defaulting to
-  `http://127.0.0.1:12568/api` (local backend). Point a physical device at
-  a LAN backend with `EXPO_PUBLIC_API_URL=http://<host>:12568/api`.
+  `https://exia-backend.vercel.app/api`. Override it for local development,
+  for example `EXPO_PUBLIC_API_URL=http://<host>:12568/api` for a physical
+  device on the same LAN as the backend.
 - Token storage: `SecureTokenStorage` (src/lib/secure-token-storage.ts) —
   Android Keystore / iOS Keychain via expo-secure-store; the `.web.ts`
   variant falls back to localStorage on the web target. Shared code never

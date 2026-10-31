@@ -9,16 +9,10 @@ import {
   User,
 } from './types';
 
+const DEFAULT_API_BASE_URL = 'https://exia-backend.vercel.app/api';
+
 export const getApiBaseUrl = (): string => {
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    // When running inside Next.js dev server on port 3000, target the FastAPI backend port
-    if (window.location.port === '3000') {
-      return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:12568/api';
-    }
-    // When running inside the desktop WebView or Vercel, use current window origin
-    return `${window.location.origin}/api`;
-  }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:12568/api';
+  return process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
 };
 
 const API_BASE_URL = getApiBaseUrl();

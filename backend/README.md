@@ -166,9 +166,9 @@ from `.env.example` and fill in the required values before running the container
 ### C. Deploy to Vercel
 
 The GitHub Actions workflow at `.github/workflows/backend.yml` validates Python
-sources and deploys backend changes to Vercel. Pull requests from this repository
-receive preview deployments; pushes to `main` deploy production. The workflow
-only runs when `backend/` or the workflow itself changes.
+sources and uploads backend changes to Vercel for a remote build. Pull requests
+from this repository receive preview deployments; pushes to `main` deploy
+production. The workflow only runs when `backend/` or the workflow itself changes.
 
 Configure these repository Actions secrets:
 
@@ -180,4 +180,5 @@ Set the Vercel project's root directory to `backend` and configure the runtime
 environment variables from `.env.example` in Vercel Project Settings. Do not add
 credentials to the repository. Frontend build output in `backend/dist` is excluded
 from the serverless function bundle; the FastAPI function does not serve that UI
-build. To deploy manually, run `vercel link` and `vercel deploy` from `backend/`.
+build. To deploy manually, run `vercel link` and `vercel deploy` from `backend/`;
+Vercel will build the uploaded source remotely.

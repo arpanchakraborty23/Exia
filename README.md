@@ -378,7 +378,7 @@ Create a `.env` file in `backend/` and `agent/` based on `.env.example`:
 | `SPEECHMATICS_API_KEY` | Optional | `sm_xxxxxxxxxxxxx` | Agent | Speechmatics Ursa/Linden-1 STT and diarization |
 | `CARTESIA_API_KEY` | Optional | `car_xxxxxxxxxxxx` | Agent | Cartesia Sonic TTS provider key |
 | `MEM0_API_KEY` | Optional | `m0-xxxxxxxxxxxx` | Agent | Mem0 managed vector memory key (if cloud-hosted) |
-| `EXPO_PUBLIC_API_URL` | No | `http://127.0.0.1:12568/api` | Mobile/Web | Inlined frontend API base URL.<br>• **Android Emulator**: `http://10.0.2.2:12568/api`<br>• **Physical Device**: `http://<LAN_IP>:12568/api` |
+| `EXPO_PUBLIC_API_URL` | No | `https://exia-backend.vercel.app/api` | Mobile/Web | Inlined frontend API base URL. Override for local development.<br>• **Android Emulator**: `http://10.0.2.2:12568/api`<br>• **Physical Device**: `http://<LAN_IP>:12568/api` |
 
 > [!WARNING]
 > `EXPO_PUBLIC_*` variables are inlined into the client bundle at build time. Never place database passwords, LiveKit secrets, or private API keys into frontend environment variables.

@@ -3,7 +3,16 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, status, HTTPException
 
 # pyrefly: ignore [missing-import]
-from src.constants import CreateUserRequest, CreateUserResponse, LoginUserRequest, LoginUserResponse, NewPasswordRequest, NewPasswordResponse, ChangePasswordRequest, ChangePasswordResponse, LogoutRequest, LogoutResponse
+from src.constants import (
+    CreateUserRequest,
+    CreateUserResponse,
+    LoginUserRequest,
+    LoginUserResponse,
+    ChangePasswordRequest,
+    ChangePasswordResponse,
+    LogoutRequest,
+    LogoutResponse,
+)
 # pyrefly: ignore [missing-import]
 from src.services import UserServices, AuthServices, AccessTokenBearer, RefreshTokenBearer, TokenBlacklistServices
 from src.services.security import TokenBearer
@@ -30,11 +39,6 @@ acess_token = access_token_bearer
 auth_route = APIRouter(prefix="/api", tags=["Auth"])
 
 @auth_route.post("/auth/create-account", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
-@auth_route.post("/create-account", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
-@auth_route.post("/auth/register", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
-@auth_route.post("/register", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
-@auth_route.post("/auth/signup", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
-@auth_route.post("/signup", response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_account(user_data: CreateUserRequest):
     # get user eamil
     user_email = user_data.email
@@ -75,10 +79,8 @@ async def create_user_account(user_data: CreateUserRequest):
         message="Account created successfully"
     )
 
-@auth_route.post("/auth/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
-@auth_route.post("/auth/signin", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
-@auth_route.post("/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
 @auth_route.post("/signin", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
+@auth_route.post("/auth/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
 async def login_user(user_data: LoginUserRequest):
     try:
         email = user_data.email
@@ -139,7 +141,6 @@ async def login_user(user_data: LoginUserRequest):
 
 
 @auth_route.post("/refresh_token", status_code=status.HTTP_200_OK)
-@auth_route.get("/refresh_token", include_in_schema=False)
 async def get_new_access_token(token_data: dict = Depends(refresh_token_bearer)):
     try:
         # RefreshTokenBearer already verifies signature + expiry via jwt.decode.
@@ -207,61 +208,6 @@ async def get_new_access_token(token_data: dict = Depends(refresh_token_bearer))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
-        )
-
-
-@auth_route.patch("/update_password",response_model=NewPasswordResponse,status_code=status.HTTP_202_ACCEPTED)
-async def update_password(user_data: NewPasswordRequest,token_data: dict = Depends(access_token_bearer)):
-    try:
-        # TokenBearer returns a dict: {"user": {"user_id","name","email"}, ...}
-        payload_user = token_data.get("user", {}) if isinstance(token_data, dict) else {}
-        user_id = payload_user.get("user_id")
-        email = payload_user.get("email")
-
-        if not user_id or not email:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload"
-            )
-
-        user_exists = await user_services.user_exist(email)
-
-        if not user_exists:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid User"
-            )
-
-        # new password
-        new_password = user_data.new_password
-
-        # validate new password (same rule as signup)
-        if not new_password or len(new_password) < 8:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password length must be at least 8 characters !"
-            )
-
-        # update password
-        updated = await user_services.update_user_password(user_id,email,new_password)
-
-        if not updated:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail = "Internal Server Error"
-            )
-
-        return NewPasswordResponse(
-            message="New Password Updated !"
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Update password error :{e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error"
         )
 
 
