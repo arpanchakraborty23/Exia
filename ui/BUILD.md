@@ -138,8 +138,12 @@ cd ui/apps/mobile
 npx expo start --web      # or: press W in a running expo start
 ```
 
-### 4.2 Production export
+### 4.2 Production export (Local & CI/CD)
 
+**Option A: GitHub Actions Cloud Build (Automated)**
+Trigger [`.github/workflows/web-ci-cd.yml`](../.github/workflows/web-ci-cd.yml) from the GitHub Actions tab. It compiles the web export, generates downloadable artifacts, and can deploy automatically to GitHub Pages. See [`docs/web-ci-cd-build.md`](../docs/web-ci-cd-build.md).
+
+**Option B: Local Export**
 ```bash
 npx expo export --platform web
 # → dist/ (static files + _expo/static/js/web chunks)
@@ -165,23 +169,47 @@ npm run dev               # Next.js dev server
 
 ---
 
-## 5. Windows app (`ui/apps/windows` — React Native Windows)
+## 5. Windows Desktop App (`desktop/` & `ui/apps/windows`)
 
-> **Status: not initialized yet.** Full plan, version pairing, and
+### 5.1 Electron Windows .EXE Packaging (Ready & Automated)
+Exia provides an Electron desktop harness (`desktop/`) that packages the universal Expo web export into standalone Windows `.exe` binaries.
+
+**Cloud Build via GitHub Actions (Zero Local Load — Recommended):**
+1. In your GitHub repository, open the **Actions** tab.
+2. Select **Exia Desktop — Windows EXE Build**.
+3. Click **Run workflow** → Choose `all` (or `portable`) → Submit.
+4. Download the compiled `.exe` files from the **Artifacts** table.
+5. See [`docs/desktop-ci-cd-exe-build.md`](../docs/desktop-ci-cd-exe-build.md) for full details.
+
+**Local Build (electron-builder):**
+```bash
+# 1. Build universal web export from ui/
+cd ui
+pnpm web:build
+
+# 2. Package Windows .exe
+cd ../desktop
+npm install
+npm run build:exe
+# Outputs: desktop/dist-electron/Exia Setup 0.1.0.exe & Exia-portable-0.1.0.exe
+```
+
+### 5.2 Native WinUI 3 App (`ui/apps/windows` — React Native Windows Roadmap)
+
+> **Status: Planned (Milestone 5).** Full plan, version pairing, and
 > prerequisites: `apps/windows/README.md`. Summary of the flow once the
-> toolchain is present:
+> C++ toolchain is present:
 
 ```bash
 # 0. Verify prerequisites: VS 2022 C++ workload + Windows SDK
 # 1. Scaffold outside the pnpm workspace (RNW 0.85 pairs RN 0.85 ≠ Expo's 0.88)
 cd ui/apps
-npx react-native@<0.85.x> init ExiaWindows --template react-native-windows@<0.85.x>
+npx react-native@0.85.x init ExiaWindows --template react-native-windows@0.85.x
 
 # 2. Run (Debug)
 npx react-native run-windows
 
-# 3. Release: build via Visual Studio (Release configuration), then package
-#    (MSIX/AppX per the chosen distribution workflow)
+# 3. Release: build via Visual Studio (Release configuration)
 ```
 
 Verification checklist lives in `apps/windows/README.md` (Debug + Release,

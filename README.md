@@ -120,10 +120,18 @@ Exia/
 │   ├── requirements.txt            # Python dependencies (livekit-agents, mem0ai, motor)
 │   └── schema.sql                  # SQLite schema for tasks and memories
 │
+├── desktop/                        # Windows Desktop Electron Client & Packaging
+│   ├── main.js                     # Electron main process (WebRTC permissions & window lifecycle)
+│   ├── preload.js                  # Context bridge isolation
+│   ├── package.json                # electron-builder packaging configuration (NSIS & portable)
+│   └── scripts/sync-dist.js        # Bundle synchronizer from universal web export
+│
 ├── docs/                           # Technical Specifications & Documentation
 │   ├── project-overview.md         # Comprehensive project architecture & roadmap
 │   ├── database-schema.md          # MongoDB collection schemas & validation
 │   ├── expo-ci-cd-apk-build.md     # CI/CD pipeline & GitHub Actions APK build guide
+│   ├── desktop-ci-cd-exe-build.md  # Windows .EXE generation guide (GitHub Actions & Electron)
+│   ├── web-ci-cd-build.md          # Web client CI/CD & production export guide
 │   └── architecture/               # Editable draw.io system diagrams
 │
 ├── mongodb_schema.json             # MongoDB JSON schema definitions
@@ -280,7 +288,16 @@ cd android && ./gradlew assembleRelease
 # Output: android/app/build/outputs/apk/release/app-release.apk
 ```
 
-### B. Production Web Export (Static SPA)
+### B. Production Web Export & CI/CD (Static SPA)
+
+#### Option 1: GitHub Actions Cloud Runner Build
+1. Go to the **Actions** tab on GitHub.
+2. Select **"Exia Web — CI/CD & Production Build"**.
+3. Click **Run workflow** → Choose `artifact-only` (downloadable ZIP) or `github-pages` (live hosted site).
+4. Download the `exia-web-production` bundle or visit your live GitHub Pages URL.
+> 📖 See [`docs/web-ci-cd-build.md`](docs/web-ci-cd-build.md) for full instructions.
+
+#### Option 2: Local Web Export
 ```bash
 cd ui/apps/mobile
 npx expo export --platform web
@@ -290,7 +307,32 @@ npx expo export --platform web
 npx serve -s dist
 ```
 
-### C. Backend Containerization (Docker)
+### C. Windows Desktop Executable (.EXE) Generation
+
+#### Option 1: GitHub Actions Cloud Runner Build (Zero Local Load — Recommended)
+Compile both the standard Windows Setup Installer (`Exia Setup.exe`) and portable standalone executable (`Exia-portable.exe`) on GitHub's hosted Windows cloud runners:
+1. Open the **Actions** tab on GitHub.
+2. Select **"Exia Desktop — Windows EXE Build"**.
+3. Click **Run workflow** → Choose `all` (or `portable` / `nsis`) → Click **Run workflow**.
+4. Download the compiled `.exe` files directly from the **Artifacts** table at the bottom of the completed run.
+> 📖 See [`docs/desktop-ci-cd-exe-build.md`](docs/desktop-ci-cd-exe-build.md) for full instructions.
+
+#### Option 2: Local Electron Build
+```bash
+# 1. Export production web bundle from UI
+cd ui && pnpm web:build
+
+# 2. Package standalone Windows .exe using electron-builder
+cd ../desktop
+npm install
+npm run build:exe
+
+# Output: desktop/dist-electron/
+# • Exia Setup 0.1.0.exe (NSIS Installer)
+# • Exia-portable-0.1.0.exe (Portable Standalone)
+```
+
+### D. Backend Containerization (Docker)
 Build and run the FastAPI backend gateway, mapping host port `12568` to internal container port `8000`:
 
 ```bash

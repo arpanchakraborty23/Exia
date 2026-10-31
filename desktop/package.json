@@ -1,0 +1,59 @@
+{
+  "name": "exia-desktop",
+  "version": "0.1.0",
+  "description": "Exia — Multimodal AI Assistant & Voice Platform Desktop Client",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "sync": "node scripts/sync-dist.js",
+    "build:exe": "node scripts/sync-dist.js && electron-builder --win --publish never",
+    "build:portable": "node scripts/sync-dist.js && electron-builder --win portable --publish never",
+    "build:nsis": "node scripts/sync-dist.js && electron-builder --win nsis --publish never"
+  },
+  "build": {
+    "appId": "ai.exia.desktop",
+    "productName": "Exia",
+    "copyright": "Copyright © 2026 Exia",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "dist/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Exia"
+    },
+    "portable": {
+      "artifactName": "Exia-portable-${version}.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  }
+}

@@ -1,0 +1,203 @@
+name: Exia Web — CI/CD & Production Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ui/**'
+      - '.github/workflows/web-ci-cd.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ui/**'
+      - '.github/workflows/web-ci-cd.yml'
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deployment / Output Target'
+        required: true
+        default: 'artifact-only'
+        type: choice
+        options:
+          - 'artifact-only'
+          - 'github-pages'
+          - 'both'
+      build_legacy_nextjs:
+        description: 'Also compile legacy Next.js client (ui/apps/web)'
+        required: true
+        default: false
+        type: boolean
+      run_validation:
+        description: 'Run Typecheck and Tests before building'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write
+
+jobs:
+  validate:
+    name: Validate Code & Tests
+    if: github.event_name != 'workflow_dispatch' || inputs.run_validation == true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+
+      - name: Install Workspace Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript Check
+        run: pnpm -r run typecheck
+
+      - name: Run Vitest Unit Tests
+        run: pnpm test
+
+  build-universal-web:
+    name: Build Universal Web Client (Expo Web)
+    needs: [validate]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+
+      - name: Install Workspace Dependencies
+        working-directory: ui
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile Expo Web Production Export
+        working-directory: ui
+        run: pnpm web:build
+
+      - name: Verify Web Bundle Output
+        run: |
+          test -f ui/apps/mobile/dist/index.html || { echo "index.html not found!"; exit 1; }
+          echo "Web export verified successfully. Total files:"
+          find ui/apps/mobile/dist -type f | wc -l
+
+      - name: Upload Web Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exia-web-production
+          path: ui/apps/mobile/dist/
+          retention-days: 30
+
+      - name: Generate Step Summary
+        run: |
+          echo "### 🌐 Universal Web Client Export Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Framework** | Expo SDK 58 · React Native Web · React 19 |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Artifact Name** | \`exia-web-production\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Output Directory** | \`ui/apps/mobile/dist\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **SPA Fallback Ready** | Single-page application (\`index.html\`) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📥 **How to deploy or use this artifact:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download the \`exia-web-production\` artifact from the bottom of this run summary." >> $GITHUB_STEP_SUMMARY
+          echo "2. Deploy directly to Cloudflare Pages, Vercel, Netlify, or any static HTTP server (Nginx/Apache)." >> $GITHUB_STEP_SUMMARY
+          echo "3. Or serve locally with \`npx serve -s dist\`." >> $GITHUB_STEP_SUMMARY
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'workflow_dispatch' && (inputs.deploy_target == 'github-pages' || inputs.deploy_target == 'both')
+    needs: [build-universal-web]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+
+      - name: Install Workspace Dependencies
+        working-directory: ui
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile Expo Web Export
+        working-directory: ui
+        run: pnpm web:build
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ui/apps/mobile/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  build-legacy-nextjs:
+    name: Build Legacy Next.js Client
+    if: github.event_name == 'workflow_dispatch' && inputs.build_legacy_nextjs == true
+    needs: [validate]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui/apps/web
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Next.js Dependencies
+        run: npm install
+
+      - name: Compile Next.js Production Build
+        run: npm run build

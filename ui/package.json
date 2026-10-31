@@ -11,6 +11,7 @@
     "mobile:lint": "pnpm --dir apps/mobile lint",
     "web:start": "pnpm --dir apps/mobile web",
     "web:build": "pnpm --dir apps/mobile exec expo export --platform web",
+    "desktop:build": "pnpm web:build && node ../desktop/scripts/sync-dist.js",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run"
   },
