@@ -21,8 +21,8 @@ A private, real-time multimodal personal AI assistant and voice agent platform. 
 │                                                                                         │
 │  ┌─────────────────────────────────────────┐  ┌──────────────────────────────────────┐  │
 │  │   Universal Mobile & Web (apps/mobile)  │  │    Shared Monorepo Packages          │  │
-│  │  • 5-Tab Navigation (Home/History/MCP/   │  │  • @exia/shared-types (contracts)   │  │
-│  │    Prompts/Settings) & Analytics        │  │  • @exia/api-client (typed SDK)     │  │
+│  │  • 4-Tab Navigation (Home/History/      │  │  • @exia/shared-types (contracts)   │  │
+│  │    Analytics/Settings) & Voice Stage    │  │  • @exia/api-client (typed SDK)     │  │
 │  │  • Immersive LiveKit Room (/voice)      │  │  • @exia/shared-logic (utilities)   │  │
 │  │  • 7-Bar Reactive Audio Visualizer      │  │  • @exia/shared-ui (RN primitives)  │  │
 │  │  • Camera & Screen-Share Streaming      │  │  • @exia/design-tokens (palette)    │  │
@@ -120,14 +120,10 @@ Exia/
 │   ├── requirements.txt            # Python dependencies (livekit-agents, mem0ai, motor)
 │   └── schema.sql                  # SQLite schema for tasks and memories
 │
-├── scripts/                        # Build & Deployment Automation
-│   ├── compile.sh                  # Multi-target compilation dispatcher
-│   ├── android.sh                  # [LEGACY] Capacitor pipeline (preserved for reference)
-│   └── desktop.sh                  # [LEGACY] Tauri 2 pipeline (preserved for reference)
-│
 ├── docs/                           # Technical Specifications & Documentation
 │   ├── project-overview.md         # Comprehensive project architecture & roadmap
 │   ├── database-schema.md          # MongoDB collection schemas & validation
+│   ├── expo-ci-cd-apk-build.md     # CI/CD pipeline & GitHub Actions APK build guide
 │   └── architecture/               # Editable draw.io system diagrams
 │
 ├── mongodb_schema.json             # MongoDB JSON schema definitions
@@ -140,17 +136,19 @@ Exia/
 
 ## 4. Features & Client Capabilities
 
-### Five-Tab Mission Control Navigation (`ui/apps/mobile`)
+### 4-Tab Mission Control Navigation (`ui/apps/mobile`)
 1. **Home (`(tabs)/index.tsx`)**: Real-time telemetry dashboard polling backend health (`/api/health`) every 15 seconds, live status pills, latency metrics, workspace KPI tiles (active sessions, registered MCP tools, prompt count), and recent session shortcuts.
-2. **History (`(tabs)/history.tsx`)**: Paginated session archive with server-side infinite scroll (`useInfiniteQuery`, page size 10), full-text search across room names and conversation previews, and model filter chips.
-3. **Analytics (`(tabs)/analytics.tsx`)**: Granular MongoDB observability dashboard with four views:
+2. **History (`(tabs)/history.tsx`)**: Paginated session archive with server-side infinite scroll (`useInfiniteQuery`, page size 10), full-text search across room names and conversation previews, high-contrast date/time stamps, and model filter chips.
+3. **Analytics (`(tabs)/analytics.tsx`)**: Granular MongoDB observability dashboard with comprehensive session tracing:
    - *Overview*: Total sessions, token volume (audio + text), tool invocation count, and multi-stage latency waterfall (STT, LLM TTFT, TTS, E2E turn).
    - *Tools*: Registry matrix detailing tool execution counts per MCP server.
    - *Models*: Token accounting comparing prompt vs. completion costs across model providers.
-   - *JSON*: Raw telemetry inspector with clipboard export.
-4. **MCP (`(tabs)/mcp.tsx`)**: Model Context Protocol management console. Active/inactive toggle switches with optimistic UI updates and error rollback, server creation modal (`stdio` or `sse`), live tool inspection, and server deletion.
-5. **Prompts (`(tabs)/prompts.tsx`)**: Persona and directive matrix. Live dynamic variable pills (`{user_name}`, `{current_time}`, `{active_room}`, `{home_temp}`), curated presets (Exia Standard, Coding Copilot, Ultra-Fast Voice Operator, Tactical Sentinel), and custom directive editor.
-6. **Settings (`(tabs)/settings.tsx`)**: Multi-engine model configuration. Switch between Realtime S2S and Modular architectures, configure LiveKit credentials, adjust STT (Speechmatics/Deepgram/Groq), LLMs (Gemini/OpenAI/Ollama), TTS (Cartesia/ElevenLabs), fallback cascade routing, and acoustic voice recognition profiles.
+   - *JSON*: Raw telemetry inspector with full session transcript details and clipboard export.
+4. **Settings (`(tabs)/settings.tsx`)**: Unified configuration console consolidating all app settings across 4 dedicated modules:
+   - *General*: Full theme customizer with 7 palette presets (GN Emerald, Cyberpunk, Cobalt Blue, Crimson Red, Amber Gold, Violet Void, Monokai Dark), dark/solar mode toggles, font size scaling, responsive layout, searchable IANA timezone dropdown modal, and data download/export.
+   - *Models*: Multi-engine pipeline setup (switch between Realtime S2S and Modular architectures, configure LiveKit credentials, adjust STT, LLMs, TTS, fallback cascade routing, and acoustic voice profiles).
+   - *Prompts*: Persona and directive matrix with dynamic variable pills (`{user_name}`, `{current_time}`, `{active_room}`, `{home_temp}`) and custom directive editor.
+   - *MCP Tools*: Model Context Protocol management console (`stdio` or `sse` servers, optimistic toggle switches, tool inspect drawer).
 
 ### Immersive Voice & Vision Room (`/voice`)
 * **LiveKit WebRTC Integration**: Built with `@livekit/react-native` (3.1.0) and `@livekit/react-native-webrtc` (150.1.1).
@@ -238,19 +236,48 @@ npx expo export --platform android    # Validates production Android Hermes JS b
 
 ## 7. Production Builds & Deployment
 
-### A. Android Native APK / AAB Generation
-From `ui/apps/mobile`:
+### A. Android Native APK / AAB Generation (Cloud CI/CD & Local)
+
+#### Option 1: GitHub Actions Cloud Runner Build (Recommended — 100% Free & Zero Laptop Load)
+If your local machine has limited RAM/disk or lacks Android Studio/SDK, use the automated GitHub Actions CI/CD pipeline ([`.github/workflows/mobile-ci-cd.yml`](file:///E:/potfolio/Exia/.github/workflows/mobile-ci-cd.yml)). It compiles the Android APK in a hosted Ubuntu cloud runner and makes the `.apk` directly downloadable from the workflow run.
+
+1. Go to the **Actions** tab in your GitHub repository.
+2. Select **"Exia Mobile — CI/CD & Android APK Build"**.
+3. Click **Run workflow**, choose `apk-debug` (or `apk-release`), and click **Run workflow**.
+4. Once completed (4–6 mins), scroll to the **Artifacts** section at the bottom to download `exia-mobile-apk-debug.zip` containing the installable `.apk`.
+> 📖 See [`docs/expo-ci-cd-apk-build.md`](docs/expo-ci-cd-apk-build.md) for detailed step-by-step instructions.
+
+#### Option 2: Cloud Build via Expo Application Services (EAS)
+EAS Build compiles clean native Android binaries in Expo's cloud without requiring a local Android SDK or C++ toolchains:
 
 ```bash
+# 1. Install EAS CLI globally (recommended)
+npm install -g eas-cli
+
+# 2. Authenticate with your Expo account
+eas login
+
+# 3. Trigger cloud build from the mobile app directory
+cd ui/apps/mobile
+
+# Build standalone installable APK (Preview profile - perfect for testing & sideloading):
+eas build -p android --profile preview
+
+# Build production Android App Bundle (Production profile - ready for Google Play Store):
+eas build -p android --profile production
+```
+*(Alternative without global install: run `pnpm dlx eas-cli login` and `pnpm dlx eas-cli build -p android --profile preview`)*
+
+#### Option 3: Local Native Build via Gradle (Requires Local Android Studio & SDK)
+```bash
+cd ui/apps/mobile
+
 # Generate Android native project via Continuous Native Generation (CNG)
 npx expo prebuild -p android
 
 # Build Release APK locally via Gradle
 cd android && ./gradlew assembleRelease
 # Output: android/app/build/outputs/apk/release/app-release.apk
-
-# Cloud Build via EAS (optional)
-npx eas build -p android --profile production
 ```
 
 ### B. Production Web Export (Static SPA)

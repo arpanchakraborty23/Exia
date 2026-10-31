@@ -45,8 +45,8 @@ flowchart TB
         VercelPlatform["Vercel Serverless Edge<br/>(Cloud Hosting Infrastructure)"]
     end
 
-    TauriClient <-->|HTTP /api/*| Gateway
-    CapacitorClient <-->|HTTP /api/*| Gateway
+    WindowsClient <-->|HTTP /api/*| Gateway
+    MobileClient <-->|HTTP /api/*| Gateway
     WebBrowser <-->|HTTP /api/*| Gateway
     Gateway --> APILayer
     Gateway --> StaticServer

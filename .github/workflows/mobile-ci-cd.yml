@@ -1,0 +1,208 @@
+name: Exia Mobile — CI/CD & Android APK Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ui/**'
+      - '.github/workflows/mobile-ci-cd.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ui/**'
+      - '.github/workflows/mobile-ci-cd.yml'
+  workflow_dispatch:
+    inputs:
+      build_target:
+        description: 'Build Target'
+        required: true
+        default: 'apk-debug'
+        type: choice
+        options:
+          - 'apk-debug'
+          - 'apk-release'
+          - 'eas-cloud-preview'
+          - 'validation-only'
+      run_validation:
+        description: 'Run Typecheck & Unit Tests before building'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  validate:
+    name: Validate Code & Tests
+    if: github.event_name != 'workflow_dispatch' || inputs.run_validation == true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+
+      - name: Install Monorepo Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript Check (All Workspace Packages)
+        run: pnpm -r run typecheck
+
+      - name: Run Vitest Unit Tests
+        run: pnpm test
+
+      - name: Run ESLint (Mobile App)
+        run: pnpm --dir apps/mobile lint
+
+  build-runner-apk:
+    name: Build APK on GitHub Runner
+    if: github.event_name == 'workflow_dispatch' && (inputs.build_target == 'apk-debug' || inputs.build_target == 'apk-release')
+    needs: [validate]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Monorepo Dependencies
+        working-directory: ui
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Native Android Project (Expo Prebuild)
+        working-directory: ui/apps/mobile
+        run: npx expo prebuild --platform android --clean
+
+      - name: Grant Execute Permission to Gradle Wrapper
+        working-directory: ui/apps/mobile/android
+        run: chmod +x gradlew
+
+      - name: Compile Debug APK (Signed with Android Debug Key)
+        if: inputs.build_target == 'apk-debug'
+        working-directory: ui/apps/mobile/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Compile Release APK
+        if: inputs.build_target == 'apk-release'
+        working-directory: ui/apps/mobile/android
+        run: |
+          ./gradlew assembleRelease --no-daemon --stacktrace
+          
+          # If output is unsigned, sign with a self-signed key for immediate device installation
+          RELEASE_DIR="app/build/outputs/apk/release"
+          if [ -f "$RELEASE_DIR/app-release-unsigned.apk" ]; then
+            echo "Signing release APK with self-signed certificate for direct device sideloading..."
+            keytool -genkeypair -v -keystore release.jks -alias exia-key -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass exiasecret -keypass exiasecret \
+              -dname "CN=Exia, OU=Mobile, O=Exia, L=City, S=State, C=US"
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore release.jks -storepass exiasecret -keypass exiasecret \
+              "$RELEASE_DIR/app-release-unsigned.apk" exia-key
+            cp "$RELEASE_DIR/app-release-unsigned.apk" "$RELEASE_DIR/app-release.apk"
+          fi
+
+      - name: Stage APK Output
+        run: |
+          mkdir -p build-output
+          find ui/apps/mobile/android/app/build/outputs/apk -name "*.apk" -type f -exec cp {} build-output/ \;
+          echo "Discovered APK files:"
+          ls -la build-output/
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exia-mobile-${{ inputs.build_target }}
+          path: build-output/*.apk
+          retention-days: 30
+
+      - name: Generate Step Summary
+        run: |
+          echo "### 🚀 Android APK Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Target** | \`${{ inputs.build_target }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Artifact Name** | \`exia-mobile-${{ inputs.build_target }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Retention** | 30 days |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📥 **How to download and install:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Scroll down to the **Artifacts** table at the bottom of this summary." >> $GITHUB_STEP_SUMMARY
+          echo "2. Download \`exia-mobile-${{ inputs.build_target }}\` (ZIP)." >> $GITHUB_STEP_SUMMARY
+          echo "3. Extract the \`.apk\` and transfer/sideload it to your Android device." >> $GITHUB_STEP_SUMMARY
+
+  build-eas-cloud:
+    name: Build APK via Expo Cloud (EAS)
+    if: github.event_name == 'workflow_dispatch' && inputs.build_target == 'eas-cloud-preview'
+    needs: [validate]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui/apps/mobile
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'ui/pnpm-lock.yaml'
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install Monorepo Dependencies
+        working-directory: ui
+        run: pnpm install --frozen-lockfile
+
+      - name: Run EAS Cloud Build (Preview APK)
+        run: eas build -p android --profile preview --non-interactive

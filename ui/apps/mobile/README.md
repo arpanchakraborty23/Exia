@@ -90,6 +90,54 @@ consistent. Revisit if a screen needs deep native integration.
 
 Never hardcode secrets into the bundle (see `../README.md` §8).
 
+## Automated APK Builds via GitHub Actions (Zero Local Load)
+
+If your local computer has limited resources or cannot run heavy Gradle builds, use the included GitHub Actions workflow ([`.github/workflows/mobile-ci-cd.yml`](../../.github/workflows/mobile-ci-cd.yml)):
+
+1. Open your repository on GitHub and go to the **Actions** tab.
+2. Select **Exia Mobile — CI/CD & Android APK Build**.
+3. Click **Run workflow**, choose `apk-debug` (or `apk-release`), and submit.
+4. When finished (4–6 minutes), download the installable `.apk` from the **Artifacts** section at the bottom.
+5. See [`docs/expo-ci-cd-apk-build.md`](../../../docs/expo-ci-cd-apk-build.md) for full instructions.
+
+## Building with Expo Cloud (EAS Build)
+
+Because Exia uses `@livekit/react-native` and WebRTC native modules, running real-time voice and video requires native compilation via **EAS Build** (Expo Cloud):
+
+### 1. Prerequisites & Login
+```bash
+# Install EAS CLI globally (recommended to prevent npx cache issues on Windows)
+npm install -g eas-cli
+
+# Log in to your Expo account
+eas login
+
+# Navigate to the mobile app directory
+cd ui/apps/mobile
+
+# Link or initialize the EAS project on expo.dev
+eas init
+```
+
+### 2. Cloud Build Commands
+The build profiles are configured in `eas.json`:
+
+```bash
+# 📱 Android Standalone APK (Installable directly on physical Android phones/emulators)
+eas build -p android --profile preview
+
+# 🚀 Android Google Play Store Release (.aab bundle)
+eas build -p android --profile production
+
+# 🍎 iOS App Store / TestFlight Release
+eas build -p ios --profile production
+
+# 🛠️ Custom Development Client (For local debugging with native WebRTC/LiveKit)
+eas build -p android --profile development
+```
+
+When the build finishes, EAS provides a web dashboard link and QR code to download and install the build immediately.
+
 ## Known gaps
 
 - **Voice session requires a native build** — `@livekit/react-native` ships

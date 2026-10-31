@@ -89,13 +89,34 @@ cd android && ./gradlew assembleRelease
 # → android/app/build/outputs/apk/release/app-release.apk
 ```
 
+**GitHub Actions Cloud Runner (Recommended — Zero Laptop Load & 100% Free):**
+
+If your local computer has limited resources or lacks Android Studio:
+1. Go to your GitHub repository → **Actions** tab.
+2. Select **Exia Mobile — CI/CD & Android APK Build**.
+3. Click **Run workflow** → Select `apk-debug` → Click **Run workflow**.
+4. Once completed, download the installable `.apk` directly from the **Artifacts** table.
+5. See [`docs/expo-ci-cd-apk-build.md`](../docs/expo-ci-cd-apk-build.md) for full instructions.
+
 **Cloud (EAS, needs an Expo account):**
 
+Installing `eas-cli` globally is recommended to avoid `npx` cache resolution conflicts on Windows:
+
 ```bash
-npx eas login
-npx eas init              # one-time: links the project (extra.eas.projectId)
-npx eas build -p android --profile production
+# 1. Install EAS CLI globally
+npm install -g eas-cli
+
+# 2. Authenticate & link project
+eas login
+cd ui/apps/mobile
+eas init                  # one-time: links the project (generates extra.eas.projectId)
+
+# 3. Build APK (preview) or Play Store bundle (production)
+eas build -p android --profile preview    # Standalone installable .apk
+eas build -p android --profile production # Optimized Google Play Store .aab
 ```
+
+*(Alternatively, without global installation: `pnpm dlx eas-cli login` and `pnpm dlx eas-cli build -p android --profile preview`)*
 
 ### 3.3 Compile-only validation (no emulator needed)
 
@@ -222,6 +243,7 @@ doctor 20/20 ✅ · both exports ✅.
 - **Backend unreachable from the app** — check the port (clients default to
   12568), then the base URL: emulator needs `10.0.2.2`, physical devices
   need the LAN IP via `EXPO_PUBLIC_API_URL`.
-- **Retired scripts** — `scripts/android.sh` (Capacitor) and
-  `scripts/desktop.sh` (Tauri 2) target the retired shells and are kept only
-  for reference; do not use them for the Expo/RNW apps.
+- **Retired scripts** — Legacy scripts (`scripts/android.sh`,
+  `scripts/desktop.sh`, `scripts/compile.sh`) and obsolete Capacitor/Tauri
+  wrappers have been completely purged from the repository in favor of the
+  unified Expo SDK 58 React Native architecture.

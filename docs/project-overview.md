@@ -59,9 +59,9 @@ Exia's clients are being migrated to the Expo / React Native stack defined in [`
 ```mermaid
 flowchart TD
     subgraph Clients["Frontend Client Surfaces"]
-        Web["Web Client (Next.js 15)"]
-        Desktop["Windows Desktop (Tauri 2)"]
-        Android["Android App (Capacitor)"]
+        Web["Web Client (Next.js 15 / Expo Web)"]
+        Desktop["Windows Desktop (RN Windows, planned)"]
+        Android["Android App (Expo SDK 58 / RN 0.88)"]
     end
 
     subgraph MediaServer["Realtime Media Gateway"]
@@ -163,15 +163,8 @@ Exia/
 │   │   └── windows/                # React Native Windows (planned)
 │   └── packages/                   # @exia/* shared packages (shared-types, api-client, design-tokens, …)
 │
-├── scripts/                        # Centralized Build & Deployment Pipelines
-│   ├── desktop.sh                  # [LEGACY] Tauri 2 pipeline — obsolete after the RN Windows decision
-│   ├── android.sh                  # [LEGACY] Capacitor pipeline — obsolete after the Expo decision
-│   └── compile.sh                  # Unified compilation dispatcher
-│
 ├── docs/                          # In-Depth Documentation & Diagrams
 │   ├── project-overview.md        # Central project architecture and overview
-│   ├── desktop-architecture.md    # Windows Desktop (Tauri 2) technical guide
-│   ├── web-architecture.md        # Vercel serverless web architecture guide
 │   ├── database-schema.md         # MongoDB collection specifications
 │   └── architecture/              # Editable draw.io diagrams
 │
