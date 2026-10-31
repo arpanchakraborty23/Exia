@@ -19,5 +19,5 @@ dependencies = [
     "uvicorn>=0.52.4",
 ]
 
-[tool.vercel]
+[tool.vercel.entrypoint]
 entrypoint = "main:app"

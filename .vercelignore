@@ -1,6 +1,12 @@
 # Vercel Monorepo Ignore Rules
-# Ignore UI, Desktop, Mobile, and Python virtual environment files
+# Ignore UI, Desktop, Agent, Mobile, and Python virtual environment files
 
+agent
+agent/**
+.agents
+.agents/**
+docs
+docs/**
 ui
 ui/**
 desktop

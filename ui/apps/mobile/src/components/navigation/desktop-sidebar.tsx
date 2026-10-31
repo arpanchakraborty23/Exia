@@ -84,7 +84,7 @@ export function DesktopSidebar({
   const t = useTheme();
   const queryClient = useQueryClient();
   const pathname = usePathname();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
 
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
