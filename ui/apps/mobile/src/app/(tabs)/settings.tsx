@@ -58,6 +58,12 @@ export default function SettingsScreen() {
         <View style={styles.navRow}>
           <Segmented
             options={['general', 'models', 'prompts', 'mcp'] as const}
+            labels={{
+              general: 'General',
+              models: 'Models',
+              prompts: 'Prompts',
+              mcp: 'MCP Tools',
+            }}
             value={activeSection}
             onChange={setActiveSection}
             accessibilityLabel="Settings category"
@@ -79,6 +85,9 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   scroll: {
     paddingBottom: spacing.xxxl,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
   },
   navRow: {
     marginBottom: spacing.lg,

@@ -247,16 +247,20 @@ export interface ExiaButtonProps extends PressableProps {
   mode?: ThemeMode;
   label: string;
   variant?: 'primary' | 'secondary' | 'destructive';
+  size?: 'sm' | 'md' | 'lg';
   style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export function ExiaButton({
   mode,
   label,
   variant = 'primary',
+  size = 'md',
   disabled,
   onPress,
   style,
+  textStyle,
   ...rest
 }: ExiaButtonProps) {
   const ctx = useContext(ThemeContext);
@@ -304,6 +308,13 @@ export function ExiaButton({
     bg = variant === 'secondary' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(31, 213, 249, 0.12)';
   }
 
+  const isSm = size === 'sm';
+  const isLg = size === 'lg';
+  const paddingH = isSm ? spacing.md : isLg ? spacing.xxl : spacing.xl;
+  const paddingV = isSm ? spacing.xs + 2 : isLg ? spacing.lg : spacing.md;
+  const minHeight = isSm ? 34 : isLg ? 52 : 44;
+  const fontSize = isSm ? typography.fontSizes.sm : isLg ? typography.fontSizes.lg : typography.fontSizes.base;
+
   return (
     <Pressable
       {...rest}
@@ -319,9 +330,9 @@ export function ExiaButton({
         {
           backgroundColor: bg,
           borderRadius,
-          paddingHorizontal: spacing.xl,
-          paddingVertical: spacing.md,
-          minHeight: 44, // touch-target minimum
+          paddingHorizontal: paddingH,
+          paddingVertical: paddingV,
+          minHeight,
           alignItems: 'center',
           justifyContent: 'center',
           opacity: disabled ? 0.5 : pressed ? 0.85 : hovered && !disabled ? 0.92 : 1,
@@ -331,7 +342,7 @@ export function ExiaButton({
         style as ViewStyle,
       ]}
     >
-      <RNText style={{ color: fg, fontSize: typography.fontSizes.base, fontWeight: '500' }}>
+      <RNText style={[{ color: fg, fontSize, fontWeight: '500' }, textStyle]}>
         {label}
       </RNText>
     </Pressable>

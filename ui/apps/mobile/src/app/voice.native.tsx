@@ -28,6 +28,7 @@ import {
   useRoomContext,
   useTracks,
   VideoTrack,
+  type TrackReference,
   type TrackReferenceOrPlaceholder,
 } from '@livekit/react-native';
 import { ScreenCapturePickerView, mediaDevices } from '@livekit/react-native-webrtc';

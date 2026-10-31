@@ -745,7 +745,13 @@ export function ModelSettings() {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md, paddingBottom: spacing.xxl },
+  container: {
+    gap: spacing.md,
+    paddingBottom: spacing.xxl,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
+  },
   latencyBanner: {
     alignItems: 'center',
     gap: spacing.xs,

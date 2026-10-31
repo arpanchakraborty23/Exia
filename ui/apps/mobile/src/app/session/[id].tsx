@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { spacing } from '@exia/design-tokens';
 import { formatCount, formatDuration, formatRelativeTime } from '@exia/shared-logic';
@@ -77,10 +78,12 @@ export default function SessionDetail() {
                   message.role === 'user' ? styles.bubbleUser : null,
                 ]}
               >
-                <ExiaText variant="caption">
-                  {message.role === 'user' ? 'You' : 'Exia'} ·{' '}
-                  {formatRelativeTime(message.timestamp)}
-                </ExiaText>
+                <View style={styles.bubbleMeta}>
+                  <Ionicons name="time-outline" size={11} color={t.mutedForeground} />
+                  <ExiaText variant="caption" style={styles.bubbleTime}>
+                    {message.role === 'user' ? 'You' : 'Exia'} · {formatRelativeTime(message.timestamp)}
+                  </ExiaText>
+                </View>
                 <ExiaText>{message.text}</ExiaText>
               </View>
             ))}
@@ -130,7 +133,12 @@ export default function SessionDetail() {
 
 const makeStyles = (cardBg: string, border: string, userBubbleBg: string) =>
   StyleSheet.create({
-    scroll: { paddingBottom: spacing.xxl },
+    scroll: {
+      paddingBottom: spacing.xxl,
+      maxWidth: 760,
+      width: '100%',
+      alignSelf: 'center',
+    },
     summaryCard: { gap: spacing.sm, marginBottom: spacing.lg },
     summaryRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
     sectionTitle: {
@@ -149,6 +157,15 @@ const makeStyles = (cardBg: string, border: string, userBubbleBg: string) =>
       marginBottom: spacing.sm,
       maxWidth: '92%',
       padding: spacing.md,
+    },
+    bubbleMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    bubbleTime: {
+      fontSize: 12,
+      fontWeight: '500',
     },
     bubbleUser: { alignSelf: 'flex-end', backgroundColor: userBubbleBg },
     toolCard: { gap: spacing.sm, marginBottom: spacing.sm },

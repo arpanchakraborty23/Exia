@@ -8,9 +8,11 @@ import {
   Animated,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
   ViewStyle,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -62,7 +64,11 @@ export function ScreenHeader({
       ) : null}
       <View style={styles.headerText}>
         <ExiaText variant="title">{title}</ExiaText>
-        {subtitle ? <ExiaText variant="caption">{subtitle}</ExiaText> : null}
+        {subtitle ? (
+          <ExiaText variant="caption" style={styles.headerSubtitle}>
+            {subtitle}
+          </ExiaText>
+        ) : null}
       </View>
     </View>
   );
@@ -237,35 +243,85 @@ export function DeleteButton({ onPress, label = 'Delete' }: { onPress: () => voi
 // Segmented control (form primitive)
 // ---------------------------------------------------------------------------
 
+export interface SegmentedProps<T extends string> {
+  options: readonly T[];
+  value: T;
+  onChange: (value: T) => void;
+  accessibilityLabel?: string;
+  labels?: Partial<Record<T, string>>;
+}
+
 export function Segmented<T extends string>({
   options,
   value,
   onChange,
   accessibilityLabel,
-}: {
-  options: readonly T[];
-  value: T;
-  onChange: (value: T) => void;
-  accessibilityLabel?: string;
-}) {
+  labels,
+}: SegmentedProps<T>) {
+  const t = useTheme();
+  const { width } = useWindowDimensions();
+  const isCompact = width < 380 && options.length > 3;
+
+  const content = options.map((option) => {
+    const active = option === value;
+    const displayLabel = labels?.[option] ?? option;
+    return (
+      <Pressable
+        key={option}
+        accessibilityRole="radio"
+        accessibilityLabel={`${accessibilityLabel ?? 'Option'}: ${displayLabel}`}
+        accessibilityState={{ selected: active }}
+        onPress={() => onChange(option)}
+        style={({ pressed }) => [
+          styles.segmentItem,
+          !isCompact && styles.segmentItemFlex,
+          active && {
+            backgroundColor: t.primary,
+            shadowColor: t.primary,
+            shadowOpacity: 0.25,
+            shadowRadius: 3,
+            elevation: 2,
+          },
+          { opacity: pressed ? 0.75 : 1 },
+        ]}
+      >
+        <ExiaText
+          numberOfLines={1}
+          style={[
+            styles.segmentText,
+            {
+              color: active ? t.primaryForeground : t.mutedForeground,
+              fontWeight: active ? '600' : '500',
+            },
+          ]}
+        >
+          {displayLabel}
+        </ExiaText>
+      </Pressable>
+    );
+  });
+
+  if (isCompact) {
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.segmentedTrack, { backgroundColor: t.input, borderColor: t.border }]}
+        accessibilityRole="radiogroup"
+        accessibilityLabel={accessibilityLabel}
+      >
+        {content}
+      </ScrollView>
+    );
+  }
+
   return (
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
-      style={styles.segmented}
+      style={[styles.segmentedTrack, { backgroundColor: t.input, borderColor: t.border }]}
     >
-      {options.map((option) => (
-        <View key={option} style={styles.segmentOption}>
-          <ExiaButton
-            accessibilityLabel={`${accessibilityLabel ?? 'Option'}: ${option}`}
-            accessibilityState={{ selected: option === value }}
-            label={option}
-            variant={option === value ? 'primary' : 'secondary'}
-            onPress={() => onChange(option)}
-            style={styles.segmentButton}
-          />
-        </View>
-      ))}
+      {content}
     </View>
   );
 }
@@ -328,6 +384,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: { gap: 2, flex: 1 },
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 2,
+  },
   badge: {
     borderRadius: radius.full,
     paddingHorizontal: spacing.sm + 2,
@@ -350,6 +411,29 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+  },
+  segmentedTrack: {
+    flexDirection: 'row',
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 3,
+    alignItems: 'center',
+    gap: 3,
+  },
+  segmentItem: {
+    minHeight: 36,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentItemFlex: {
+    flex: 1,
+  },
+  segmentText: {
+    fontSize: 12,
+    textAlign: 'center',
   },
   segmented: { flexDirection: 'row', gap: spacing.sm },
   segmentOption: { flex: 1 },

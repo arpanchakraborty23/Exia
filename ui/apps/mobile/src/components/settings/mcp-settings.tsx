@@ -269,7 +269,12 @@ function ServerItemCard({
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md },
+  container: {
+    gap: spacing.md,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
+  },
   topBar: {
     alignItems: 'center',
     borderRadius: radius.lg,

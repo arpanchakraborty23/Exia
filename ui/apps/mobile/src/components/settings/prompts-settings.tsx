@@ -406,7 +406,12 @@ export function PromptsSettings() {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md },
+  container: {
+    gap: spacing.md,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
+  },
   tabContent: { gap: spacing.md },
   card: { gap: spacing.sm },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

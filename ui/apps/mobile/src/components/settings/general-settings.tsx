@@ -33,18 +33,62 @@ import { api, tokenStorage } from '@/lib/api';
 import { AUTH_TOKEN_KEY, useAuthToken } from '@/lib/auth';
 import { saveStoredPreferences } from '@/lib/theme-storage';
 import { Badge, ExiaAvatar, Field, Segmented } from '@/components/ui';
+import { SelectField } from '@/components/models/controls';
 
 const TIMEZONE_OPTIONS = [
-  { value: 'auto', label: 'Auto-Detect (System)' },
+  { value: 'auto', label: 'Auto-Detect (Device System Timezone)' },
   { value: 'UTC', label: 'UTC (Coordinated Universal Time)' },
-  { value: 'America/New_York', label: 'America / New York (EST/EDT)' },
-  { value: 'America/Los_Angeles', label: 'America / Los Angeles (PST/PDT)' },
-  { value: 'Europe/London', label: 'Europe / London (GMT/BST)' },
-  { value: 'Europe/Paris', label: 'Europe / Paris (CET/CEST)' },
-  { value: 'Asia/Kolkata', label: 'Asia / Kolkata (IST)' },
-  { value: 'Asia/Tokyo', label: 'Asia / Tokyo (JST)' },
-  { value: 'Australia/Sydney', label: 'Australia / Sydney (AEST/AEDT)' },
+  { value: 'America/New_York', label: 'Eastern Time (America/New_York)' },
+  { value: 'America/Chicago', label: 'Central Time (America/Chicago)' },
+  { value: 'America/Denver', label: 'Mountain Time (America/Denver)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (America/Los_Angeles)' },
+  { value: 'Europe/London', label: 'London, Dublin (Europe/London)' },
+  { value: 'Europe/Paris', label: 'Paris, Rome, Berlin (Europe/Paris)' },
+  { value: 'Asia/Dubai', label: 'Dubai, Abu Dhabi (Asia/Dubai)' },
+  { value: 'Asia/Kolkata', label: 'India Standard Time (Asia/Kolkata)' },
+  { value: 'Asia/Singapore', label: 'Singapore, Kuala Lumpur (Asia/Singapore)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo, Seoul (Asia/Tokyo)' },
+  { value: 'Australia/Sydney', label: 'Sydney, Melbourne (Australia/Sydney)' },
+  { value: 'Pacific/Auckland', label: 'Auckland (Pacific/Auckland)' },
 ] as const;
+
+function formatLiveTime(
+  tz: string,
+  timeFmt: '12h' | '24h',
+  dateFmt: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY'
+): string {
+  try {
+    const now = new Date();
+    const tzOption = tz === 'auto' ? undefined : tz;
+    const hourCycle = timeFmt === '12h' ? 'h12' : 'h23';
+    const timeStr = now.toLocaleTimeString('en-US', {
+      timeZone: tzOption,
+      hourCycle,
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: tzOption,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(now);
+
+    const year = parts.find((p) => p.type === 'year')?.value ?? String(now.getFullYear());
+    const month = parts.find((p) => p.type === 'month')?.value ?? '01';
+    const day = parts.find((p) => p.type === 'day')?.value ?? '01';
+
+    let dateStr = `${year}-${month}-${day}`;
+    if (dateFmt === 'DD/MM/YYYY') dateStr = `${day}/${month}/${year}`;
+    if (dateFmt === 'MM/DD/YYYY') dateStr = `${month}/${day}/${year}`;
+
+    return `${dateStr}  ·  ${timeStr}`;
+  } catch {
+    return new Date().toLocaleString();
+  }
+}
 
 export function GeneralSettings() {
   const t = useTheme();
@@ -324,43 +368,32 @@ export function GeneralSettings() {
           </ExiaText>
         </View>
 
-        <Field label="Regional Timezone">
-          <View style={styles.timezoneList}>
-            {TIMEZONE_OPTIONS.map((tz) => {
-              const active = timezone === tz.value;
-              return (
-                <Pressable
-                  key={tz.value}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => {
-                    setTimezone(tz.value);
-                    void saveStoredPreferences({ timezone: tz.value });
-                  }}
-                  style={[
-                    styles.tzItem,
-                    {
-                      backgroundColor: active ? t.input : 'transparent',
-                      borderColor: active ? t.primary : t.border,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={active ? 'radio-button-on' : 'radio-button-off'}
-                    size={16}
-                    color={active ? t.primary : t.mutedForeground}
-                  />
-                  <ExiaText
-                    variant={active ? 'body' : 'caption'}
-                    style={{ color: active ? t.foreground : t.mutedForeground }}
-                  >
-                    {tz.label}
-                  </ExiaText>
-                </Pressable>
-              );
-            })}
+        {/* Timezone Dropdown Picker Modal */}
+        <SelectField
+          label="Regional Timezone"
+          value={timezone}
+          options={TIMEZONE_OPTIONS.map((tz) => ({
+            value: tz.value,
+            label: tz.label,
+          }))}
+          onChange={(val) => {
+            setTimezone(val);
+            void saveStoredPreferences({ timezone: val });
+          }}
+        />
+
+        {/* Live Clock & Timezone Preview */}
+        <View style={[styles.clockPreviewBox, { backgroundColor: t.input, borderColor: t.border }]}>
+          <View style={styles.clockPreviewHeader}>
+            <Ionicons name="calendar-outline" size={14} color={t.primary} />
+            <ExiaText variant="caption" style={styles.clockPreviewTitle}>
+              Live Timezone & Clock Preview
+            </ExiaText>
           </View>
-        </Field>
+          <ExiaText variant="mono" style={[styles.clockPreviewValue, { color: t.foreground }]}>
+            {formatLiveTime(timezone, timeFormat, dateFormat)}
+          </ExiaText>
+        </View>
 
         <Field label="Clock Display Format">
           <Segmented
@@ -505,22 +538,32 @@ const styles = StyleSheet.create({
   previewRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+    flexWrap: 'wrap',
   },
   previewBtn: {
     flex: 1,
+    minWidth: 90,
     paddingHorizontal: spacing.sm,
   },
-  timezoneList: {
+  clockPreviewBox: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
+    padding: spacing.md,
     gap: spacing.xs,
+    marginVertical: spacing.xs,
   },
-  tzItem: {
+  clockPreviewHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.xs + 2,
+  },
+  clockPreviewTitle: {
+    fontWeight: '500',
+  },
+  clockPreviewValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   dataActions: {
     gap: spacing.md,

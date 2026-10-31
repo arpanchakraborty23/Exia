@@ -280,9 +280,12 @@ function SessionRow({ item }: { item: SessionSummary }) {
         </View>
 
         {/* Timestamp */}
-        <ExiaText variant="caption" style={styles.startedTimeText}>
-          {formatRelativeTime(item.started_at)}
-        </ExiaText>
+        <View style={styles.timeRow}>
+          <Ionicons name="time-outline" size={13} color={t.mutedForeground} />
+          <ExiaText variant="caption" style={styles.startedTimeText}>
+            {formatRelativeTime(item.started_at)}
+          </ExiaText>
+        </View>
 
         {/* Preview text container if available */}
         {item.preview_text ? (
@@ -368,7 +371,13 @@ function SessionRow({ item }: { item: SessionSummary }) {
 }
 
 const styles = StyleSheet.create({
-  list: { gap: spacing.md, paddingBottom: spacing.xxl },
+  list: {
+    gap: spacing.md,
+    paddingBottom: spacing.xxl,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
+  },
   controls: { gap: spacing.sm, marginBottom: spacing.xs },
   searchBox: {
     alignItems: 'center',
@@ -379,7 +388,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: spacing.md,
   },
-  searchIcon: { opacity: 0.8 },
+  searchIcon: { opacity: 0.9 },
   searchInput: {
     flex: 1,
     fontSize: 14,
@@ -441,9 +450,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.xs + 2,
   },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   startedTimeText: {
-    fontSize: 11,
-    opacity: 0.75,
+    fontSize: 12,
+    fontWeight: '500',
   },
   previewContainer: {
     borderRadius: radius.md,
@@ -456,13 +470,11 @@ const styles = StyleSheet.create({
   },
   previewIcon: {
     marginTop: 2,
-    opacity: 0.7,
   },
   previewText: {
     flex: 1,
     fontSize: 12,
     lineHeight: 17,
-    opacity: 0.85,
   },
   metaRow: {
     alignItems: 'center',

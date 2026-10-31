@@ -79,7 +79,7 @@ export default function Home() {
             <ExiaText variant="title" style={styles.greetingTitle}>
               {greeting}
             </ExiaText>
-            <ExiaText variant="caption">{dateLabel}</ExiaText>
+            <ExiaText variant="caption" style={styles.headerDate}>{dateLabel}</ExiaText>
           </View>
           <View
             accessibilityLabel={health.isLoading ? 'Checking backend status' : online ? 'Backend online' : 'Backend offline'}
@@ -442,9 +442,12 @@ function RecentRow({ session }: { session: SessionSummary }) {
             <Badge label={active ? 'LIVE' : 'ENDED'} tone={active ? 'ok' : 'muted'} />
           </View>
           <View style={styles.recentMetaRow}>
-            <ExiaText variant="caption" style={styles.recentTime}>
-              {formatRelativeTime(session.started_at)}
-            </ExiaText>
+            <View style={styles.recentTimeWrap}>
+              <Ionicons name="time-outline" size={11} color={t.mutedForeground} />
+              <ExiaText variant="caption" style={styles.recentTime}>
+                {formatRelativeTime(session.started_at)}
+              </ExiaText>
+            </View>
             {session.duration_seconds !== undefined ? (
               <View style={[styles.recentDurationPill, { backgroundColor: t.input }]}>
                 <Ionicons name="time-outline" size={11} color={t.mutedForeground} />
@@ -467,9 +470,16 @@ function RecentRow({ session }: { session: SessionSummary }) {
 }
 
 const styles = StyleSheet.create({
-  scroll: { gap: spacing.md, paddingBottom: spacing.xxl },
+  scroll: {
+    gap: spacing.md,
+    paddingBottom: spacing.xxl,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
+  },
   header: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xs },
   headerText: { flex: 1, gap: 2 },
+  headerDate: { fontSize: 13, fontWeight: '500' },
   greetingTitle: { letterSpacing: -0.3 },
   statusPill: {
     alignItems: 'center',
@@ -493,7 +503,7 @@ const styles = StyleSheet.create({
   cardRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   cardHeaderLeft: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   cardHeaderTitleGroup: { gap: 1 },
-  cardHeaderStatus: { fontSize: 11, opacity: 0.8 },
+  cardHeaderStatus: { fontSize: 12, fontWeight: '500' },
   serviceIconBox: {
     alignItems: 'center',
     borderRadius: radius.sm,
@@ -533,7 +543,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
-  statLabel: { opacity: 0.85, fontSize: 11, fontWeight: '500' },
+  statLabel: { fontSize: 11, fontWeight: '500' },
   statValue: {
     fontSize: typography.fontSizes.xl,
     fontVariant: ['tabular-nums'],
@@ -575,7 +585,7 @@ const styles = StyleSheet.create({
   },
   actionTextGroup: { gap: 2 },
   actionLabel: { fontWeight: '600', fontSize: typography.fontSizes.sm },
-  actionDescription: { fontSize: 11, opacity: 0.75 },
+  actionDescription: { fontSize: 12 },
   sectionHeader: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -616,7 +626,15 @@ const styles = StyleSheet.create({
   },
   recentTitle: { flexShrink: 1, fontWeight: '600', fontSize: typography.fontSizes.sm },
   recentMetaRow: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs + 2 },
-  recentTime: { opacity: 0.8 },
+  recentTimeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  recentTime: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
   recentDurationPill: {
     alignItems: 'center',
     borderRadius: radius.full,
@@ -626,5 +644,5 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   recentDurationText: { fontSize: 10, opacity: 0.9 },
-  recentModelText: { opacity: 0.7, fontSize: 11 },
+  recentModelText: { fontSize: 12 },
 });
