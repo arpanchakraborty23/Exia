@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, router } from 'expo-router';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { brand, radius, spacing, typography } from '@exia/design-tokens';
 import { formatCount, formatDuration, formatRelativeTime } from '@exia/shared-logic';
@@ -21,6 +22,7 @@ type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
  */
 export default function Home() {
   const t = useTheme();
+  const insets = useSafeAreaInsets();
 
   const health = useQuery({
     queryKey: ['health'],
@@ -62,10 +64,215 @@ export default function Home() {
     day: 'numeric',
   });
 
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+
+  const backendCard = (
+    health.isLoading && !health.data ? (
+      <View style={[styles.card, { backgroundColor: t.card, borderColor: t.border }]}>
+        <View style={styles.cardRow}>
+          <View style={styles.cardHeaderLeft}>
+            <Ionicons name="server-outline" size={16} color={t.mutedForeground} />
+            <ExiaText style={styles.cardTitle}>Backend Gateway</ExiaText>
+          </View>
+          <Skeleton width={52} height={20} borderRadius={radius.full} />
+        </View>
+        <Skeleton width="70%" height={14} borderRadius={radius.sm} style={{ marginTop: spacing.xs }} />
+        <Skeleton width="45%" height={12} borderRadius={radius.sm} />
+      </View>
+    ) : (
+      <View style={[styles.card, { backgroundColor: t.card, borderColor: t.border }]}>
+        <View style={styles.cardRow}>
+          <View style={styles.cardHeaderLeft}>
+            <View
+              style={[
+                styles.serviceIconBox,
+                {
+                  backgroundColor: online ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                },
+              ]}
+            >
+              <Ionicons
+                name={online ? 'server' : 'server-outline'}
+                size={14}
+                color={online ? brand.liveEmerald : t.destructive}
+              />
+            </View>
+            <View style={styles.cardHeaderTitleGroup}>
+              <ExiaText style={styles.cardTitle}>Backend Gateway</ExiaText>
+              <ExiaText variant="caption" style={styles.cardHeaderStatus}>
+                {online ? 'Operational' : 'Service unreachable'}
+              </ExiaText>
+            </View>
+          </View>
+          {health.data ? (
+            <Badge
+              label={`${health.data.latencyMs} ms`}
+              tone={health.data.latencyMs < 350 ? 'info' : 'warn'}
+            />
+          ) : null}
+        </View>
+
+        <View style={[styles.targetEndpointBox, { backgroundColor: t.input, borderColor: t.border }]}>
+          <Ionicons name="link-outline" size={14} color={t.mutedForeground} />
+          <ExiaText variant="mono" selectable numberOfLines={1} style={styles.targetEndpointText}>
+            {health.data?.target ?? 'Checking gateway…'}
+          </ExiaText>
+        </View>
+
+        <View style={styles.backendFooter}>
+          <Ionicons
+            name={online ? 'checkmark-circle-outline' : 'alert-circle-outline'}
+            size={14}
+            color={online ? brand.liveEmerald : t.destructive}
+          />
+          <ExiaText variant="caption" style={styles.backendFooterText} numberOfLines={1}>
+            {health.data
+              ? `Responding · checked ${formatRelativeTime(new Date(health.dataUpdatedAt).toISOString())}`
+              : health.error instanceof Error
+                ? health.error.message
+                : 'Waiting for connection telemetry…'}
+          </ExiaText>
+        </View>
+      </View>
+    )
+  );
+
+  const statsSection = (
+    <View style={styles.gridRow}>
+      <StatTile
+        label="Sessions"
+        value={sessions.data ? formatCount(sessions.data.total) : '0'}
+        loading={sessions.isLoading}
+        icon="mic-outline"
+      />
+      <StatTile
+        label="MCP servers"
+        value={mcp.data ? String(mcp.data.length) : '0'}
+        sub={mcpActive !== undefined ? `${mcpActive} active` : undefined}
+        loading={mcp.isLoading}
+        icon="hardware-chip-outline"
+      />
+      <StatTile
+        label="Prompts"
+        value={prompts.data ? String(prompts.data.length) : '0'}
+        loading={prompts.isLoading}
+        icon="document-text-outline"
+      />
+    </View>
+  );
+
+  const quickActionsSection = (
+    <>
+      <View style={styles.gridRow}>
+        <ActionTile
+          icon="mic"
+          label="Voice session"
+          description="Real-time AI voice call"
+          onPress={() => router.push('/voice')}
+        />
+        <ActionTile
+          icon="time-outline"
+          label="History"
+          description="Transcripts & logs"
+          onPress={() => router.push('/history')}
+        />
+      </View>
+      <View style={styles.gridRow}>
+        <ActionTile
+          icon="hardware-chip-outline"
+          label="MCP servers"
+          description="Tools & integrations"
+          onPress={() => router.push('/settings?section=mcp')}
+        />
+        <ActionTile
+          icon="settings-outline"
+          label="Settings"
+          description="Preferences & models"
+          onPress={() => router.push('/settings')}
+        />
+      </View>
+    </>
+  );
+
+  const desktopVoiceBanner = (
+    <View
+      style={[
+        styles.card,
+        styles.desktopVoiceCard,
+        { backgroundColor: t.card, borderColor: 'rgba(31, 213, 249, 0.35)' },
+      ]}
+    >
+      <View style={styles.desktopVoiceRow}>
+        <View style={styles.desktopVoiceLeft}>
+          <View style={styles.desktopVoiceBadgeRow}>
+            <View style={styles.desktopVoiceDot} />
+            <ExiaText style={styles.desktopVoiceBadgeText}>LIVE VOICE STUDIO</ExiaText>
+          </View>
+          <ExiaText style={styles.desktopVoiceTitle}>Start Real-time Voice Session</ExiaText>
+          <ExiaText variant="caption" style={styles.desktopVoiceSub}>
+            Multimodal speech streaming with Gemini 2.5 Flash, native audio hardware, and MCP tool execution.
+          </ExiaText>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Launch Voice Studio"
+          onPress={() => router.push('/voice')}
+          style={({ pressed }) => [
+            styles.desktopVoiceBtn,
+            { backgroundColor: brand.electricCyan, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Ionicons name="mic" size={18} color="#000000" />
+          <ExiaText style={styles.desktopVoiceBtnText}>Launch Studio</ExiaText>
+          <ExiaText style={styles.desktopVoiceShortcut}>⌘⇧V</ExiaText>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  const recentSessionsSection = (
+    <>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionHeaderLeft}>
+          <ExiaText style={styles.sectionTitle}>Recent sessions</ExiaText>
+          <View style={[styles.sectionCountBadge, { backgroundColor: t.input }]}>
+            <ExiaText style={[styles.sectionCountText, { color: t.mutedForeground }]}>
+              {sessions.data ? sessions.data.total : '—'}
+            </ExiaText>
+          </View>
+        </View>
+        <Link href="/history" asChild>
+          <Pressable hitSlop={8} accessibilityRole="link" accessibilityLabel="See all sessions">
+            <ExiaText variant="caption" style={styles.seeAll}>
+              See all
+            </ExiaText>
+          </Pressable>
+        </Link>
+      </View>
+
+      {sessions.isLoading ? (
+        <View style={styles.recentLoadingStack}>
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={2} />
+        </View>
+      ) : recent.length > 0 ? (
+        recent.map((session) => <RecentRow key={session.id} session={session} />)
+      ) : (
+        <EmptyState
+          title="No sessions yet"
+          message="Start your first voice conversation to record transcripts and telemetry."
+          actionLabel="Start voice session"
+          onAction={() => router.push('/voice')}
+        />
+      )}
+    </>
+  );
+
   return (
     <ExiaScreen>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, isDesktop && styles.scrollDesktop]}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -73,7 +280,14 @@ export default function Home() {
         }
       >
         {/* Header: identity + greeting + live status pill */}
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            {
+              paddingTop: insets.top > 0 ? Math.max(insets.top - spacing.lg, 0) : 0,
+            },
+          ]}
+        >
           <ExiaAvatar size={44} />
           <View style={styles.headerText}>
             <ExiaText variant="title" style={styles.greetingTitle}>
@@ -128,162 +342,26 @@ export default function Home() {
           </View>
         </View>
 
-        {/* Backend hero card */}
-        {health.isLoading && !health.data ? (
-          <View style={[styles.card, { backgroundColor: t.card, borderColor: t.border }]}>
-            <View style={styles.cardRow}>
-              <View style={styles.cardHeaderLeft}>
-                <Ionicons name="server-outline" size={16} color={t.mutedForeground} />
-                <ExiaText style={styles.cardTitle}>Backend Gateway</ExiaText>
-              </View>
-              <Skeleton width={52} height={20} borderRadius={radius.full} />
+        {/* High-Density Multi-Pane Desktop View vs Standard Single Column */}
+        {isDesktop ? (
+          <View style={styles.desktopGrid}>
+            <View style={styles.desktopLeftCol}>
+              {backendCard}
+              {statsSection}
+              {quickActionsSection}
             </View>
-            <Skeleton width="70%" height={14} borderRadius={radius.sm} style={{ marginTop: spacing.xs }} />
-            <Skeleton width="45%" height={12} borderRadius={radius.sm} />
+            <View style={styles.desktopRightCol}>
+              {desktopVoiceBanner}
+              {recentSessionsSection}
+            </View>
           </View>
         ) : (
-          <View style={[styles.card, { backgroundColor: t.card, borderColor: t.border }]}>
-            <View style={styles.cardRow}>
-              <View style={styles.cardHeaderLeft}>
-                <View
-                  style={[
-                    styles.serviceIconBox,
-                    {
-                      backgroundColor: online ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={online ? 'server' : 'server-outline'}
-                    size={14}
-                    color={online ? brand.liveEmerald : t.destructive}
-                  />
-                </View>
-                <View style={styles.cardHeaderTitleGroup}>
-                  <ExiaText style={styles.cardTitle}>Backend Gateway</ExiaText>
-                  <ExiaText variant="caption" style={styles.cardHeaderStatus}>
-                    {online ? 'Operational' : 'Service unreachable'}
-                  </ExiaText>
-                </View>
-              </View>
-              {health.data ? (
-                <Badge
-                  label={`${health.data.latencyMs} ms`}
-                  tone={health.data.latencyMs < 350 ? 'info' : 'warn'}
-                />
-              ) : null}
-            </View>
-
-            <View style={[styles.targetEndpointBox, { backgroundColor: t.input, borderColor: t.border }]}>
-              <Ionicons name="link-outline" size={14} color={t.mutedForeground} />
-              <ExiaText variant="mono" selectable numberOfLines={1} style={styles.targetEndpointText}>
-                {health.data?.target ?? 'Checking gateway…'}
-              </ExiaText>
-            </View>
-
-            <View style={styles.backendFooter}>
-              <Ionicons
-                name={online ? 'checkmark-circle-outline' : 'alert-circle-outline'}
-                size={14}
-                color={online ? brand.liveEmerald : t.destructive}
-              />
-              <ExiaText variant="caption" style={styles.backendFooterText} numberOfLines={1}>
-                {health.data
-                  ? `Responding · checked ${formatRelativeTime(new Date(health.dataUpdatedAt).toISOString())}`
-                  : health.error instanceof Error
-                    ? health.error.message
-                    : 'Waiting for connection telemetry…'}
-              </ExiaText>
-            </View>
-          </View>
-        )}
-
-        {/* Stats row */}
-        <View style={styles.gridRow}>
-          <StatTile
-            label="Sessions"
-            value={sessions.data ? formatCount(sessions.data.total) : '0'}
-            loading={sessions.isLoading}
-            icon="mic-outline"
-          />
-          <StatTile
-            label="MCP servers"
-            value={mcp.data ? String(mcp.data.length) : '0'}
-            sub={mcpActive !== undefined ? `${mcpActive} active` : undefined}
-            loading={mcp.isLoading}
-            icon="hardware-chip-outline"
-          />
-          <StatTile
-            label="Prompts"
-            value={prompts.data ? String(prompts.data.length) : '0'}
-            loading={prompts.isLoading}
-            icon="document-text-outline"
-          />
-        </View>
-
-        {/* Quick actions */}
-        <View style={styles.gridRow}>
-          <ActionTile
-            icon="mic"
-            label="Voice session"
-            description="Real-time AI voice call"
-            onPress={() => router.push('/voice')}
-          />
-          <ActionTile
-            icon="time-outline"
-            label="History"
-            description="Transcripts & logs"
-            onPress={() => router.push('/history')}
-          />
-        </View>
-        <View style={styles.gridRow}>
-          <ActionTile
-            icon="hardware-chip-outline"
-            label="MCP servers"
-            description="Tools & integrations"
-            onPress={() => router.push('/settings?section=mcp')}
-          />
-          <ActionTile
-            icon="settings-outline"
-            label="Settings"
-            description="Preferences & models"
-            onPress={() => router.push('/settings')}
-          />
-        </View>
-
-        {/* Recent sessions */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionHeaderLeft}>
-            <ExiaText style={styles.sectionTitle}>Recent sessions</ExiaText>
-            <View style={[styles.sectionCountBadge, { backgroundColor: t.input }]}>
-              <ExiaText style={[styles.sectionCountText, { color: t.mutedForeground }]}>
-                {sessions.data ? sessions.data.total : '—'}
-              </ExiaText>
-            </View>
-          </View>
-          <Link href="/history" asChild>
-            <Pressable hitSlop={8} accessibilityRole="link" accessibilityLabel="See all sessions">
-              <ExiaText variant="caption" style={styles.seeAll}>
-                See all
-              </ExiaText>
-            </Pressable>
-          </Link>
-        </View>
-
-        {sessions.isLoading ? (
-          <View style={styles.recentLoadingStack}>
-            <SkeletonCard lines={2} />
-            <SkeletonCard lines={2} />
-          </View>
-        ) : recent.length > 0 ? (
-          recent.map((session) => <RecentRow key={session.id} session={session} />)
-        ) : (
-          <EmptyState
-            title="No sessions yet"
-            message="Start your first voice conversation to record transcripts and telemetry."
-            actionLabel="Start voice session"
-            onAction={() => router.push('/voice')}
-          />
+          <>
+            {backendCard}
+            {statsSection}
+            {quickActionsSection}
+            {recentSessionsSection}
+          </>
         )}
       </ScrollView>
     </ExiaScreen>
@@ -472,10 +550,88 @@ function RecentRow({ session }: { session: SessionSummary }) {
 const styles = StyleSheet.create({
   scroll: {
     gap: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: 110,
     maxWidth: 760,
     width: '100%',
     alignSelf: 'center',
+  },
+  scrollDesktop: {
+    maxWidth: 1240,
+  },
+  desktopGrid: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    width: '100%',
+    alignItems: 'flex-start',
+  },
+  desktopLeftCol: {
+    width: 440,
+    gap: spacing.md,
+  },
+  desktopRightCol: {
+    flex: 1,
+    gap: spacing.md,
+  },
+  desktopVoiceCard: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: spacing.lg,
+  },
+  desktopVoiceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  desktopVoiceLeft: {
+    flex: 1,
+    gap: 4,
+  },
+  desktopVoiceBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  desktopVoiceDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: brand.liveEmerald,
+  },
+  desktopVoiceBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    color: brand.electricCyan,
+  },
+  desktopVoiceTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  desktopVoiceSub: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: 'rgba(255, 255, 255, 0.65)',
+  },
+  desktopVoiceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 10,
+    borderRadius: radius.md,
+  },
+  desktopVoiceBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  desktopVoiceShortcut: {
+    fontSize: 11,
+    fontFamily: 'monospace',
+    fontWeight: '600',
+    color: 'rgba(0, 0, 0, 0.6)',
   },
   header: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xs },
   headerText: { flex: 1, gap: 2 },

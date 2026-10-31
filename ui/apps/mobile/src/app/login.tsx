@@ -60,7 +60,7 @@ export default function Login() {
           <ExiaText variant="caption">Sign in to access your Exia workspace</ExiaText>
         </View>
 
-        <ExiaCard>
+        <ExiaCard style={styles.card}>
           <Field label="Email">
             <ExiaInput
               accessibilityLabel="Email"
@@ -93,23 +93,25 @@ export default function Login() {
             </ExiaText>
           ) : null}
 
-          <ExiaButton
-            disabled={!canSubmit}
-            label={submitting ? 'Signing in…' : 'Sign in'}
-            onPress={handleSignIn}
-          />
+          <View style={styles.buttonStack}>
+            <ExiaButton
+              disabled={!canSubmit}
+              label={submitting ? 'Signing in…' : 'Sign in'}
+              onPress={handleSignIn}
+            />
 
-          <ExiaButton
-            label="Create account"
-            variant="secondary"
-            onPress={() => router.push('/register')}
-          />
+            <ExiaButton
+              label="Create account"
+              variant="secondary"
+              onPress={() => router.push('/register')}
+            />
 
-          <ExiaButton
-            label="Configure Environment (Setup Wizard)"
-            variant="secondary"
-            onPress={() => router.push('/setup' as any)}
-          />
+            <ExiaButton
+              label="Configure Environment (Setup Wizard)"
+              variant="secondary"
+              onPress={() => router.push('/setup' as any)}
+            />
+          </View>
         </ExiaCard>
       </KeyboardAvoidingView>
     </ExiaScreen>
@@ -117,7 +119,9 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, marginTop: spacing.xxxl },
-  header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xl },
-  error: { marginBottom: spacing.md },
+  flex: { flex: 1, justifyContent: 'center', maxWidth: 440, width: '100%', alignSelf: 'center' },
+  header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.lg },
+  card: { gap: spacing.sm },
+  buttonStack: { gap: spacing.sm, marginTop: spacing.xs },
+  error: { marginBottom: spacing.xs },
 });

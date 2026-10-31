@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, shell, protocol, net } = require('electron');
+const { app, BrowserWindow, session, shell, protocol, net, Menu } = require('electron');
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
@@ -21,6 +21,14 @@ protocol.registerSchemesAsPrivileged([
 
 // Set application name
 app.name = 'Exia';
+
+if (process.env.ELECTRON_USER_DATA_DIR) {
+  try {
+    app.setPath('userData', process.env.ELECTRON_USER_DATA_DIR);
+  } catch (err) {
+    console.warn('[Exia Desktop] Could not set custom userData directory:', err);
+  }
+}
 
 // Global error handlers for main process
 process.on('uncaughtException', (err) => {
@@ -166,7 +174,148 @@ function registerAppProtocol() {
   });
 }
 
+function setupApplicationMenu(win) {
+  const isMac = process.platform === 'darwin';
+
+  const sendNav = (route) => {
+    if (!win || win.isDestroyed()) return;
+    win.webContents.executeJavaScript(`
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('exia:desktop-nav', { detail: { route: ${JSON.stringify(route)} } }));
+      }
+    `).catch(() => {});
+  };
+
+  const toggleSidebar = () => {
+    if (!win || win.isDestroyed()) return;
+    win.webContents.executeJavaScript(`
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('exia:toggle-sidebar'));
+      }
+    `).catch(() => {});
+  };
+
+  const template = [
+    ...(isMac
+      ? [
+          {
+            label: app.name,
+            submenu: [
+              { role: 'about' },
+              { type: 'separator' },
+              {
+                label: 'Preferences / Settings',
+                accelerator: 'CmdOrCtrl+,',
+                click: () => sendNav('/settings'),
+              },
+              {
+                label: 'Desktop Setup Wizard',
+                accelerator: 'CmdOrCtrl+Shift+S',
+                click: () => sendNav('/setup'),
+              },
+              { type: 'separator' },
+              { role: 'services' },
+              { type: 'separator' },
+              { role: 'hide' },
+              { role: 'hideOthers' },
+              { role: 'unhide' },
+              { type: 'separator' },
+              { role: 'quit' },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Setup Wizard',
+          accelerator: 'CmdOrCtrl+Shift+S',
+          click: () => sendNav('/setup'),
+        },
+        {
+          label: 'Settings',
+          accelerator: 'CmdOrCtrl+,',
+          click: () => sendNav('/settings'),
+        },
+        { type: 'separator' },
+        isMac ? { role: 'close' } : { role: 'quit' },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'Studio',
+      submenu: [
+        {
+          label: 'Dashboard',
+          accelerator: 'CmdOrCtrl+1',
+          click: () => sendNav('/(tabs)'),
+        },
+        {
+          label: 'History & Transcripts',
+          accelerator: 'CmdOrCtrl+2',
+          click: () => sendNav('/history'),
+        },
+        {
+          label: 'Agent Observability',
+          accelerator: 'CmdOrCtrl+3',
+          click: () => sendNav('/analytics'),
+        },
+        {
+          label: 'MCP Tools & Registry',
+          accelerator: 'CmdOrCtrl+4',
+          click: () => sendNav('/mcp'),
+        },
+        { type: 'separator' },
+        {
+          label: 'Launch Voice Studio',
+          accelerator: 'CmdOrCtrl+Shift+V',
+          click: () => sendNav('/voice'),
+        },
+        {
+          label: 'Toggle Sidebar',
+          accelerator: 'CmdOrCtrl+B',
+          click: () => toggleSidebar(),
+        },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload', accelerator: 'CmdOrCtrl+R' },
+        { role: 'forceReload', accelerator: 'CmdOrCtrl+Shift+R' },
+        { type: 'separator' },
+        { role: 'togglefullscreen', accelerator: 'F11' },
+        { role: 'toggleDevTools', accelerator: 'CmdOrCtrl+Shift+I' },
+      ],
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(isMac ? [{ type: 'separator' }, { role: 'front' }] : [{ role: 'close' }]),
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 function createWindow() {
+  const isMac = process.platform === 'darwin';
   const iconPath = process.platform === 'win32'
     ? path.join(__dirname, 'assets', 'icon.ico')
     : path.join(__dirname, 'assets', 'icon.png');
@@ -177,6 +326,8 @@ function createWindow() {
     minWidth: 960,
     minHeight: 600,
     title: 'Exia — Multimodal AI Assistant',
+    titleBarStyle: isMac ? 'hiddenInset' : 'default',
+    trafficLightPosition: isMac ? { x: 16, y: 16 } : undefined,
     backgroundColor: '#090909',
     autoHideMenuBar: true,
     icon: fs.existsSync(iconPath) ? iconPath : undefined,
@@ -189,6 +340,8 @@ function createWindow() {
       spellcheck: true,
     },
   });
+
+  setupApplicationMenu(mainWindow);
 
   // Content-Security-Policy to protect the application while supporting React Native Web and WebRTC
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

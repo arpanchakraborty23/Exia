@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
-import { spacing } from '@exia/design-tokens';
 import { ExiaScreen } from '@exia/shared-ui';
 
 import { PromptsSettings } from '@/components/settings/prompts-settings';
@@ -29,6 +28,9 @@ export default function PromptsScreen() {
 
 const styles = StyleSheet.create({
   scroll: {
-    paddingBottom: spacing.xxxl,
+    paddingBottom: 110,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
   },
 });

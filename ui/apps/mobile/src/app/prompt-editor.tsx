@@ -141,7 +141,12 @@ export default function PromptEditor() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: spacing.xxl },
+  scroll: {
+    paddingBottom: spacing.xxl,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center',
+  },
   multiline: { minHeight: 120, textAlignVertical: 'top' },
   error: { marginBottom: spacing.md },
 });

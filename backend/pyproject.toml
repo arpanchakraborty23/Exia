@@ -1,9 +1,24 @@
 [project]
-name = "homeasstant"
-version = "0.1.0"
-description = "Add your description here"
+name = "exia-backend"
+version = "1.0.0"
+description = "Exia — FastAPI Server Gateway for UI Clients (Web, Desktop, Mobile), LiveKit WebRTC & MongoDB Atlas"
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Arpan Chakraborty", email = "arpanchakraborty500@gmail.com" }
+]
+keywords = [
+    "exia",
+    "fastapi",
+    "livekit",
+    "webrtc",
+    "mongodb",
+    "mcp",
+    "voice-agent",
+    "ai-assistant",
+    "vercel"
+]
 dependencies = [
     "bcrypt>=4.0.1",
     "fastapi>=0.141.1",

@@ -19,6 +19,16 @@ export function isElectronApp(): boolean {
   if (typeof navigator !== 'undefined' && /electron/i.test(navigator.userAgent)) {
     return true;
   }
+  if (typeof window !== 'undefined' && (window as any).__EXIA_FORCE_DESKTOP) {
+    return true;
+  }
+  try {
+    if (typeof window !== 'undefined' && window.location?.search?.includes('desktop=1')) {
+      return true;
+    }
+  } catch {
+    // Ignore URL access error
+  }
 
   return false;
 }

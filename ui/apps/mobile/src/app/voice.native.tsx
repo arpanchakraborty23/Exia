@@ -35,6 +35,7 @@ import { ScreenCapturePickerView, mediaDevices } from '@livekit/react-native-web
 import { Track } from 'livekit-client';
 import { Ionicons } from '@expo/vector-icons';
 import { brand, radius, spacing } from '@exia/design-tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExiaScreen, ExiaText, useTheme } from '@exia/shared-ui';
 
 import { api } from '@/lib/api';
@@ -128,6 +129,7 @@ export default function Voice() {
 
 function VoiceStage({ sessionId }: { sessionId: string }) {
   const t = useTheme();
+  const insets = useSafeAreaInsets();
   const room = useRoomContext();
   const connectionState = useConnectionState();
   const participants = useParticipants();
@@ -279,7 +281,14 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
   return (
     <View style={styles.flex}>
       {/* Status Bar */}
-      <View style={styles.statusRow}>
+      <View
+        style={[
+          styles.statusRow,
+          {
+            paddingTop: insets.top > 0 ? Math.max(insets.top - spacing.lg, 0) : 0,
+          },
+        ]}
+      >
         <View style={styles.statusLeft}>
           <Pressable
             accessibilityLabel="Back to sessions"
@@ -470,7 +479,12 @@ function VoiceStage({ sessionId }: { sessionId: string }) {
         }}
         onToggleChat={() => setChatOpen((open) => !open)}
         screenShareEnabled={isScreenShareEnabled}
-        style={styles.controlBar}
+        style={[
+          styles.controlBar,
+          {
+            marginBottom: insets.bottom > 0 ? insets.bottom : spacing.xs,
+          },
+        ]}
       />
 
       {screenCapturePickerView}

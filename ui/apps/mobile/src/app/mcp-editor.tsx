@@ -151,7 +151,12 @@ export default function McpEditor() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: spacing.xxl },
-  switchRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md },
+  scroll: {
+    paddingBottom: spacing.xxl,
+    maxWidth: 640,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  switchRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.md, minHeight: 48 },
   error: { marginBottom: spacing.md },
 });

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing } from '@exia/design-tokens';
@@ -52,11 +52,14 @@ export function McpSettings() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['mcp'] }),
   });
 
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 960;
+
   const data = servers.data;
 
   if (servers.isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, isDesktop && styles.containerDesktop]}>
         <Loading label="Loading MCP registry…" />
         <SkeletonCard lines={3} />
         <SkeletonCard lines={3} />
@@ -74,7 +77,7 @@ export function McpSettings() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       {/* Top summary & add button */}
       <View style={[styles.topBar, { backgroundColor: t.card, borderColor: t.border }]}>
         <View style={styles.topBarText}>
@@ -105,26 +108,31 @@ export function McpSettings() {
         />
       ) : null}
 
-      {data?.map((item) => (
-        <ServerItemCard
-          key={item.id}
-          server={item}
-          onToggle={(enabled) => toggle.mutate({ server: item, enabled })}
-          onEdit={() => router.push(`/mcp-editor?id=${encodeURIComponent(item.id)}`)}
-          onDelete={() => remove.mutate(item.id)}
-        />
-      ))}
+      <View style={[styles.serverList, isDesktop && styles.serverListGrid]}>
+        {data?.map((item) => (
+          <ServerItemCard
+            key={item.id}
+            server={item}
+            isDesktop={isDesktop}
+            onToggle={(enabled) => toggle.mutate({ server: item, enabled })}
+            onEdit={() => router.push(`/mcp-editor?id=${encodeURIComponent(item.id)}`)}
+            onDelete={() => remove.mutate(item.id)}
+          />
+        ))}
+      </View>
     </View>
   );
 }
 
 function ServerItemCard({
   server,
+  isDesktop,
   onToggle,
   onEdit,
   onDelete,
 }: {
   server: MCPServer;
+  isDesktop?: boolean;
   onToggle: (enabled: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -152,7 +160,7 @@ function ServerItemCard({
   const transportTone: BadgeTone = server.server_type === 'sse' ? 'info' : 'muted';
 
   return (
-    <ExiaCard style={[styles.card, !server.enabled && styles.cardDisabled]}>
+    <ExiaCard style={[styles.card, !server.enabled && styles.cardDisabled, isDesktop && styles.cardGrid]}>
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleBlock}>
           <View style={styles.serverNameRow}>
@@ -275,6 +283,21 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
+  containerDesktop: {
+    maxWidth: 1240,
+  },
+  serverList: {
+    gap: spacing.md,
+  },
+  serverListGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  cardGrid: {
+    flexBasis: '48.5%',
+    flexGrow: 1,
+  },
   topBar: {
     alignItems: 'center',
     borderRadius: radius.lg,
@@ -287,7 +310,7 @@ const styles = StyleSheet.create({
   topBarText: { flex: 1, gap: 2 },
   topBarTitleRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs },
   topBarTitle: { fontSize: 16, fontWeight: '600' },
-  addBtn: { minHeight: 38, paddingHorizontal: spacing.md },
+  addBtn: { minHeight: 44, paddingHorizontal: spacing.md },
   card: { gap: spacing.md },
   cardDisabled: { opacity: 0.75 },
   cardHeader: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
@@ -297,11 +320,11 @@ const styles = StyleSheet.create({
   badgeRow: { alignItems: 'center', flexDirection: 'row', gap: spacing.xs },
   editButton: {
     alignItems: 'center',
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
-    height: 32,
+    minHeight: 44,
+    minWidth: 44,
     justifyContent: 'center',
-    width: 32,
   },
   commandBox: {
     alignItems: 'center',

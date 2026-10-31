@@ -17,6 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { brand, radius, spacing } from '@exia/design-tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ExiaBadge,
   type ExiaBadgeProps,
@@ -48,8 +49,16 @@ export function ScreenHeader({
   onBack?: () => void;
 }) {
   const t = useTheme();
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.header}>
+    <View
+      style={[
+        styles.header,
+        {
+          paddingTop: insets.top > 0 ? Math.max(insets.top - spacing.lg, 0) : 0,
+        },
+      ]}
+    >
       {onBack ? (
         <Pressable
           accessibilityRole="button"
@@ -373,12 +382,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.md,
-    marginBottom: spacing.xl,
-    marginTop: spacing.xl,
+    marginBottom: spacing.md,
+    marginTop: spacing.xs,
   },
   backButton: {
-    minHeight: 44,
-    minWidth: 44,
+    minHeight: 48,
+    minWidth: 48,
+    borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -402,12 +412,12 @@ const styles = StyleSheet.create({
   stateMessage: { textAlign: 'center' },
   stateAction: { alignSelf: 'stretch', marginTop: spacing.sm },
   field: { gap: spacing.xs, marginBottom: spacing.md },
-  deleteButton: { paddingVertical: spacing.sm, minHeight: 36 },
+  deleteButton: { paddingVertical: spacing.sm, minHeight: 44 },
   input: {
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     fontSize: 16,
-    minHeight: 44,
+    minHeight: 48,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
@@ -420,8 +430,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   segmentItem: {
-    minHeight: 36,
-    paddingHorizontal: spacing.sm + 2,
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
     borderRadius: radius.sm,
     alignItems: 'center',

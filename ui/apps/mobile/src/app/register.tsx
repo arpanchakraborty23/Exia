@@ -65,7 +65,7 @@ export default function Register() {
           <ExiaText variant="caption">Register a new operator profile for your system</ExiaText>
         </View>
 
-        <ExiaCard>
+        <ExiaCard style={styles.card}>
           <Field label="Name">
             <ExiaInput
               accessibilityLabel="Name"
@@ -111,6 +111,7 @@ export default function Register() {
             disabled={!canSubmit}
             label={submitting ? 'Creating account…' : 'Create account'}
             onPress={handleCreateAccount}
+            style={styles.submitBtn}
           />
         </ExiaCard>
 
@@ -129,8 +130,16 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, marginTop: spacing.xxxl },
-  header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xl },
-  error: { marginBottom: spacing.md },
-  signInLink: { alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.md },
+  flex: { flex: 1, justifyContent: 'center', maxWidth: 440, width: '100%', alignSelf: 'center' },
+  header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.lg },
+  card: { gap: spacing.sm },
+  submitBtn: { marginTop: spacing.xs },
+  error: { marginBottom: spacing.xs },
+  signInLink: {
+    alignSelf: 'center',
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
+  },
 });

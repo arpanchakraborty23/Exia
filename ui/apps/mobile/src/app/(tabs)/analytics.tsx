@@ -356,7 +356,13 @@ function JsonTab({ json }: { json: string | null }) {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  scroll: { gap: spacing.md, paddingBottom: spacing.xxl },
+  scroll: {
+    gap: spacing.md,
+    paddingBottom: 110,
+    maxWidth: 760,
+    width: '100%',
+    alignSelf: 'center',
+  },
   syncRow: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -370,7 +376,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.xs + 2,
+    minHeight: 38,
   },
   liveDot: {
     backgroundColor: '#10b981', // liveEmerald — live status only
@@ -379,7 +386,7 @@ const styles = StyleSheet.create({
     width: 6,
   },
   liveText: { color: '#10b981', fontSize: 12, fontWeight: '600' },
-  syncButton: { minHeight: 36, paddingVertical: spacing.xs },
+  syncButton: { minHeight: 44, paddingVertical: spacing.xs, paddingHorizontal: spacing.md },
   tabContent: { gap: spacing.sm },
   tabSectionTitle: { fontWeight: '600', marginTop: spacing.xs },
   kpiGrid: {

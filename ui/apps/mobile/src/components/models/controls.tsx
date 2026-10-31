@@ -19,6 +19,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { brand, radius, spacing } from '@exia/design-tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExiaCard, ExiaText, useTheme } from '@exia/shared-ui';
 
 export interface SelectOption {
@@ -141,6 +142,7 @@ export function OptionPickerModal({
   trigger: (open: () => void) => React.ReactNode;
 }) {
   const t = useTheme();
+  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
 
   return (
@@ -148,7 +150,27 @@ export function OptionPickerModal({
       {trigger(() => setVisible(true))}
       <Modal animationType="slide" onRequestClose={() => setVisible(false)} transparent visible={visible}>
         <View style={styles.modalBackdrop}>
-          <View style={[styles.modalSheet, { backgroundColor: t.card, borderColor: t.border }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss option picker"
+            style={StyleSheet.absoluteFill}
+            onPress={() => setVisible(false)}
+          />
+          <View
+            style={[
+              styles.modalSheet,
+              {
+                backgroundColor: t.card,
+                borderColor: t.border,
+                paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.xs,
+              },
+            ]}
+          >
+            {/* Sheet Handle Grabber */}
+            <View style={styles.sheetHandleWrap}>
+              <View style={[styles.sheetHandle, { backgroundColor: t.mutedForeground }]} />
+            </View>
+
             <ExiaText style={styles.modalTitle}>{title}</ExiaText>
             <FlatList
               data={options}
@@ -187,9 +209,12 @@ export function OptionPickerModal({
               accessibilityLabel={`Close ${title} picker`}
               accessibilityRole="button"
               onPress={() => setVisible(false)}
-              style={({ pressed }) => [styles.modalClose, { opacity: pressed ? 0.8 : 1 }]}
+              style={({ pressed }) => [
+                styles.modalClose,
+                { backgroundColor: t.input, borderColor: t.border, opacity: pressed ? 0.8 : 1 },
+              ]}
             >
-              <ExiaText>Close</ExiaText>
+              <ExiaText style={styles.modalCloseText}>Done</ExiaText>
             </Pressable>
           </View>
         </View>
@@ -330,7 +355,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     justifyContent: 'space-between',
-    minHeight: 44,
+    minHeight: 48,
     paddingHorizontal: spacing.lg,
   },
   selectValue: { flex: 1 },
@@ -343,42 +368,63 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    maxHeight: '75%',
+    maxHeight: '80%',
     maxWidth: 580,
     width: '100%',
     alignSelf: 'center',
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
   },
-  modalTitle: { fontWeight: '600', marginBottom: spacing.md },
+  sheetHandleWrap: {
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  sheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    opacity: 0.35,
+  },
+  modalTitle: { fontWeight: '600', marginBottom: spacing.md, fontSize: 16 },
   optionRow: {
     alignItems: 'center',
     borderRadius: radius.md,
     flexDirection: 'row',
     gap: spacing.md,
-    minHeight: 48,
-    paddingHorizontal: spacing.xs,
+    minHeight: 50,
+    paddingHorizontal: spacing.sm,
   },
   optionText: { flex: 1, gap: 2 },
   modalClose: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
-    marginTop: spacing.sm,
+    minHeight: 48,
+    marginTop: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  modalCloseText: {
+    fontWeight: '600',
+    fontSize: 15,
   },
   stepper: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.md,
     justifyContent: 'space-between',
+    minHeight: 48,
   },
   stepperText: { flex: 1, gap: 2 },
   stepperControl: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
   stepperButton: {
     alignItems: 'center',
     borderRadius: radius.full,
-    height: 36,
+    height: 44,
+    width: 44,
+    minHeight: 44,
+    minWidth: 44,
     justifyContent: 'center',
-    width: 36,
   },
   stepperValue: { minWidth: 56, textAlign: 'center' },
   toggle: {
@@ -386,6 +432,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     justifyContent: 'space-between',
+    minHeight: 48,
   },
   toggleText: { flex: 1, gap: 2 },
 });

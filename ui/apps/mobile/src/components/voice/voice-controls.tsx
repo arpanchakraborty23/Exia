@@ -3,6 +3,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  StyleProp,
   StyleSheet,
   View,
   type ViewStyle,
@@ -36,7 +37,7 @@ export interface VoiceControlBarProps {
   onSetScreenShare: (enabled: boolean) => void;
   onToggleChat: () => void;
   onDisconnect: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function VoiceControlBar({
@@ -170,7 +171,7 @@ function IconButton({
   disabled?: boolean;
   badgeCount?: number;
   iconStyle?: object;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }) {
   const t = useTheme();
 

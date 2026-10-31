@@ -9,10 +9,12 @@ import { router, useSegments } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ThemeProvider, useTheme, useThemeControl } from '@exia/shared-ui';
 import { ApiError } from '@exia/api-client';
 
+import { WebStyles } from '@/components/navigation/web-styles';
 import { tokenStorage } from '@/lib/api';
 import { AUTH_TOKEN_KEY, useAuthToken } from '@/lib/auth';
 import { getStoredSetupConfigSync } from '@/lib/desktop-config';
@@ -66,20 +68,22 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        initialMode={prefs.mode}
-        initialAccent={prefs.accent}
-        initialButtonRadius={prefs.buttonRadius}
-        initialButtonStyle={prefs.buttonStyle}
-        initialFontStyle={prefs.fontStyle}
-        onPreferencesChange={(updated) => {
-          void saveStoredPreferences(updated);
-        }}
-      >
-        <ThemedApp />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          initialMode={prefs.mode}
+          initialAccent={prefs.accent}
+          initialButtonRadius={prefs.buttonRadius}
+          initialButtonStyle={prefs.buttonStyle}
+          initialFontStyle={prefs.fontStyle}
+          onPreferencesChange={(updated) => {
+            void saveStoredPreferences(updated);
+          }}
+        >
+          <ThemedApp />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -88,6 +92,7 @@ function ThemedApp() {
   return (
     <>
       <StatusBar style={resolvedMode === 'light' ? 'dark' : 'light'} />
+      <WebStyles />
       <RootNavigator />
     </>
   );

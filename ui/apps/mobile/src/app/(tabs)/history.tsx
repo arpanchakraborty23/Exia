@@ -157,6 +157,7 @@ export default function History() {
                     accessibilityLabel={`Filter ${opt.label} models`}
                     accessibilityRole="button"
                     accessibilityState={{ selected: isSelected }}
+                    hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                     onPress={() => setModelFilter(opt.id)}
                     style={({ pressed }) => [
                       styles.filterChip,
@@ -373,8 +374,8 @@ function SessionRow({ item }: { item: SessionSummary }) {
 const styles = StyleSheet.create({
   list: {
     gap: spacing.md,
-    paddingBottom: spacing.xxl,
-    maxWidth: 760,
+    paddingBottom: 110,
+    maxWidth: 1160,
     width: '100%',
     alignSelf: 'center',
   },
@@ -385,7 +386,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.sm,
-    minHeight: 44,
+    minHeight: 48,
     paddingHorizontal: spacing.md,
   },
   searchIcon: { opacity: 0.9 },
@@ -396,6 +397,10 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     padding: spacing.xs,
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterRow: {
     flexDirection: 'row',
@@ -409,7 +414,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     justifyContent: 'center',
-    minHeight: 32,
+    minHeight: 38,
     paddingHorizontal: spacing.md,
   },
   filterChipText: {
