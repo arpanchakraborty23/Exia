@@ -14,6 +14,7 @@
     "appId": "ai.exia.desktop",
     "productName": "Exia",
     "copyright": "Copyright © 2026 Exia",
+    "publish": [],
     "directories": {
       "output": "dist-electron"
     },
