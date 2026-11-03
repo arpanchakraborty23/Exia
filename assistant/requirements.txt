@@ -1,6 +1,7 @@
 # LiveKit Voice Agent Core & API SDK
 livekit-agents>=0.9.0
 livekit-api>=0.8.0
+cryptography>=44.0.0
 
 # Voice Processing & AI Plugins
 livekit-plugins-silero>=0.7.0
@@ -24,4 +25,3 @@ python-dotenv>=1.0.0
 pydantic>=2.8.0
 aiosqlite>=0.20.0
 redis>=8.1.0
-

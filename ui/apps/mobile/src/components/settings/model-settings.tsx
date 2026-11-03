@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { radius, spacing } from '@exia/design-tokens';
 import { DEFAULT_MODEL_CONFIG } from '@exia/api-client';
@@ -20,7 +19,6 @@ import {
 } from '@/lib/model-catalog';
 import { ErrorState, ExiaInput, Field, Loading, Segmented } from '@/components/ui';
 import {
-  BadgePill,
   SectionCard,
   SelectField,
   StepperRow,
@@ -40,6 +38,7 @@ interface SettingsForm {
   sttProvider: string;
   sttApiKey: string;
   sttModel: string;
+  sttLanguage: string;
   llmProvider: string;
   llmApiKey: string;
   llmModel: string;
@@ -61,17 +60,6 @@ interface SettingsForm {
   fallbackTtsModel: string;
   fallbackTtsVoice: string;
   fallbackTtsApiKey: string;
-  speechmaticsApiKey: string;
-  speechmaticsModel: string;
-  speechmaticsLanguage: string;
-  speechmaticsTurnDetection: 'vad' | 'external';
-  speechmaticsMaxDelay: number;
-  speechmaticsEnablePartials: boolean;
-  speechmaticsDictionary: string;
-  speechmaticsDiarization: boolean;
-  speechmaticsSpeakerIdentification: boolean;
-  speechmaticsVoiceProfileName: string;
-  speechmaticsSpeakerThreshold: number;
   temperature: number;
   topP: number;
   maxTokens: number;
@@ -87,7 +75,6 @@ function formFromConfig(c: LoadedModelConfig): SettingsForm {
   const anthropicKey = c.anthropic_api_key ?? '';
   const deepgramKey = c.deepgram_api_key ?? '';
   const cartesiaKey = c.cartesia_api_key ?? '';
-  const speechmaticsKey = c.speechmatics_api_key ?? '';
 
   const model = c.gemini_model || DEFAULT_MODEL_CONFIG.gemini_model;
   const realtimeProvider = model.includes('/')
@@ -97,6 +84,8 @@ function formFromConfig(c: LoadedModelConfig): SettingsForm {
       : 'google';
 
   const sttProvider = (c.stt_provider || DEFAULT_MODEL_CONFIG.stt_provider).toLowerCase();
+  const sttKey =
+    c.modular?.stt?.api_key ?? c.stt_model_api_key ?? deepgramKey;
   const llmProvider = (c.llm_provider || DEFAULT_MODEL_CONFIG.llm_provider).toLowerCase();
   const ttsProvider = (c.tts_provider || DEFAULT_MODEL_CONFIG.tts_provider).toLowerCase();
 
@@ -111,13 +100,9 @@ function formFromConfig(c: LoadedModelConfig): SettingsForm {
     realtimeModel: model,
     realtimeVoice: c.gemini_voice || 'Charon',
     sttProvider,
-    sttApiKey:
-      sttProvider === 'deepgram'
-        ? deepgramKey
-        : sttProvider === 'speechmatics'
-          ? speechmaticsKey
-          : '',
-    sttModel: c.stt_model || DEFAULT_MODEL_CONFIG.stt_model,
+    sttApiKey: sttKey,
+    sttModel: c.modular?.stt?.model || c.stt_model || DEFAULT_MODEL_CONFIG.stt_model,
+    sttLanguage: c.modular?.stt?.language || c.stt_language || 'en',
     llmProvider,
     llmApiKey:
       llmProvider === 'google'
@@ -146,17 +131,6 @@ function formFromConfig(c: LoadedModelConfig): SettingsForm {
     fallbackTtsModel: c.fallback_tts_model || 'cartesia/sonic-3.6',
     fallbackTtsVoice: c.fallback_tts_voice || 'baritone-us',
     fallbackTtsApiKey: c.fallback_tts_api_key ?? '',
-    speechmaticsApiKey: speechmaticsKey,
-    speechmaticsModel: c.speechmatics_model ?? 'linden-1',
-    speechmaticsLanguage: c.speechmatics_language ?? 'en',
-    speechmaticsTurnDetection: c.speechmatics_turn_detection ?? 'vad',
-    speechmaticsMaxDelay: c.speechmatics_max_delay ?? 1.0,
-    speechmaticsEnablePartials: c.speechmatics_enable_partials ?? true,
-    speechmaticsDictionary: c.speechmatics_custom_dictionary ?? '',
-    speechmaticsDiarization: c.speechmatics_diarization ?? false,
-    speechmaticsSpeakerIdentification: c.speechmatics_speaker_identification ?? false,
-    speechmaticsVoiceProfileName: c.speechmatics_voice_profile_name ?? '',
-    speechmaticsSpeakerThreshold: c.speechmatics_speaker_threshold ?? 0.82,
     temperature: c.temperature ?? 0.7,
     topP: c.top_p ?? 0.95,
     maxTokens: c.max_output_tokens ?? 1024,
@@ -233,9 +207,6 @@ export function ModelSettings() {
       let anthropicKey = '';
       let deepgramKey = '';
       let cartesiaKey = '';
-      const speechmaticsKey =
-        f.speechmaticsApiKey || (f.sttProvider === 'speechmatics' ? f.sttApiKey : '');
-
       if (f.realtimeProvider === 'google' && f.realtimeApiKey) geminiKey = f.realtimeApiKey;
       if (f.realtimeProvider === 'openai' && f.realtimeApiKey) openaiKey = f.realtimeApiKey;
 
@@ -257,6 +228,8 @@ export function ModelSettings() {
         gemini_voice: f.realtimeVoice,
         stt_provider: f.sttProvider,
         stt_model: f.sttModel,
+        stt_model_api_key: f.sttApiKey || undefined,
+        stt_language: f.sttLanguage,
         llm_provider: f.llmProvider,
         llm_model: f.llmModel,
         tts_provider: f.ttsProvider,
@@ -269,7 +242,6 @@ export function ModelSettings() {
         anthropic_api_key: anthropicKey || undefined,
         deepgram_api_key: deepgramKey || undefined,
         cartesia_api_key: cartesiaKey || undefined,
-        speechmatics_api_key: speechmaticsKey || undefined,
         fallback_enabled: f.fallbackEnabled,
         fallback_provider: f.fallbackProvider,
         fallback_model: f.fallbackModel,
@@ -284,16 +256,6 @@ export function ModelSettings() {
         fallback_tts_model: f.fallbackTtsModel,
         fallback_tts_voice: f.fallbackTtsVoice,
         fallback_tts_api_key: f.fallbackTtsApiKey || undefined,
-        speechmatics_model: f.speechmaticsModel,
-        speechmatics_language: f.speechmaticsLanguage,
-        speechmatics_turn_detection: f.speechmaticsTurnDetection,
-        speechmatics_max_delay: f.speechmaticsMaxDelay,
-        speechmatics_enable_partials: f.speechmaticsEnablePartials,
-        speechmatics_custom_dictionary: f.speechmaticsDictionary,
-        speechmatics_diarization: f.speechmaticsDiarization,
-        speechmatics_speaker_identification: f.speechmaticsSpeakerIdentification,
-        speechmatics_voice_profile_name: f.speechmaticsVoiceProfileName || undefined,
-        speechmatics_speaker_threshold: f.speechmaticsSpeakerThreshold,
         system_prompt_override: f.systemPromptOverride || undefined,
       };
 
@@ -303,33 +265,6 @@ export function ModelSettings() {
       queryClient.invalidateQueries({ queryKey: ['models-config'] });
       setDraft({});
     },
-  });
-
-  const profiles = useQuery({
-    queryKey: ['voice-profiles'],
-    queryFn: () => api.voiceProfiles.list(),
-  });
-
-  const [profileName, setProfileName] = useState('');
-  const [profileRole, setProfileRole] = useState<'admin' | 'user' | 'guest'>('user');
-
-  const createProfile = useMutation({
-    mutationFn: () =>
-      api.voiceProfiles.create({
-        speaker_name: profileName.trim(),
-        role: profileRole,
-        confidence_threshold: 0.82,
-        sample_status: 'enrolled',
-      }),
-    onSuccess: () => {
-      setProfileName('');
-      queryClient.invalidateQueries({ queryKey: ['voice-profiles'] });
-    },
-  });
-
-  const removeProfile = useMutation({
-    mutationFn: (id: string) => api.voiceProfiles.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['voice-profiles'] }),
   });
 
   if (config.isLoading || !form) {
@@ -344,8 +279,6 @@ export function ModelSettings() {
       />
     );
   }
-
-  const profileRows = profiles.data?.profiles ?? [];
 
   return (
     <View style={styles.container}>
@@ -507,6 +440,15 @@ export function ModelSettings() {
               options={modelOptions(sttP, form.sttModel)}
               onChange={(sttModel) => set({ sttModel })}
             />
+            <SelectField
+              label="Spoken language"
+              value={form.sttLanguage}
+              options={SPEECHMATICS_LANGUAGES.map((language) => ({
+                value: language.code,
+                label: language.name,
+              }))}
+              onChange={(sttLanguage) => set({ sttLanguage })}
+            />
           </SectionCard>
 
           <SectionCard title="Language Model" badge={llmP?.badge}>
@@ -602,35 +544,6 @@ export function ModelSettings() {
         ) : null}
       </SectionCard>
 
-      {/* Speechmatics Advanced */}
-      <SectionCard title="Speechmatics Advanced Recognition" badge="URSA / LINDEN">
-        <Field label="Speechmatics API key">
-          <ExiaInput
-            autoCapitalize="none"
-            secureTextEntry
-            placeholder="sm_..."
-            value={form.speechmaticsApiKey}
-            onChangeText={(speechmaticsApiKey) => set({ speechmaticsApiKey })}
-          />
-        </Field>
-        <SelectField
-          label="Spoken language"
-          value={form.speechmaticsLanguage}
-          options={SPEECHMATICS_LANGUAGES.map((l) => ({ value: l.code, label: l.name }))}
-          onChange={(speechmaticsLanguage) => set({ speechmaticsLanguage })}
-        />
-        <ToggleRow
-          label="Speaker diarization"
-          value={form.speechmaticsDiarization}
-          onValueChange={(val: boolean) => set({ speechmaticsDiarization: val })}
-        />
-        <ToggleRow
-          label="Speaker identification"
-          value={form.speechmaticsSpeakerIdentification}
-          onValueChange={(val: boolean) => set({ speechmaticsSpeakerIdentification: val })}
-        />
-      </SectionCard>
-
       {/* Inference Tuning */}
       <SectionCard title="Inference Tuning" badge="PARAMETERS">
         <StepperRow
@@ -666,59 +579,6 @@ export function ModelSettings() {
             style={{ minHeight: 70 }}
           />
         </Field>
-      </SectionCard>
-
-      {/* Voice Profiles */}
-      <SectionCard title="Voice Profiles" badge="SPEAKER ID">
-        <ExiaText variant="caption">
-          Enrolled speaker signatures used by Speechmatics speaker identification and for voice-skill permissions.
-        </ExiaText>
-
-        {profiles.isLoading ? <Loading label="Loading profiles…" /> : null}
-
-        {profileRows.map((p) => (
-          <View key={p.profile_id} style={[styles.profileRow, { borderColor: t.border }]}>
-            <View style={styles.profileText}>
-              <View style={styles.profileTitle}>
-                <ExiaText numberOfLines={1} style={styles.profileName}>
-                  {p.speaker_name}
-                </ExiaText>
-                <BadgePill
-                  label={(p.role ?? 'user').toUpperCase()}
-                  tone={p.role === 'admin' ? 'info' : 'muted'}
-                />
-              </View>
-              <ExiaText variant="caption" numberOfLines={1}>
-                {p.voice_signature ? `${p.voice_signature} · ` : ''}
-                {(p.sample_status ?? 'enrolled') + (p.pitch_hz ? ` · ${p.pitch_hz} Hz` : '')}
-              </ExiaText>
-            </View>
-            <Pressable
-              accessibilityLabel={`Delete profile ${p.speaker_name}`}
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => removeProfile.mutate(p.profile_id)}
-            >
-              <Ionicons name="trash-outline" size={18} color={t.destructive} />
-            </Pressable>
-          </View>
-        ))}
-
-        <Field label="Enroll new speaker">
-          <ExiaInput placeholder="Speaker name" value={profileName} onChangeText={setProfileName} />
-        </Field>
-        <Segmented
-          accessibilityLabel="Speaker role"
-          options={['admin', 'user', 'guest'] as const}
-          value={profileRole}
-          onChange={setProfileRole}
-        />
-        <ExiaButton
-          label={createProfile.isPending ? 'Enrolling…' : 'Enroll speaker'}
-          variant="secondary"
-          disabled={createProfile.isPending || profileName.trim().length === 0}
-          onPress={() => createProfile.mutate()}
-        />
       </SectionCard>
 
       {/* Save Action */}
@@ -768,15 +628,4 @@ const styles = StyleSheet.create({
   },
   personaName: { fontSize: 13, fontWeight: '500' },
   actions: { gap: spacing.sm, marginVertical: spacing.md },
-  profileRow: {
-    alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: 'row',
-    gap: spacing.md,
-    paddingBottom: spacing.sm,
-    paddingTop: spacing.sm,
-  },
-  profileText: { flex: 1, gap: 2 },
-  profileTitle: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
-  profileName: { flexShrink: 1, fontWeight: '500' },
 });

@@ -56,7 +56,6 @@ Exia uses **one single, unified MongoDB database** (`exia_db`) shared between th
 | 6 | **`prompts`** | System personas, base instructions, quick macros & skills | Agent Worker, Prompts UI | Backend / Operator | `(user_id, type)`, Unique `prompt_id`, `is_default` |
 | 7 | **`model_configs`** | Pipeline configuration (`gemini_live` vs `modular`) | Agent Worker, Engine UI | Backend / Operator | Unique `user_id` |
 | 8 | **`agent_memories`** | Long-term semantic memories and user facts (Mem0) | Agent Worker Context | Agent Worker Hook | `(user_id, updated_at)`, `category` |
-| 9 | **`voice_profiles`** | Speaker diarization & voice recognition profiles | Agent STT Worker, Settings | Backend & Agent Worker | Unique `profile_id`, `(user_id, speaker_name)` |
 
 ---
 
@@ -491,29 +490,10 @@ db.agent_memories.createIndex({ "user_id": 1, "category": 1 }, { name: "idx_memo
 
 ---
 
-### 3.9. `voice_profiles` Collection
+### Legacy `voice_profiles` Collection
 
-Stores speaker identification signatures and enrollment details for Speechmatics speaker diarization and personalized recognition.
-
-```javascript
-// Index Definitions
-db.voice_profiles.createIndex({ "profile_id": 1 }, { unique: true, name: "idx_voice_profile_id_unique" });
-db.voice_profiles.createIndex({ "user_id": 1, "speaker_name": 1 }, { unique: true, name: "idx_user_speaker_unique" });
-```
-
-#### Document Shape
-```json
-{
-  "_id": { "$oid": "671e6666777788889999aaaa" },
-  "profile_id": "vp_alpha_01",
-  "user_id": "usr_7x9q2m4k",
-  "speaker_name": "Operator Alpha",
-  "voice_signature": "spk_sig_sha256_9b8f2d...",
-  "enrolled_at": { "$date": "2026-10-27T08:00:00.000Z" },
-  "sample_count": 5,
-  "notes": "Primary account operator voice signature"
-}
-```
+The application no longer reads, writes, or seeds speaker-recognition profiles. Existing
+documents in this collection are left untouched; no data migration or deletion is performed.
 
 ---
 

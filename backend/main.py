@@ -1,7 +1,7 @@
 """
 Exia — FastAPI Server Gateway.
 
-The single API server for all UI clients (Web, Android/Capacitor, Windows/Tauri).
+The single API server for all UI clients (Web, Android, Windows).
 The Backend is the ONLY writer of all UI data to MongoDB; the voice agent
 never receives UI data and reads user data from the database directly.
 
@@ -94,12 +94,6 @@ _DEFAULT_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:12568",
     "http://localhost:12568",
-    # Capacitor Android shell
-    "https://localhost",
-    "capacitor://localhost",
-    # Tauri Windows shell
-    "tauri://localhost",
-    "http://tauri.localhost",
 ]
 
 _EXTRA_ORIGINS = [

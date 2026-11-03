@@ -81,7 +81,7 @@ async def create_user_account(user_data: CreateUserRequest):
         message="Account created successfully"
     )
 
-@auth_route.post("/signin", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
+
 @auth_route.post("/auth/login", response_model=LoginUserResponse, status_code=status.HTTP_200_OK)
 async def login_user(user_data: LoginUserRequest):
     try:

@@ -34,8 +34,6 @@ import {
   Sliders,
   Sparkles,
   Trash2,
-  UserCheck,
-  Users,
   Volume2,
   Waves,
   X,
@@ -43,7 +41,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import { ModelConfig, VoiceUserProfile } from '@/lib/types';
+import { ModelConfig } from '@/lib/types';
 
 // ─────────────────────────────────────────────────────────────
 // VERIFIED UP-TO-DATE MODEL REGISTRIES (Validated via LiveKit Docs & Web)
@@ -145,21 +143,6 @@ export const STT_LANGUAGES = [
   { code: 'ko', name: 'Korean (한국어)' },
   { code: 'ru', name: 'Russian (Русский)' },
   { code: 'ar', name: 'Arabic (العربية)' },
-];
-
-export const SPEECHMATICS_LANGUAGES = [
-  { code: 'en', name: 'English (US, UK, AU, IN, Scottish Accents)' },
-  { code: 'es', name: 'Spanish (Español)' },
-  { code: 'fr', name: 'French (Français)' },
-  { code: 'de', name: 'German (Deutsch)' },
-  { code: 'ja', name: 'Japanese (日本語)' },
-  { code: 'cmn', name: 'Mandarin Chinese (中文)' },
-  { code: 'hi', name: 'Hindi (हिन्दी)' },
-  { code: 'it', name: 'Italian (Italiano)' },
-  { code: 'pt', name: 'Portuguese (Português)' },
-  { code: 'nl', name: 'Dutch (Nederlands)' },
-  { code: 'ko', name: 'Korean (한국어)' },
-  { code: 'auto', name: 'Auto-Detect (Automatic Language ID)' },
 ];
 
 const STT_PROVIDERS = [
@@ -507,42 +490,6 @@ const TTS_PROVIDERS = [
   },
 ];
 
-export const DEFAULT_VOICE_USERS: VoiceUserProfile[] = [
-  {
-    id: 'usr_01_cmd',
-    name: 'Primary Commander',
-    role: 'admin',
-    voice_signature_id: 'vs_ursa_9201',
-    enrolled_at: '2026-10-25',
-    confidence_threshold: 0.85,
-    pitch_hz: 180,
-    sample_status: 'calibrated',
-    notes: 'Primary voice signature for system control & executive directives',
-  },
-  {
-    id: 'usr_02_user',
-    name: 'Sarah (Research Lead)',
-    role: 'user',
-    voice_signature_id: 'vs_ursa_4102',
-    enrolled_at: '2026-10-26',
-    confidence_threshold: 0.82,
-    pitch_hz: 250,
-    sample_status: 'enrolled',
-    notes: 'Authorized speaker with memory context retention & tool execution',
-  },
-  {
-    id: 'usr_03_guest',
-    name: 'Guest Speaker',
-    role: 'guest',
-    voice_signature_id: 'vs_ursa_1190',
-    enrolled_at: '2026-10-27',
-    confidence_threshold: 0.75,
-    pitch_hz: 210,
-    sample_status: 'pending',
-    notes: 'Standard conversational privileges, read-only tools',
-  },
-];
-
 interface FullModelConfig {
   architecture: 'realtime' | 'modular';
   realtime: {
@@ -558,21 +505,6 @@ interface FullModelConfig {
     language?: string;
     serverUrl?: string;
   };
-  speechmatics: {
-    voiceRecognitionEnabled: boolean;
-    apiKey: string;
-    model: 'linden-1' | 'enhanced' | 'standard' | string;
-    turnDetection: 'vad' | 'external';
-    maxDelay: number;
-    enablePartials: boolean;
-    language: string;
-    customDictionary: string[];
-    diarization: boolean;
-    speakerIdentification: boolean;
-    voiceProfileName: string;
-    speakerThreshold: number;
-  };
-  voiceUsers: VoiceUserProfile[];
   llm: {
     provider: LLMProvider;
     apiKey: string;
@@ -642,21 +574,6 @@ const DEFAULT_FULL_CONFIG: FullModelConfig = {
     language: 'en',
     serverUrl: 'http://localhost:9000/v1',
   },
-  speechmatics: {
-    voiceRecognitionEnabled: false,
-    apiKey: '',
-    model: 'linden-1',
-    turnDetection: 'vad',
-    maxDelay: 1.0,
-    enablePartials: true,
-    language: 'en',
-    customDictionary: ['Exia', 'LiveKit', 'WebRTC', 'PyTorch', 'Gemini'],
-    diarization: false,
-    speakerIdentification: false,
-    voiceProfileName: 'Commander / Primary User',
-    speakerThreshold: 0.82,
-  },
-  voiceUsers: DEFAULT_VOICE_USERS,
   llm: {
     provider: 'anthropic',
     apiKey: '',
@@ -710,62 +627,17 @@ const DEFAULT_FULL_CONFIG: FullModelConfig = {
 };
 
 const STORAGE_KEY = 'exia_unified_model_config';
-const VOICE_CACHE_KEY = 'exia_voice_profiles_cache';
 
 export function ModelSelectionView() {
   const [config, setConfig] = useState<FullModelConfig>(DEFAULT_FULL_CONFIG);
   const [isSaved, setIsSaved] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [auditioningVoice, setAuditioningVoice] = useState<string | null>(null);
-  const [newKeyword, setNewKeyword] = useState('');
 
-  // Voice Profile Enrollment Modal
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [isAddingUser, setIsAddingUser] = useState(false);
-  const [newUserName, setNewUserName] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'admin' | 'user' | 'guest'>('user');
-  const [newUserThreshold, setNewUserThreshold] = useState(0.82);
-  const [newUserNotes, setNewUserNotes] = useState('');
-
-  // Load Voice Profiles from MongoDB
-  const loadVoiceProfilesFromDb = () => {
-    api.voiceProfiles
-      .list()
-      .then((res: any) => {
-        if (res && Array.isArray(res.profiles) && res.profiles.length > 0) {
-          const mapped: VoiceUserProfile[] = res.profiles.map((p: any) => ({
-            id: p.profile_id || p.id || `vp_${Math.random().toString(36).substring(7)}`,
-            name: p.speaker_name || p.name || 'Speaker',
-            role: (p.role as 'admin' | 'user' | 'guest') || 'user',
-            voice_signature_id: p.voice_signature || p.voice_signature_id || 'vs_ursa_live',
-            enrolled_at: p.enrolled_at ? p.enrolled_at.split('T')[0] : new Date().toISOString().split('T')[0],
-            confidence_threshold: typeof p.confidence_threshold === 'number' ? p.confidence_threshold : 0.82,
-            pitch_hz: p.pitch_hz || 200,
-            sample_status: p.sample_status || 'enrolled',
-            notes: p.notes || '',
-          }));
-          setConfig((prev) => ({ ...prev, voiceUsers: mapped }));
-          try {
-            localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(mapped));
-          } catch {}
-        }
-      })
-      .catch((err) => {
-        console.warn('Could not load voice profiles from MongoDB:', err);
-      });
-  };
-
-  // Load from localStorage & MongoDB on mount
+  // Load from localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      const rawUsers = localStorage.getItem(VOICE_CACHE_KEY);
-      let parsedUsers: VoiceUserProfile[] = DEFAULT_VOICE_USERS;
-      if (rawUsers) {
-        try {
-          parsedUsers = JSON.parse(rawUsers);
-        } catch {}
-      }
 
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -774,23 +646,16 @@ export function ModelSelectionView() {
           ...parsed,
           realtime: { ...prev.realtime, ...(parsed.realtime || {}) },
           stt: { ...prev.stt, ...(parsed.stt || {}) },
-          speechmatics: { ...prev.speechmatics, ...(parsed.speechmatics || {}) },
-          voiceUsers: parsed.voiceUsers || parsedUsers,
           llm: { ...prev.llm, ...(parsed.llm || {}) },
           tts: { ...prev.tts, ...(parsed.tts || {}) },
           fallback: { ...prev.fallback, ...(parsed.fallback || {}) },
           turnAndVad: { ...prev.turnAndVad, ...(parsed.turnAndVad || {}) },
           params: { ...prev.params, ...(parsed.params || {}) },
         }));
-      } else if (rawUsers) {
-        setConfig((prev) => ({ ...prev, voiceUsers: parsedUsers }));
       }
     } catch (e) {
       console.warn('Failed to parse saved config:', e);
     }
-
-    // Always fetch fresh profiles from MongoDB
-    loadVoiceProfilesFromDb();
 
     // Fetch and merge backend configuration
     api.models
@@ -808,7 +673,6 @@ export function ModelSelectionView() {
             const cartesiaKey = serverCfg.cartesia_api_key || '';
             const elevenlabsKey = serverCfg.elevenlabs_api_key || '';
             const groqKey = serverCfg.groq_api_key || '';
-            const speechmaticsKey = serverCfg.speechmatics_api_key || '';
 
             // Realtime mappings
             const rt = serverCfg.realtime || {};
@@ -830,7 +694,6 @@ export function ModelSelectionView() {
 
             let sttKey = sttCfg.api_key || prev.stt.apiKey;
             if (prev.stt.provider === 'deepgram' && deepgramKey) sttKey = deepgramKey;
-            if (prev.stt.provider === 'speechmatics' && speechmaticsKey) sttKey = speechmaticsKey;
 
             let ttsKey = ttsCfg.api_key || prev.tts.apiKey;
             if (prev.tts.provider === 'cartesia' && cartesiaKey) ttsKey = cartesiaKey;
@@ -846,15 +709,6 @@ export function ModelSelectionView() {
 
             // Turn & VAD mappings
             const vadCfg = serverCfg.vad || {};
-
-            // Speechmatics voice recognition toggle
-            const vrCfg = sttCfg.voice_recognition || {};
-            const vrEnabled = Boolean(
-              serverCfg.speechmatics_voice_recognition_enabled ||
-              vrCfg.enabled ||
-              serverCfg.speechmatics_speaker_identification ||
-              serverCfg.speechmatics_diarization
-            );
 
             return {
               ...prev,
@@ -873,19 +727,6 @@ export function ModelSelectionView() {
                 language: sttCfg.language || serverCfg.stt_language || prev.stt.language || 'en',
                 apiKey: sttKey,
                 serverUrl: sttCfg.server_url || prev.stt.serverUrl,
-              },
-              speechmatics: {
-                ...prev.speechmatics,
-                voiceRecognitionEnabled: vrEnabled,
-                apiKey: speechmaticsKey || prev.speechmatics.apiKey,
-                model: serverCfg.speechmatics_model || prev.speechmatics.model,
-                language: serverCfg.speechmatics_language || prev.speechmatics.language,
-                diarization: Boolean(serverCfg.speechmatics_diarization ?? prev.speechmatics.diarization),
-                speakerIdentification: Boolean(serverCfg.speechmatics_speaker_identification ?? prev.speechmatics.speakerIdentification),
-                speakerThreshold: serverCfg.speechmatics_speaker_threshold ?? prev.speechmatics.speakerThreshold,
-                voiceProfileName: serverCfg.speechmatics_voice_profile_name || prev.speechmatics.voiceProfileName,
-                maxDelay: serverCfg.speechmatics_max_delay ?? prev.speechmatics.maxDelay,
-                enablePartials: serverCfg.speechmatics_enable_partials ?? prev.speechmatics.enablePartials,
               },
               llm: {
                 ...prev.llm,
@@ -951,102 +792,9 @@ export function ModelSelectionView() {
     setShowKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
   };
 
-  const handleAddKeyword = () => {
-    const trimmed = newKeyword.trim();
-    if (!trimmed) return;
-    if (!config.speechmatics.customDictionary.includes(trimmed)) {
-      setConfig((prev) => ({
-        ...prev,
-        speechmatics: {
-          ...prev.speechmatics,
-          customDictionary: [...prev.speechmatics.customDictionary, trimmed],
-        },
-      }));
-    }
-    setNewKeyword('');
-  };
-
-  const handleRemoveKeyword = (wordToRemove: string) => {
-    setConfig((prev) => ({
-      ...prev,
-      speechmatics: {
-        ...prev.speechmatics,
-        customDictionary: prev.speechmatics.customDictionary.filter((w) => w !== wordToRemove),
-      },
-    }));
-  };
-
-  const handleAddVoiceUser = async () => {
-    if (!newUserName.trim()) return;
-    setIsAddingUser(true);
-    const newProfilePayload = {
-      speaker_name: newUserName.trim(),
-      role: newUserRole,
-      confidence_threshold: newUserThreshold,
-      notes: newUserNotes.trim() || 'Acoustic voiceprint enrolled in MongoDB',
-      pitch_hz: Math.floor(160 + Math.random() * 120),
-      sample_status: 'calibrated' as const,
-    };
-
-    try {
-      const saved = await api.voiceProfiles.create(newProfilePayload);
-      const userProfile: VoiceUserProfile = {
-        id: saved.profile_id || `vp_${Date.now().toString(36)}`,
-        name: saved.speaker_name || newUserName.trim(),
-        role: (saved.role as 'admin' | 'user' | 'guest') || newUserRole,
-        voice_signature_id: saved.voice_signature || `vs_ursa_${Math.floor(1000 + Math.random() * 9000)}`,
-        enrolled_at: (saved.enrolled_at || new Date().toISOString()).split('T')[0],
-        confidence_threshold: saved.confidence_threshold || newUserThreshold,
-        pitch_hz: saved.pitch_hz || 200,
-        sample_status: (saved.sample_status as any) || 'calibrated',
-        notes: saved.notes || newProfilePayload.notes,
-      };
-
-      setConfig((prev) => {
-        const updated = [...prev.voiceUsers, userProfile];
-        try {
-          localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(updated));
-        } catch {}
-        return { ...prev, voiceUsers: updated };
-      });
-      toast.success(`Voice profile '${userProfile.name}' enrolled into database`);
-      setNewUserName('');
-      setNewUserNotes('');
-      setIsAddUserModalOpen(false);
-    } catch (e: any) {
-      toast.error(`Failed to enroll voice profile: ${e.message || 'Database error'}`);
-    } finally {
-      setIsAddingUser(false);
-    }
-  };
-
-  const handleDeleteVoiceUser = async (id: string) => {
-    try {
-      await api.voiceProfiles.delete(id);
-      setConfig((prev) => {
-        const updated = prev.voiceUsers.filter((u) => u.id !== id);
-        try {
-          localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(updated));
-        } catch {}
-        return { ...prev, voiceUsers: updated };
-      });
-      toast.success('Voice profile removed from database');
-    } catch (e: any) {
-      setConfig((prev) => {
-        const updated = prev.voiceUsers.filter((u) => u.id !== id);
-        try {
-          localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(updated));
-        } catch {}
-        return { ...prev, voiceUsers: updated };
-      });
-      toast.error(`Database notice: ${e.message || 'Removed from local state'}`);
-    }
-  };
-
   const handleSave = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-      localStorage.setItem(VOICE_CACHE_KEY, JSON.stringify(config.voiceUsers));
 
       // Extract active API keys
       let realtimeKey = config.realtime.apiKey;
@@ -1057,7 +805,6 @@ export function ModelSelectionView() {
       let cartesiaKey = '';
       let elevenlabsKey = '';
       let groqKey = '';
-      const speechmaticsKey = config.speechmatics.apiKey || (config.stt.provider === 'speechmatics' ? config.stt.apiKey : '');
 
       if (config.realtime.provider === 'google' && realtimeKey) geminiKey = realtimeKey;
       if (config.realtime.provider === 'openai' && realtimeKey) openaiKey = realtimeKey;
@@ -1119,16 +866,10 @@ export function ModelSelectionView() {
           tts_api_key: undefined,
           tts_server_url: undefined,
           voice_id: undefined,
-          speechmatics_voice_recognition_enabled: false,
-          speechmatics_speaker_identification: false,
-          speechmatics_diarization: false,
-          voice_users: [],
         };
       } else {
         // STRICT MODULAR ISOLATION
-        const isSpeechmatics = config.stt.provider === 'speechmatics';
-        const vrActive = isSpeechmatics && config.speechmatics.voiceRecognitionEnabled;
-        const activeSttLang = config.stt.language || (isSpeechmatics ? config.speechmatics.language : 'en');
+        const activeSttLang = config.stt.language || 'en';
 
         payload = {
           mode: 'modular',
@@ -1137,21 +878,9 @@ export function ModelSelectionView() {
             stt: {
               provider: config.stt.provider,
               model: config.stt.model,
-              api_key: (isSpeechmatics ? speechmaticsKey : config.stt.apiKey) || undefined,
+              api_key: config.stt.apiKey || undefined,
               server_url: config.stt.serverUrl || undefined,
               language: activeSttLang,
-              voice_recognition: vrActive ? {
-                enabled: true,
-                speaker_identification: config.speechmatics.speakerIdentification,
-                diarization: config.speechmatics.diarization,
-                speaker_threshold: config.speechmatics.speakerThreshold,
-                voice_profile_name: config.speechmatics.voiceProfileName,
-                turn_detection: config.speechmatics.turnDetection,
-                max_delay: config.speechmatics.maxDelay,
-                enable_partials: config.speechmatics.enablePartials,
-                custom_dictionary: config.speechmatics.customDictionary.join(', '),
-                voice_users: config.voiceUsers,
-              } : { enabled: false },
             },
             llm: {
               provider: config.llm.provider,
@@ -1173,7 +902,7 @@ export function ModelSelectionView() {
           },
           stt_provider: config.stt.provider,
           stt_model: config.stt.model,
-          stt_model_api_key: (isSpeechmatics ? speechmaticsKey : config.stt.apiKey) || undefined,
+          stt_model_api_key: config.stt.apiKey || undefined,
           stt_language: activeSttLang,
           stt_server_url: config.stt.serverUrl || undefined,
           llm_provider: config.llm.provider,
@@ -1201,19 +930,6 @@ export function ModelSelectionView() {
           groq_api_key: groqKey || undefined,
           cartesia_api_key: cartesiaKey || undefined,
           elevenlabs_api_key: elevenlabsKey || undefined,
-          speechmatics_api_key: speechmaticsKey || undefined,
-          speechmatics_voice_recognition_enabled: vrActive,
-          speechmatics_model: isSpeechmatics ? config.speechmatics.model : undefined,
-          speechmatics_language: activeSttLang,
-          speechmatics_turn_detection: vrActive ? config.speechmatics.turnDetection : undefined,
-          speechmatics_max_delay: vrActive ? config.speechmatics.maxDelay : undefined,
-          speechmatics_enable_partials: vrActive ? config.speechmatics.enablePartials : undefined,
-          speechmatics_custom_dictionary: vrActive ? config.speechmatics.customDictionary.join(', ') : undefined,
-          speechmatics_diarization: vrActive ? config.speechmatics.diarization : false,
-          speechmatics_speaker_identification: vrActive ? config.speechmatics.speakerIdentification : false,
-          speechmatics_voice_profile_name: vrActive ? config.speechmatics.voiceProfileName : undefined,
-          speechmatics_speaker_threshold: vrActive ? config.speechmatics.speakerThreshold : undefined,
-          voice_users: vrActive ? config.voiceUsers : [],
           // Explicitly clear realtime fields
           realtime_model_provider: undefined,
           realtime_model: undefined,
@@ -1837,10 +1553,6 @@ export function ModelSelectionView() {
                       setConfig((prev) => ({
                         ...prev,
                         stt: { ...prev.stt, model: val },
-                        speechmatics:
-                          prev.stt.provider === 'speechmatics'
-                            ? { ...prev.speechmatics, model: val }
-                            : prev.speechmatics,
                       }));
                     }}
                     className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-2 text-xs"
@@ -1866,7 +1578,6 @@ export function ModelSelectionView() {
                       setConfig((prev) => ({
                         ...prev,
                         stt: { ...prev.stt, language: lang },
-                        speechmatics: { ...prev.speechmatics, language: lang },
                       }));
                     }}
                     className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-2 text-xs"
@@ -1924,10 +1635,6 @@ export function ModelSelectionView() {
                           setConfig((prev) => ({
                             ...prev,
                             stt: { ...prev.stt, apiKey: val },
-                            speechmatics:
-                              prev.stt.provider === 'speechmatics'
-                                ? { ...prev.speechmatics, apiKey: val }
-                                : prev.speechmatics,
                           }));
                         }}
                         className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-2.5 py-1.5 pr-8 text-xs font-mono"
@@ -1951,7 +1658,7 @@ export function ModelSelectionView() {
                       <span>Speechmatics Active</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground leading-normal">
-                      Configure transcription, voice recognition, and speaker profiles in the studio section below.
+                      Configure the Speechmatics model, API key, and spoken language here.
                     </p>
                   </div>
                 ) : (
@@ -1963,8 +1670,7 @@ export function ModelSelectionView() {
                         stt: {
                           ...prev.stt,
                           provider: 'speechmatics',
-                          model: prev.speechmatics.model || 'linden-1',
-                          apiKey: prev.speechmatics.apiKey || '',
+                          model: 'linden-1',
                         },
                       }));
                     }}
@@ -2384,599 +2090,7 @@ export function ModelSelectionView() {
               </div>
             </div>
 
-            {/* ── SPEECHMATICS VOICE RECOGNITION STUDIO (Conditional on Speechmatics STT) ── */}
-            {config.stt.provider === 'speechmatics' && (
-              <section className="border-border bg-card relative space-y-6 overflow-hidden rounded-2xl border p-6 shadow-sm">
-                <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-primary/5 blur-3xl" />
 
-                {/* Studio Header & Main Toggle */}
-                <div className="border-border flex flex-col justify-between gap-4 border-b pb-5 sm:flex-row sm:items-center">
-                  <div className="flex items-center gap-3">
-                    <div className="border-primary/40 bg-primary/10 text-primary flex size-11 items-center justify-center rounded-2xl border shadow-inner">
-                      <Waves className="size-5" />
-                    </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-foreground text-base font-semibold">Speechmatics Voice Recognition Studio</h3>
-                        <span className="border-primary/30 bg-primary/15 text-primary rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase">
-                          URSA™ & LINDEN-1
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground mt-0.5 text-xs">
-                        Conversational agent STT with optional acoustic voice identification and MongoDB profile enrollment.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Toggle: Enable Voice Recognition */}
-                  <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-3.5 py-2">
-                    <div className="text-left">
-                      <div className="text-xs font-semibold text-foreground">Voice Recognition Mode</div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {config.speechmatics.voiceRecognitionEnabled ? 'Speaker ID & Profiles Active' : 'Simple Transcription Only'}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          speechmatics: {
-                            ...prev.speechmatics,
-                            voiceRecognitionEnabled: !prev.speechmatics.voiceRecognitionEnabled,
-                          },
-                        }))
-                      }
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        config.speechmatics.voiceRecognitionEnabled ? 'bg-primary' : 'bg-muted/80'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                          config.speechmatics.voiceRecognitionEnabled ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {/* SIMPLE MODE (When Voice Recognition is Disabled) */}
-                {!config.speechmatics.voiceRecognitionEnabled ? (
-                  <div className="space-y-4">
-                    <div className="rounded-xl border border-border/80 bg-muted/20 p-4 text-xs text-muted-foreground flex items-center gap-3">
-                      <Info className="size-4 text-primary shrink-0" />
-                      <span>
-                        <strong className="text-foreground">Simple Transcription Mode:</strong> Standard STT transcription is enabled. Acoustic voice identification, diarization, and speaker profiles are disabled and will not be stored in database.
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      {/* Language Selection */}
-                      <div className="space-y-1.5">
-                        <label className="text-foreground text-xs font-medium">Transcription Language</label>
-                        <select
-                          value={config.speechmatics.language}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              speechmatics: { ...prev.speechmatics, language: e.target.value },
-                            }))
-                          }
-                          className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-2 text-xs"
-                        >
-                          {SPEECHMATICS_LANGUAGES.map((l) => (
-                            <option key={l.code} value={l.code} className="bg-card text-foreground">
-                              {l.name} ({l.code})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* API Key */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <label className="text-foreground text-xs font-medium">Speechmatics API Key</label>
-                          <span className="text-muted-foreground text-[10px]">portal.speechmatics.com</span>
-                        </div>
-                        <div className="relative">
-                          <input
-                            type={showKeys['speechmatics'] ? 'text' : 'password'}
-                            placeholder="Bearer eyJhbGciOiJIUzI1Ni..."
-                            value={config.speechmatics.apiKey}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: { ...prev.speechmatics, apiKey: val },
-                                stt:
-                                  prev.stt.provider === 'speechmatics'
-                                    ? { ...prev.stt, apiKey: val }
-                                    : prev.stt,
-                              }));
-                            }}
-                            className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 pr-10 font-mono text-xs"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => toggleKey('speechmatics')}
-                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
-                          >
-                            {showKeys['speechmatics'] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* EXPANDED MODE (Voice Recognition Enabled) */
-                  <div className="space-y-6">
-                    {/* 1. Acoustic Model */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-foreground text-xs font-medium">1. Acoustic Recognition Model</label>
-                        <span className="text-muted-foreground text-[11px]">
-                          Active: <strong className="text-foreground font-semibold">{config.speechmatics.model}</strong>
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                        {/* Linden-1 */}
-                        <div
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              speechmatics: { ...prev.speechmatics, model: 'linden-1' },
-                              stt: prev.stt.provider === 'speechmatics' ? { ...prev.stt, model: 'linden-1' } : prev.stt,
-                            }))
-                          }
-                          className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
-                            config.speechmatics.model === 'linden-1'
-                              ? 'border-primary/60 bg-primary/10 shadow-sm ring-1 ring-primary/30'
-                              : 'border-border bg-muted/20 hover:bg-muted/40'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="border-primary/40 bg-primary/20 text-primary rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase">
-                              VOICE AGENT OPTIMIZED
-                            </span>
-                            {config.speechmatics.model === 'linden-1' && <Check className="text-primary size-4" />}
-                          </div>
-                          <h4 className="text-foreground mt-2.5 text-sm font-semibold">Linden-1 (Agent STT)</h4>
-                          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                            Purpose-built for LiveKit voice agents with ~90ms turn endpointing and lowest latency streaming.
-                          </p>
-                        </div>
-
-                        {/* Enhanced */}
-                        <div
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              speechmatics: { ...prev.speechmatics, model: 'enhanced' },
-                              stt: prev.stt.provider === 'speechmatics' ? { ...prev.stt, model: 'enhanced' } : prev.stt,
-                            }))
-                          }
-                          className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
-                            config.speechmatics.model === 'enhanced'
-                              ? 'border-primary/60 bg-primary/10 shadow-sm ring-1 ring-primary/30'
-                              : 'border-border bg-muted/20 hover:bg-muted/40'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="border-border bg-muted text-foreground rounded-full border px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
-                              FLAGSHIP ACCURACY
-                            </span>
-                            {config.speechmatics.model === 'enhanced' && <Check className="text-primary size-4" />}
-                          </div>
-                          <h4 className="text-foreground mt-2.5 text-sm font-semibold">Ursa Enhanced</h4>
-                          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                            Deep neural network delivering lowest word error rate across 50+ global dialects and noisy environments.
-                          </p>
-                        </div>
-
-                        {/* Standard */}
-                        <div
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              speechmatics: { ...prev.speechmatics, model: 'standard' },
-                              stt: prev.stt.provider === 'speechmatics' ? { ...prev.stt, model: 'standard' } : prev.stt,
-                            }))
-                          }
-                          className={`relative cursor-pointer rounded-xl border p-4 transition-all ${
-                            config.speechmatics.model === 'standard'
-                              ? 'border-primary/60 bg-primary/10 shadow-sm ring-1 ring-primary/30'
-                              : 'border-border bg-muted/20 hover:bg-muted/40'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="border-border bg-muted text-foreground rounded-full border px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase">
-                              FAST STREAMING
-                            </span>
-                            {config.speechmatics.model === 'standard' && <Check className="text-primary size-4" />}
-                          </div>
-                          <h4 className="text-foreground mt-2.5 text-sm font-semibold">Ursa Standard</h4>
-                          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                            High throughput cloud model designed for minimal compute overhead and fast transcription.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 2. Turn Detection & Latency Window */}
-                    <div className="border-border grid grid-cols-1 gap-6 border-t pt-5 md:grid-cols-2">
-                      <div className="space-y-3">
-                        <label className="text-foreground text-xs font-medium">2. Turn Detection Mode</label>
-                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                          <div
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: { ...prev.speechmatics, turnDetection: 'vad' },
-                              }))
-                            }
-                            className={`cursor-pointer rounded-xl border p-3 transition-all ${
-                              config.speechmatics.turnDetection === 'vad'
-                                ? 'border-primary/50 bg-primary/10 ring-1 ring-primary/30'
-                                : 'border-border bg-muted/20 hover:bg-muted/40'
-                            }`}
-                          >
-                            <div className="text-foreground text-xs font-semibold">Native Server VAD</div>
-                            <p className="text-muted-foreground mt-1 text-[11px]">
-                              Autonomous endpointing handled directly in the Speechmatics recognition stream.
-                            </p>
-                          </div>
-
-                          <div
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: { ...prev.speechmatics, turnDetection: 'external' },
-                              }))
-                            }
-                            className={`cursor-pointer rounded-xl border p-3 transition-all ${
-                              config.speechmatics.turnDetection === 'external'
-                                ? 'border-primary/50 bg-primary/10 ring-1 ring-primary/30'
-                                : 'border-border bg-muted/20 hover:bg-muted/40'
-                            }`}
-                          >
-                            <div className="text-foreground text-xs font-semibold">External Silero VAD</div>
-                            <p className="text-muted-foreground mt-1 text-[11px]">
-                              LiveKit Silero VAD coordinates turn endpoints while Speechmatics streams text.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-foreground text-xs font-medium">3. Max Delay (`max_delay`)</label>
-                          <span className="text-primary text-xs font-semibold">{config.speechmatics.maxDelay.toFixed(1)}s</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0.5"
-                          max="3.0"
-                          step="0.1"
-                          value={config.speechmatics.maxDelay}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              speechmatics: {
-                                ...prev.speechmatics,
-                                maxDelay: parseFloat(e.target.value),
-                              },
-                            }))
-                          }
-                          className="accent-primary w-full cursor-pointer"
-                        />
-                        <div className="text-muted-foreground flex justify-between text-[10px]">
-                          <span>0.5s (Ultra-Instant)</span>
-                          <span>1.0s (Agent Standard)</span>
-                          <span>3.0s (High Accuracy)</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3. Language & Custom Dictionary */}
-                    <div className="border-border grid grid-cols-1 gap-6 border-t pt-5 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-foreground text-xs font-medium">4. Language & Accent Adaptation</label>
-                        <select
-                          value={config.speechmatics.language}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              speechmatics: { ...prev.speechmatics, language: e.target.value },
-                            }))
-                          }
-                          className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-2 text-xs"
-                        >
-                          {SPEECHMATICS_LANGUAGES.map((l) => (
-                            <option key={l.code} value={l.code} className="bg-card text-foreground">
-                              {l.name} ({l.code})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-foreground text-xs font-medium">5. Custom Dictionary (Keyword Boosting)</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Add term (e.g. Exia, PyTorch)..."
-                            value={newKeyword}
-                            onChange={(e) => setNewKeyword(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddKeyword();
-                              }
-                            }}
-                            className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus flex-1 rounded-xl border px-3 py-1.5 text-xs"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleAddKeyword}
-                            className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/30 inline-flex cursor-pointer items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors"
-                          >
-                            <Plus className="size-3.5" />
-                            <span>Add</span>
-                          </button>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {config.speechmatics.customDictionary.map((word) => (
-                            <span
-                              key={word}
-                              className="border-border bg-muted/60 text-foreground inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-xs"
-                            >
-                              <span>{word}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveKeyword(word)}
-                                className="text-muted-foreground hover:text-foreground cursor-pointer"
-                              >
-                                <X className="size-3" />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 4. Streaming Toggles & Key */}
-                    <div className="border-border grid grid-cols-1 gap-6 border-t pt-5 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-foreground text-xs font-medium">6. Streaming Features</label>
-                        <label className="border-border bg-muted/20 hover:bg-muted/30 flex cursor-pointer items-center justify-between rounded-xl border p-3">
-                          <div>
-                            <div className="text-foreground text-xs font-semibold">Real-Time Interim Partials</div>
-                            <div className="text-muted-foreground text-[10px]">
-                              Stream instantaneous word-by-word hypotheses before final sentence punctuation.
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={config.speechmatics.enablePartials}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: { ...prev.speechmatics, enablePartials: e.target.checked },
-                              }))
-                            }
-                            className="accent-primary size-4 cursor-pointer"
-                          />
-                        </label>
-
-                        <label className="border-border bg-muted/20 hover:bg-muted/30 flex cursor-pointer items-center justify-between rounded-xl border p-3">
-                          <div>
-                            <div className="text-foreground text-xs font-semibold">Speaker Change Detection / Diarization</div>
-                            <div className="text-muted-foreground text-[10px]">
-                              Track speaker boundaries and distinct turns.
-                            </div>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={config.speechmatics.diarization}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: { ...prev.speechmatics, diarization: e.target.checked },
-                              }))
-                            }
-                            className="accent-primary size-4 cursor-pointer"
-                          />
-                        </label>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-foreground text-xs font-medium">Speechmatics API Key</label>
-                          <span className="text-muted-foreground text-[10px]">portal.speechmatics.com</span>
-                        </div>
-                        <div className="relative">
-                          <input
-                            type={showKeys['speechmatics'] ? 'text' : 'password'}
-                            placeholder="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                            value={config.speechmatics.apiKey}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: { ...prev.speechmatics, apiKey: val },
-                                stt:
-                                  prev.stt.provider === 'speechmatics'
-                                    ? { ...prev.stt, apiKey: val }
-                                    : prev.stt,
-                              }));
-                            }}
-                            className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 pr-10 font-mono text-xs"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => toggleKey('speechmatics')}
-                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
-                          >
-                            {showKeys['speechmatics'] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 5. Active Voice Profiles & Speaker Verification */}
-                    <div className="border-border border-t pt-5 space-y-4">
-                      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="flex size-9 items-center justify-center rounded-xl border border-primary/40 bg-primary/10 text-primary">
-                            <Users className="size-4" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-foreground text-sm font-semibold">Active Voice Profiles (MongoDB Database)</h4>
-                              <span className="rounded-full border border-primary/30 bg-primary/15 px-2 py-0.5 text-[9px] font-bold text-primary uppercase">
-                                {config.voiceUsers.length} Enrolled
-                              </span>
-                            </div>
-                            <p className="text-muted-foreground text-xs">
-                              Enrolled acoustic speaker voiceprints in MongoDB (<code className="text-foreground font-mono">voice_profiles</code>). Real-time caller identification.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={loadVoiceProfilesFromDb}
-                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground transition-colors"
-                            title="Refresh from MongoDB"
-                          >
-                            <RotateCcw className="size-3.5 text-muted-foreground" />
-                            <span>Sync DB</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setIsAddUserModalOpen(true)}
-                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary hover:bg-primary-hover px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all"
-                          >
-                            <Plus className="size-3.5" />
-                            <span>Enroll Voice User</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Speaker Identification Mode Switch */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 p-3.5">
-                        <div className="space-y-0.5">
-                          <div className="text-foreground text-xs font-semibold flex items-center gap-2">
-                            <span>Acoustic Speaker Voice Verification</span>
-                            {config.speechmatics.speakerIdentification && (
-                              <span className="text-[10px] text-emerald-500 font-medium">● Active</span>
-                            )}
-                          </div>
-                          <p className="text-muted-foreground text-[11px]">
-                            Matches callers against enrolled signatures and injects identity into conversation context.
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                          <span className="text-xs font-mono text-primary font-semibold">
-                            {(config.speechmatics.speakerThreshold * 100).toFixed(0)}% threshold
-                          </span>
-                          <input
-                            type="checkbox"
-                            checked={config.speechmatics.speakerIdentification}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                speechmatics: {
-                                  ...prev.speechmatics,
-                                  speakerIdentification: e.target.checked,
-                                },
-                              }))
-                            }
-                            className="size-4 accent-primary cursor-pointer"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Voice Users List Cards */}
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {config.voiceUsers.map((user) => (
-                          <div
-                            key={user.id}
-                            className="border-border bg-muted/20 hover:bg-muted/30 relative flex flex-col justify-between rounded-xl border p-4 transition-all"
-                          >
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex size-7 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
-                                    <UserCheck className="size-3.5" />
-                                  </div>
-                                  <div>
-                                    <div className="text-foreground text-xs font-semibold">{user.name}</div>
-                                    <span className="text-[10px] text-muted-foreground font-mono">{user.voice_signature_id}</span>
-                                  </div>
-                                </div>
-
-                                <span
-                                  className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase border ${
-                                    user.role === 'admin'
-                                      ? 'border-primary/40 bg-primary/15 text-primary'
-                                      : user.role === 'user'
-                                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
-                                      : 'border-border bg-muted text-muted-foreground'
-                                  }`}
-                                >
-                                  {user.role}
-                                </span>
-                              </div>
-
-                              {user.notes && (
-                                <p className="text-muted-foreground text-[11px] leading-relaxed line-clamp-2">
-                                  {user.notes}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="mt-3 border-t border-border pt-2.5 flex items-center justify-between text-[10px]">
-                              <div className="flex items-center gap-1.5 text-muted-foreground">
-                                <span className="text-primary font-medium">{(user.confidence_threshold * 100).toFixed(0)}%</span>
-                                <span>match threshold</span>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                {user.pitch_hz && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAudition(user.pitch_hz!, user.name)}
-                                    className="text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
-                                    title="Audition fundamental pitch"
-                                  >
-                                    <Volume2 className="size-3" />
-                                    <span>{user.pitch_hz}Hz</span>
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteVoiceUser(user.id)}
-                                  className="text-muted-foreground hover:text-red-400 cursor-pointer p-0.5"
-                                  title="Delete voice profile"
-                                >
-                                  <Trash2 className="size-3" />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
           </div>
         )}
       </section>
@@ -3655,113 +2769,7 @@ export function ModelSelectionView() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          MODAL: ENROLL NEW VOICE USER PROFILE
-         ───────────────────────────────────────────────────────────── */}
-      {isAddUserModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="border-border bg-card relative w-full max-w-md rounded-2xl border p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
-                  <UserCheck className="size-4" />
-                </div>
-                <div>
-                  <h3 className="text-foreground text-sm font-semibold">Enroll Voice User Profile</h3>
-                  <p className="text-muted-foreground text-xs">Register speaker name, access role, and threshold.</p>
-                </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={() => setIsAddUserModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {/* User Name */}
-              <div className="space-y-1">
-                <label className="text-foreground text-xs font-medium">Speaker Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Commander Alex, Sarah, Guest..."
-                  value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-xs"
-                />
-              </div>
-
-              {/* Role */}
-              <div className="space-y-1">
-                <label className="text-foreground text-xs font-medium">Access Role</label>
-                <select
-                  value={newUserRole}
-                  onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'user' | 'guest')}
-                  className="bg-muted/40 border-border text-foreground input-focus w-full cursor-pointer rounded-xl border px-3 py-2 text-xs"
-                >
-                  <option value="admin" className="bg-card text-foreground">Admin / Owner (Full Directives Override)</option>
-                  <option value="user" className="bg-card text-foreground">Authorized User (Standard AI Queries)</option>
-                  <option value="guest" className="bg-card text-foreground">Guest Speaker (Limited Access)</option>
-                </select>
-              </div>
-
-              {/* Confidence Threshold */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-foreground text-xs font-medium">Match Confidence Threshold</label>
-                  <span className="text-primary font-mono text-xs font-semibold">
-                    {(newUserThreshold * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0.70"
-                  max="0.95"
-                  step="0.01"
-                  value={newUserThreshold}
-                  onChange={(e) => setNewUserThreshold(parseFloat(e.target.value))}
-                  className="w-full accent-primary cursor-pointer"
-                />
-              </div>
-
-              {/* Notes */}
-              <div className="space-y-1">
-                <label className="text-foreground text-xs font-medium">Profile Directives / Notes</label>
-                <textarea
-                  rows={2}
-                  placeholder="Notes on voice tone, privileges, or companion response style..."
-                  value={newUserNotes}
-                  onChange={(e) => setNewUserNotes(e.target.value)}
-                  className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-xs"
-                />
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-              <button
-                type="button"
-                onClick={() => setIsAddUserModalOpen(false)}
-                className="cursor-pointer rounded-xl border border-border px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleAddVoiceUser}
-                disabled={!newUserName.trim() || isAddingUser}
-                className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover disabled:opacity-50"
-              >
-                {isAddingUser ? <Loader2 className="size-3.5 animate-spin" /> : <UserCheck className="size-3.5" />}
-                <span>{isAddingUser ? 'Enrolling to Database...' : 'Enroll to Database'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

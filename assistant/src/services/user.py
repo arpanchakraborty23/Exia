@@ -11,7 +11,7 @@ class UserContext:
     """
     Manages user configuration context for the voice assistant.
     Fetches full user configuration across MongoDB collections (model_config,
-    prompts, mcp_servers, voice_profiles, users) and caches in Redis.
+    prompts, mcp_servers, users) and caches in Redis.
     """
     def __init__(self):
         self.mongo_service = MongoDBService(
@@ -67,4 +67,3 @@ class UserContext:
         except Exception as e:
             logger.error(f"Error fetching session context for '{user_id}': {e}")
             raise
-

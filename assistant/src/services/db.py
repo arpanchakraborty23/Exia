@@ -171,7 +171,6 @@ class MongoDBService:
             settings.mongodb_model_collection,
             settings.mongodb_prompt_collection,
             settings.mongodb_mcp_collection,
-            settings.mongodb_voice_profiles_collection,
             settings.mongodb_session_collection,
         ]
 
@@ -192,8 +191,7 @@ class MongoDBService:
           1. model_config: LLM, STT, TTS, LiveKit credentials, API keys, fallback settings
           2. prompts: System directives, quick macros, skill prompts, active default prompt
           3. mcp_servers: Active MCP tools, transport protocol, endpoints
-          4. voice_profiles: Speaker recognition profiles and diarization voice signatures
-          5. session: User session data
+          4. session: User session data
         
         Returns:
             Dict[str, Any] containing the structured configuration data.
@@ -231,21 +229,12 @@ class MongoDBService:
                 raw_mcp = list(self.db[mcp_col].find({"user_id": user_id}, {"_id": 0}))
                 mcp_servers = sanitize_doc(raw_mcp)
 
-            # 4. Voice Profiles
-            voice_col = settings.mongodb_voice_profiles_collection
-            voice_profiles = []
-            if voice_col in existing_cols:
-                raw_voices = list(self.db[voice_col].find({"user_id": user_id}, {"_id": 0}))
-                voice_profiles = sanitize_doc(raw_voices)
-
-
             return {
                 "user_id": user_id,
                 "model_config": model_config,
                 "prompts": prompts,
                 "default_prompt": default_prompt,
                 "mcp_servers": mcp_servers,
-                "voice_profiles": voice_profiles,
             }
         except Exception as e:
             logger.error(f"Failed to fetch user config for '{user_id}': {e}")

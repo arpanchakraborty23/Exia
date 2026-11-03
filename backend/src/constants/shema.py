@@ -41,9 +41,7 @@ class NewPasswordResponse(BaseModel):
 class AgentTokenRequest(BaseModel):
     room_name: Optional[str] = None
     session_id: Optional[str] = None
-    livekit_url: Optional[str] = None
-    livekit_api_key: Optional[str] = None
-    livekit_api_secret: Optional[str] = None
+
 
 
 class AgentTokenResponse(BaseModel):
@@ -241,22 +239,6 @@ class FallbackSectionSchema(BaseModel):
     tts: Optional[FallbackComponentSchema] = None
 
 
-class VoiceRecognitionSectionSchema(BaseModel):
-    model_config = ConfigDict(extra="allow")
-    enabled: Optional[bool] = False
-    diarization: Optional[bool] = False
-    speaker_identification: Optional[bool] = False
-    speaker_threshold: Optional[float] = None
-    voice_profile_name: Optional[str] = None
-    model: Optional[str] = None
-    language: Optional[str] = None
-    turn_detection: Optional[bool] = None
-    max_delay: Optional[float] = None
-    enable_partials: Optional[bool] = None
-    custom_dictionary: Optional[str] = None
-    voice_users: Optional[List[Dict[str, Any]]] = None
-
-
 # model engine config (Intelligence & Model Engine) — matches frontend ModelConfig.
 # Accepts both `mode` (lib/api.ts) and `pipeline_mode` (model-selection-view),
 # plus the `llt_provider` typo the view sends.
@@ -273,7 +255,6 @@ class ModelConfigSchema(BaseModel):
     realtime: Optional[Dict[str, Any]] = None
     modular: Optional[ModularConfigSchema] = None
     fallback: Optional[FallbackSectionSchema] = None
-    voice_recognition: Optional[VoiceRecognitionSectionSchema] = None
     api_keys: Optional[Dict[str, str]] = None
 
     # STT configuration
@@ -336,21 +317,6 @@ class ModelConfigSchema(BaseModel):
         default=None,
         validation_alias=AliasChoices("tts_server_url", "server_url"),
     )
-
-    # Speechmatics STT voice recognition
-    speechmatics_voice_recognition_enabled: Optional[bool] = None
-    speechmatics_voice_id: Optional[str] = None
-    speechmatics_language: Optional[str] = None
-    speechmatics_model: Optional[str] = None
-    speechmatics_diarization: Optional[bool] = None
-    speechmatics_speaker_identification: Optional[bool] = None
-    speechmatics_speaker_threshold: Optional[float] = None
-    speechmatics_voice_profile_name: Optional[str] = None
-    speechmatics_turn_detection: Optional[bool] = None
-    speechmatics_max_delay: Optional[float] = None
-    speechmatics_enable_partials: Optional[bool] = None
-    speechmatics_custom_dictionary: Optional[str] = None
-    voice_users: Optional[List[Dict[str, Any]]] = None
 
     # Turn detection and VAD Section
     vad_threshold: Optional[float] = None
@@ -514,36 +480,6 @@ class AnalyticsMetricsResponse(BaseModel):
     })
     model_breakdown: List[Dict[str, Any]] = Field(default_factory=list)
     recent_activity: List[Dict[str, Any]] = Field(default_factory=list)
-
-
-# User Voice Recognition / Speaker Diarization Profiles
-class VoiceProfileSchema(BaseModel):
-    profile_id: str
-    user_id: str
-    speaker_name: str
-    voice_signature: Optional[str] = None
-    enrolled_at: str
-    sample_count: int = 1
-    notes: Optional[str] = None
-    role: Optional[str] = "user"
-    confidence_threshold: Optional[float] = 0.82
-    pitch_hz: Optional[int] = 200
-    sample_status: Optional[str] = "enrolled"
-
-
-class VoiceProfileCreateRequest(BaseModel):
-    speaker_name: str
-    voice_signature: Optional[str] = None
-    notes: Optional[str] = None
-    role: Optional[str] = "user"
-    confidence_threshold: Optional[float] = 0.82
-    pitch_hz: Optional[int] = 200
-    sample_status: Optional[str] = "enrolled"
-
-
-class VoiceProfileListResponse(BaseModel):
-    profiles: List[VoiceProfileSchema] = Field(default_factory=list)
-    total: int = 0
 
 
 # mcp generic edit (frontend edit modal) — all fields optional

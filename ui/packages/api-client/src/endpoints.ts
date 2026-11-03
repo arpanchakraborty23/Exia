@@ -134,37 +134,6 @@ export interface LiveKitOverrides {
   roomName?: string;
 }
 
-/**
- * Backend wire shape for voice profiles (FastAPI VoiceProfileSchema —
- * see backend/src/constants + users.json seed data). Note: the wire uses
- * `profile_id` / `speaker_name` / `voice_signature`, NOT the shared-types
- * `VoiceUserProfile` field names, so this screen maps between the two.
- */
-export interface VoiceProfileWire {
-  profile_id: string;
-  user_id: string;
-  speaker_name: string;
-  voice_signature?: string | null;
-  enrolled_at: string;
-  sample_count: number;
-  notes?: string | null;
-  role?: string;
-  confidence_threshold?: number;
-  pitch_hz?: number | null;
-  sample_status?: string;
-}
-
-/** Payload for POST /api/voice-profiles (FastAPI VoiceProfileCreateRequest). */
-export interface VoiceProfileCreatePayload {
-  speaker_name: string;
-  voice_signature?: string;
-  notes?: string;
-  role?: string;
-  confidence_threshold?: number;
-  pitch_hz?: number;
-  sample_status?: string;
-}
-
 export function createApi(request: RequestFn) {
   return {
     // 0. Health ------------------------------------------------------------
@@ -450,25 +419,6 @@ export function createApi(request: RequestFn) {
       },
     },
 
-    // 7. Voice Recognition Profiles (Backend: GET/POST /api/voice-profiles, DELETE /api/voice-profiles/{id})
-    voiceProfiles: {
-      async list(): Promise<{ profiles: VoiceProfileWire[]; total: number }> {
-        return await request<{ profiles: VoiceProfileWire[]; total: number }>('/voice-profiles');
-      },
-
-      async create(profile: VoiceProfileCreatePayload): Promise<VoiceProfileWire> {
-        return await request<VoiceProfileWire>('/voice-profiles', {
-          method: 'POST',
-          body: JSON.stringify(profile),
-        });
-      },
-
-      async delete(id: string): Promise<{ success: boolean }> {
-        return await request<{ success: boolean }>(`/voice-profiles/${encodeURIComponent(id)}`, {
-          method: 'DELETE',
-        });
-      },
-    },
   };
 }
 

@@ -67,15 +67,3 @@ class ModelConfigModel(BaseModel):
     user_id: str = Field(...,description="owner user id")
     config: Dict = Field(default_factory=dict,description="model engine config")
     updated_at: Optional[str] = Field(None,description="iso update timestamp")
-
-
-class VoiceProfileModel(BaseModel):
-    __table__="voice_profiles"
-
-    user_id: str = Field(...,description="owner user id")
-    profile_id: str = Field(...,description="voice profile id (vp_...)")
-    speaker_name: str = Field(...,description="speaker display name")
-    voice_signature: Optional[str] = Field(None, description="biometric or acoustic voiceprint signature")
-    enrolled_at: str = Field(..., description="enrollment timestamp")
-    sample_count: int = Field(default=1, description="voice samples enrolled")
-    notes: Optional[str] = Field(None, description="speaker notes")

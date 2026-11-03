@@ -138,18 +138,6 @@ export interface AgentSkill {
   created_at?: string;
 }
 
-export interface VoiceUserProfile {
-  id: string;
-  name: string;
-  role: 'admin' | 'user' | 'guest';
-  voice_signature_id: string;
-  enrolled_at: string;
-  confidence_threshold: number;
-  pitch_hz?: number;
-  sample_status: 'enrolled' | 'calibrated' | 'pending';
-  notes?: string;
-}
-
 export interface ModelConfig {
   mode: 'gemini_live' | 'modular' | 'realtime';
   // Alias used by model-selection-view (mirrored by backend GET/PUT /models/config)
@@ -206,7 +194,6 @@ export interface ModelConfig {
       api_key?: string;
       server_url?: string;
       language?: string;
-      voice_recognition?: any;
     };
     llm?: {
       provider?: string;
@@ -283,21 +270,6 @@ export interface ModelConfig {
   // Structured Section Objects
   default_model?: any;
   fallback?: any;
-  voice_recognition?: any;
-
-  // Speechmatics Voice Recognition & STT Parameters
-  speechmatics_voice_recognition_enabled?: boolean;
-  speechmatics_model?: 'linden-1' | 'enhanced' | 'standard' | string;
-  speechmatics_language?: string;
-  speechmatics_turn_detection?: 'vad' | 'external';
-  speechmatics_max_delay?: number;
-  speechmatics_enable_partials?: boolean;
-  speechmatics_custom_dictionary?: string;
-  speechmatics_diarization?: boolean;
-  speechmatics_speaker_identification?: boolean;
-  speechmatics_voice_profile_name?: string;
-  speechmatics_speaker_threshold?: number;
-  voice_users?: VoiceUserProfile[];
 
   // Base System Prompt & Skills
   base_system_prompt?: string;

@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     # JWT
     jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
+    model_config_encryption_key: str = ""
     
     # livekit
     livekit_api_key: str = ""
@@ -55,7 +56,7 @@ class Settings(BaseSettings):
     mongodb_database: str = "exia_db"
     mongodb_user_collection: str = "users"
     mongodb_session_collection: str = "sessions"
-    mongodb_sesison_summary: str = "session_summary"  # (Typo note: consider renaming to session_summary)
+    mongodb_sesison_summary_collection: str = "session_summary"  # (Typo note: consider renaming to session_summary)
     mongodb_mcp_collection: str = Field(
         default="mcp_servers",
         validation_alias=AliasChoices(

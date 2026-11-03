@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 from livekit.agents import JobContext, cli
 
-from src.services import cache, UserContext
+from src.services import cache, UserContext, settings
+from src.services.model_config import build_runtime_model_config
 
 
 # Configure logging and load environment variables
@@ -31,7 +32,9 @@ async def entrypoint(ctx: JobContext):
         # 3. User context building
         user_id = participant.identity
         user_name = participant.name
-        metadata = json.load(participant.metadata)
+        metadata = json.loads(participant.metadata or "{}")
+        if not isinstance(metadata, dict):
+            raise ValueError("Participant metadata must contain a JSON object.")
         session_thread = metadata.get("session_id")
 
         
@@ -44,12 +47,20 @@ async def entrypoint(ctx: JobContext):
         logger.info(f"✅ Successfully loaded configuration for user '{user_id}' ")
 
         # Agent Context Building
-        models_config = user_config.get("model_config", {})
+        models_config = build_runtime_model_config(
+            user_config.get("model_config", {}),
+            settings.model_config_encryption_key,
+        )
         prompts_config = user_config.get("prompts", {})
         base_prompt = prompts_config.get("default_prompt", {})
         mcp_servers = user_config.get("mcp_servers", {})
-        voice_profiles = user_config.get("voice_profiles", {})
 
+        logger.info(
+            "Loaded model runtime configuration for user '%s' (mode=%s, fallback=%s)",
+            user_id,
+            models_config["mode"],
+            "fallback" in models_config,
+        )
 
 
     except Exception as e:

@@ -21,6 +21,7 @@ keywords = [
 ]
 dependencies = [
     "bcrypt>=4.0.1",
+    "cryptography>=44.0.0",
     "fastapi>=0.141.1",
     "fastmcp>=4.0.3",
     "livekit>=1.1.18",

@@ -597,7 +597,7 @@ export function HistoryView({ onNavigateToAnalytics }: HistoryViewProps) {
             </span>
           </div>
           <p className="text-muted-foreground mt-1 text-sm">
-            Inspect conversation audit trails, speaker identification, turn-by-turn latencies, and MCP tool execution logs.
+            Inspect conversation audit trails, speaker turns, turn-by-turn latencies, and MCP tool execution logs.
           </p>
         </div>
 

@@ -5,6 +5,8 @@ import {
   AlertCircle,
   ArrowRight,
   CheckCircle2,
+  Eye,
+  EyeOff,
   Loader2,
   Lock,
   Mail,
@@ -13,8 +15,8 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ThemeToggle } from '@/components/app/theme-toggle';
 import { BackendStatus } from '@/components/app/backend-status';
+import { ThemeToggle } from '@/components/app/theme-toggle';
 import { useAuth } from '@/context/auth-context';
 
 interface LoginViewProps {
@@ -28,12 +30,15 @@ export function LoginView({ onSuccess }: LoginViewProps) {
   // Sign In fields
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Register fields
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -113,8 +118,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
         <div
           className="absolute top-1/4 left-1/2 size-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{
-            background:
-              'radial-gradient(circle, rgba(31,213,249,0.06) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(31,213,249,0.06) 0%, transparent 65%)',
           }}
         />
       </div>
@@ -131,11 +135,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
           <div className="relative mb-4 inline-flex items-center justify-center">
             <div className="relative size-16 overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-cyan-500/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/exia-avatar.jpg"
-                alt="Exia"
-                className="size-full object-cover"
-              />
+              <img src="/images/exia-avatar.jpg" alt="Exia" className="size-full object-cover" />
             </div>
             {/* Online status indicator */}
             <span className="border-background absolute -right-0.5 -bottom-0.5 size-3.5 rounded-full border-2 bg-emerald-500 shadow-xs" />
@@ -156,7 +156,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
         </div>
 
         {/* Card */}
-        <div className="border-border bg-card/80 backdrop-blur-xl rounded-2xl border p-6 shadow-2xl shadow-black/25">
+        <div className="border-border bg-card/80 rounded-2xl border p-6 shadow-2xl shadow-black/25 backdrop-blur-xl">
           {/* Mode Tabs Switcher */}
           <div className="border-border bg-muted/40 mb-5 grid grid-cols-2 rounded-xl border p-1 text-xs font-medium">
             <button
@@ -166,9 +166,9 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                 setLocalError(null);
                 clearError();
               }}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
+              className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 transition-all ${
                 mode === 'signin'
-                  ? 'bg-background text-foreground shadow-sm font-semibold'
+                  ? 'bg-background text-foreground font-semibold shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -182,9 +182,9 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                 setLocalError(null);
                 clearError();
               }}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
+              className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg py-2 transition-all ${
                 mode === 'register'
-                  ? 'bg-background text-foreground shadow-sm font-semibold'
+                  ? 'bg-background text-foreground font-semibold shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -204,9 +204,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
           {mode === 'signin' ? (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-foreground/80 text-xs font-medium">
-                  Email or username
-                </label>
+                <label className="text-foreground/80 text-xs font-medium">Email or username</label>
                 <div className="relative">
                   <User className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <input
@@ -222,20 +220,27 @@ export function LoginView({ onSuccess }: LoginViewProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-foreground/80 text-xs font-medium">
-                  Password
-                </label>
+                <label className="text-foreground/80 text-xs font-medium">Password</label>
                 <div className="relative">
                   <Lock className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
                     autoComplete="current-password"
-                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2.5 pr-3 pl-9 text-sm transition-all"
+                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2.5 pr-10 pl-9 text-sm transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -270,9 +275,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
             /* REGISTRATION FORM */
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
               <div className="space-y-1.5">
-                <label className="text-foreground/80 text-xs font-medium">
-                  Full name
-                </label>
+                <label className="text-foreground/80 text-xs font-medium">Full name</label>
                 <div className="relative">
                   <User className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <input
@@ -287,9 +290,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-foreground/80 text-xs font-medium">
-                  Email address
-                </label>
+                <label className="text-foreground/80 text-xs font-medium">Email address</label>
                 <div className="relative">
                   <Mail className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <input
@@ -305,37 +306,66 @@ export function LoginView({ onSuccess }: LoginViewProps) {
 
               <div className="space-y-1.5">
                 <label className="text-foreground/80 text-xs font-medium">
-                  Password <span className="text-muted-foreground text-[10px]">(min 8 characters)</span>
+                  Password{' '}
+                  <span className="text-muted-foreground text-[10px]">(min 8 characters)</span>
                 </label>
                 <div className="relative">
                   <Lock className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <input
-                    type="password"
+                    type={showRegPassword ? 'text' : 'password'}
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="••••••••"
                     required
                     minLength={8}
-                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2 pr-3 pl-9 text-sm transition-all"
+                    autoComplete="new-password"
+                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2 pr-10 pl-9 text-sm transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword((visible) => !visible)}
+                    aria-label={showRegPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showRegPassword}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+                  >
+                    {showRegPassword ? (
+                      <EyeOff className="size-3.5" />
+                    ) : (
+                      <Eye className="size-3.5" />
+                    )}
+                  </button>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-foreground/80 text-xs font-medium">
-                  Confirm Password
-                </label>
+                <label className="text-foreground/80 text-xs font-medium">Confirm Password</label>
                 <div className="relative">
                   <ShieldCheck className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                   <input
-                    type="password"
+                    type={showRegConfirmPassword ? 'text' : 'password'}
                     value={regConfirmPassword}
                     onChange={(e) => setRegConfirmPassword(e.target.value)}
                     placeholder="••••••••"
                     required
                     minLength={8}
-                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2 pr-3 pl-9 text-sm transition-all"
+                    autoComplete="new-password"
+                    className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border py-2 pr-10 pl-9 text-sm transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegConfirmPassword((visible) => !visible)}
+                    aria-label={
+                      showRegConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
+                    }
+                    aria-pressed={showRegConfirmPassword}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+                  >
+                    {showRegConfirmPassword ? (
+                      <EyeOff className="size-3.5" />
+                    ) : (
+                      <Eye className="size-3.5" />
+                    )}
+                  </button>
                 </div>
               </div>
 

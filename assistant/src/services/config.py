@@ -93,10 +93,6 @@ class Settings:
             default="model_config",
             aliases=["MONGODB_MODEL_COLLECTIONS"],
         )
-        self.mongodb_voice_profiles_collection: str = _get_env(
-            "MONGODB_VOICE_PROFILES_COLLECTION",
-            default="voice_profiles",
-        )
         self.mongodb_blacklist_collection: str = _get_env(
             "MONGODB_BLACKLIST_COLLECTION",
             default="token_blacklist",
@@ -132,6 +128,10 @@ class Settings:
         # ----------------------------------------------------------------------
         self.jwt_secret: str = _get_env("JWT_SECRET", default="")
         self.jwt_algorithm: str = _get_env("JWT_ALGORITHM", default="HS256")
+        self.model_config_encryption_key: str = _get_env(
+            "MODEL_CONFIG_ENCRYPTION_KEY",
+            default="",
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Returns all configuration key-value pairs (excluding passwords/secrets where sensitive)."""

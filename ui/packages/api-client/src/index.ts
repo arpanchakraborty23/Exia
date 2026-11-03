@@ -13,8 +13,6 @@ export {
   type AnalyticsMetrics,
   type Api,
   type LiveKitOverrides,
-  type VoiceProfileCreatePayload,
-  type VoiceProfileWire,
 } from './endpoints';
 
 import { createRequestFn, type ApiClientOptions } from './client';

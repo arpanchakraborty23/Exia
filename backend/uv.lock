@@ -524,6 +524,7 @@ version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "bcrypt" },
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "fastmcp" },
     { name = "livekit" },
@@ -540,6 +541,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "bcrypt", specifier = ">=4.0.1" },
+    { name = "cryptography", specifier = ">=44.0.0" },
     { name = "fastapi", specifier = ">=0.141.1" },
     { name = "fastmcp", specifier = ">=4.0.3" },
     { name = "livekit", specifier = ">=1.1.18" },

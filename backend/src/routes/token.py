@@ -31,8 +31,8 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         # decode jwt token payload
         payload = token_details if isinstance(token_details, dict) else auth_services.decode_token(token_details)
         user_info = (payload or {}).get("user") or {}
-        participant_identity = user_info.get("user_id") or "usr_admin"
-        participant_name = user_info.get("name") or "Operator"
+        participant_identity = user_info.get("user_id")
+        participant_name = user_info.get("name")
         logger.info(
             "[POST /api/agent/token] LiveKit token requested for participant_identity=%s, name=%s (room=%s, session_id=%s)",
             participant_identity,

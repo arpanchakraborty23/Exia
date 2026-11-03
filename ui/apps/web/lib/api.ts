@@ -491,21 +491,4 @@ export const api = {
     },
   },
 
-  // 7. Voice Recognition Profiles (MongoDB Backend)
-  voiceProfiles: {
-    async list(): Promise<{ profiles: any[]; total: number }> {
-      return await apiRequest<{ profiles: any[]; total: number }>('/voice-profiles');
-    },
-    async create(profile: any): Promise<any> {
-      return await apiRequest<any>('/voice-profiles', {
-        method: 'POST',
-        body: JSON.stringify(profile),
-      });
-    },
-    async delete(profileId: string): Promise<any> {
-      return await apiRequest<any>(`/voice-profiles/${encodeURIComponent(profileId)}`, {
-        method: 'DELETE',
-      });
-    },
-  },
 };

@@ -154,7 +154,7 @@ Exia/
    - *JSON*: Raw telemetry inspector with full session transcript details and clipboard export.
 4. **Settings (`(tabs)/settings.tsx`)**: Unified configuration console consolidating all app settings across 4 dedicated modules:
    - *General*: Full theme customizer with 7 palette presets (GN Emerald, Cyberpunk, Cobalt Blue, Crimson Red, Amber Gold, Violet Void, Monokai Dark), dark/solar mode toggles, font size scaling, responsive layout, searchable IANA timezone dropdown modal, and data download/export.
-   - *Models*: Multi-engine pipeline setup (switch between Realtime S2S and Modular architectures, configure LiveKit credentials, adjust STT, LLMs, TTS, fallback cascade routing, and acoustic voice profiles).
+   - *Models*: Multi-engine pipeline setup (switch between Realtime S2S and Modular architectures, configure LiveKit credentials, adjust STT providers and models, LLMs, TTS, and fallback routing).
    - *Prompts*: Persona and directive matrix with dynamic variable pills (`{user_name}`, `{current_time}`, `{active_room}`, `{home_temp}`) and custom directive editor.
    - *MCP Tools*: Model Context Protocol management console (`stdio` or `sse` servers, optimistic toggle switches, tool inspect drawer).
 
@@ -355,6 +355,7 @@ docker run -d \
 5. Set **Docker Build Context:** `backend`.
 6. Leave **Build Command** and **Start Command** blank (Render uses the Dockerfile's `CMD`).
 7. Add environment variables: `MONGODB_URI`, `MONGODB_DATABASE`, `JWT_SECRET`, `LIVEKIT_API_HOST`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`.
+8. Configure `MODEL_CONFIG_ENCRYPTION_KEY` with the same Fernet key in both `backend/.env` and `assistant/.env` so user-supplied provider keys can be encrypted in MongoDB and decrypted by the assistant.
 
 ---
 
@@ -372,6 +373,7 @@ Create a `.env` file in `backend/` and `agent/` based on `.env.example`:
 | `LIVEKIT_URL` / `LIVEKIT_API_HOST` | **Yes** | `wss://<project>.livekit.cloud` | Backend & Agent | WebSocket endpoint for LiveKit SFU server |
 | `LIVEKIT_API_KEY` | **Yes** | `APIxxxxxxxxx` | Backend & Agent | LiveKit API Key for room tokens and management |
 | `LIVEKIT_API_SECRET` | **Yes** | `sec_yyyyyyyyyyyyyyyyyy` | Backend & Agent | LiveKit API Secret for HMAC signing |
+| `MODEL_CONFIG_ENCRYPTION_KEY` | **Yes, for saved provider keys** | Generate with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` | Backend & Agent | Shared Fernet key for encrypting provider keys in MongoDB and decrypting them in the assistant. Use exactly the same value in both `.env` files. |
 | `GEMINI_API_KEY` | Optional | `AIzaxxxxxxxxxxxxx` | Agent | Google Gemini Live API key |
 | `OPENAI_API_KEY` | Optional | `ollama` or `sk-xxxx` | Agent | OpenAI or local model key |
 | `OPENAI_BASE_URL` | Optional | `http://localhost:11434/v1` | Agent | Local Ollama / LM Studio endpoint |
