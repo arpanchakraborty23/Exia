@@ -1,0 +1,22 @@
+[project]
+name = "assistant"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "arpanchakraborty23", email = "arpanchakraborty500@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "livekit>=1.2.0",
+    "pymongo>=4.19.0",
+    "python-dotenv>=1.2.4",
+    "redis>=8.1.0",
+]
+
+[project.scripts]
+assistant = "assistant:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
