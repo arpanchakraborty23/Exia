@@ -1,36 +1,70 @@
-import os
-from dotenv import load_dotenv
+import logging
+from typing import Optional, Dict, Any
 
+from .config import settings
 from .db import MongoDBService, cache
 
-load_dotenv()
+logger = logging.getLogger("user-context")
 
 
 class UserContext:
+    """
+    Manages user configuration context for the voice assistant.
+    Fetches full user configuration across MongoDB collections (model_config,
+    prompts, mcp_servers, voice_profiles, users) and caches in Redis.
+    """
     def __init__(self):
         self.mongo_service = MongoDBService(
-            uri=os.getenv("MONGO_URI"),
-            db_name=os.getenv("MONGO_DB_NAME"),
-            collection_name=os.getenv("MONGO_COLLECTION_NAME")
+            uri=settings.mongodb_uri,
+            db_name=settings.mongodb_database,
         )
         self.user_cache_key = "user_context"
         self.cache_service = cache
 
-
-    def get_context(self, user_id: str):
+    def get_context(self, user_id: str, use_cache: bool = True) -> Dict[str, Any]:
+        """
+        Fetches all configuration data for a user by user_id.
+        Checks Redis cache first; if missing or use_cache is False,
+        queries MongoDB across config collections and updates Redis.
+        """
         try:
-            # Check in cache first
-            cached_context = self.cache_service.get(f"{self.user_cache_key}:{user_id}")
-            if cached_context:
-                return cached_context
+            cache_key = f"{self.user_cache_key}:{user_id}"
 
-            # If not found in cache, check in MongoDB
-            mongo_context = self.mongo_service.find_document({"user_id": user_id})
-            if mongo_context:
-                # Cache the context for future requests
-                self.cache_service.set(f"{self.user_cache_key}:{user_id}", mongo_context)
-                return mongo_context
+            # 1. Check in cache first
+            if use_cache:
+                cached_context = self.cache_service.get(cache_key)
+                if cached_context:
+                    logger.info(f"Retrieved user context from Redis cache for '{user_id}'")
+                    return cached_context
 
-            return None
+            # 2. Query MongoDB for all config data of this user
+            user_config = self.mongo_service.get_user_config(user_id)
+            if user_config:
+                # Cache the configuration for future requests using settings.redis_ttl
+                self.cache_service.set(cache_key, user_config, ex=settings.redis_ttl)
+                logger.info(f"Fetched and cached user config for '{user_id}' from MongoDB")
+                return user_config
+
+            return {}
         except Exception as e:
-            raise e
+            logger.error(f"Error fetching user context for '{user_id}': {e}")
+            raise
+
+    def refresh_context(self, user_id: str) -> Dict[str, Any]:
+        """
+        Force-refreshes the user configuration from MongoDB and updates the cache.
+        """
+        return self.get_context(user_id, use_cache=False)
+
+    def session_context(self, user_id: str,session_id : str) -> Dict[str, Any]:
+        """
+        Fetches only the session data for a user from MongoDB.
+        Does not cache session data in Redis.
+        """
+        try:
+            session_data = self.mongo_service.find_session_data(user_id, session_id=session_id)
+            return session_data or {}
+        except Exception as e:
+            logger.error(f"Error fetching session context for '{user_id}': {e}")
+            raise
+

@@ -38,11 +38,15 @@ async def create_prompt(data: PromptCreateRequest, token_data: dict = Depends(ac
     """Create a new prompt directive."""
     try:
         user_id = _get_user_id(token_data)
-        return await prompt_services.create_prompt(user_id, data)
+        logger.info("[POST /api/prompts] Creating prompt for user_id=%s (title='%s', type=%s)", user_id, data.title, data.type)
+        created = await prompt_services.create_prompt(user_id, data)
+        prompt_id = getattr(created, "id", None) or (created.get("id") if isinstance(created, dict) else "unknown")
+        logger.info("[POST /api/prompts] Successfully created prompt '%s' (id=%s) for user_id=%s", data.title, prompt_id, user_id)
+        return created
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to create prompt: %s", e)
+        logger.exception("[POST /api/prompts] Failed to create prompt: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create prompt",
@@ -54,11 +58,14 @@ async def list_prompts(token_data: dict = Depends(access_token_bearer)):
     """List all prompt directives of the authenticated user."""
     try:
         user_id = _get_user_id(token_data)
-        return await prompt_services.list_prompts(user_id)
+        logger.info("[GET /api/prompts] Listing prompts for user_id=%s", user_id)
+        prompts = await prompt_services.list_prompts(user_id)
+        logger.info("[GET /api/prompts] Retrieved %d prompt(s) for user_id=%s", len(prompts or []), user_id)
+        return prompts
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to list prompts: %s", e)
+        logger.exception("[GET /api/prompts] Failed to list prompts: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list prompts",
@@ -70,11 +77,14 @@ async def get_prompt(prompt_id: str, token_data: dict = Depends(access_token_bea
     """Get a single prompt directive."""
     try:
         user_id = _get_user_id(token_data)
-        return await prompt_services.get_prompt(user_id, prompt_id)
+        logger.info("[GET /api/prompts/%s] Fetching prompt for user_id=%s", prompt_id, user_id)
+        prompt = await prompt_services.get_prompt(user_id, prompt_id)
+        logger.info("[GET /api/prompts/%s] Found prompt for user_id=%s", prompt_id, user_id)
+        return prompt
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to get prompt: %s", e)
+        logger.exception("[GET /api/prompts/%s] Failed to get prompt: %s", prompt_id, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get prompt",
@@ -90,11 +100,14 @@ async def update_prompt(
     """Update a prompt directive."""
     try:
         user_id = _get_user_id(token_data)
-        return await prompt_services.update_prompt(user_id, prompt_id, data)
+        logger.info("[PUT /api/prompts/%s] Updating prompt for user_id=%s (title='%s')", prompt_id, user_id, data.title)
+        updated = await prompt_services.update_prompt(user_id, prompt_id, data)
+        logger.info("[PUT /api/prompts/%s] Successfully updated prompt for user_id=%s", prompt_id, user_id)
+        return updated
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to update prompt: %s", e)
+        logger.exception("[PUT /api/prompts/%s] Failed to update prompt: %s", prompt_id, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update prompt",
@@ -106,11 +119,14 @@ async def delete_prompt(prompt_id: str, token_data: dict = Depends(access_token_
     """Delete a prompt directive."""
     try:
         user_id = _get_user_id(token_data)
-        return await prompt_services.delete_prompt(user_id, prompt_id)
+        logger.info("[DELETE /api/prompts/%s] Deleting prompt for user_id=%s", prompt_id, user_id)
+        result = await prompt_services.delete_prompt(user_id, prompt_id)
+        logger.info("[DELETE /api/prompts/%s] Successfully deleted prompt for user_id=%s", prompt_id, user_id)
+        return result
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to delete prompt: %s", e)
+        logger.exception("[DELETE /api/prompts/%s] Failed to delete prompt: %s", prompt_id, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete prompt",

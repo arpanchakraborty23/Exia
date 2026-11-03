@@ -76,68 +76,6 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [autoGainControl, setAutoGainControl] = useState(true);
 
-  // LiveKit SFU Credentials
-  const [livekitUrl, setLivekitUrl] = useState('');
-  const [livekitApiKey, setLivekitApiKey] = useState('');
-  const [livekitApiSecret, setLivekitApiSecret] = useState('');
-  const [showLivekitSecret, setShowLivekitSecret] = useState(false);
-  const [isLoadingLivekit, setIsLoadingLivekit] = useState(false);
-  const [isSavingLivekit, setIsSavingLivekit] = useState(false);
-
-  useEffect(() => {
-    async function loadLivekitConfig() {
-      setIsLoadingLivekit(true);
-      try {
-        const cfg = await api.models.getConfig();
-        if (cfg) {
-          const lk = cfg.livekit || {};
-          setLivekitUrl(lk.url || cfg.livekit_url || '');
-          setLivekitApiKey(lk.apiKey || cfg.livekit_api_key || '');
-          setLivekitApiSecret(lk.apiSecret || cfg.livekit_api_secret || '');
-        }
-      } catch (err) {
-        console.warn('Failed to load LiveKit config:', err);
-      } finally {
-        setIsLoadingLivekit(false);
-      }
-    }
-    loadLivekitConfig();
-  }, []);
-
-  const handleSaveLivekit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSavingLivekit(true);
-    try {
-      await api.models.updateConfig({
-        livekit_url: livekitUrl.trim(),
-        livekit_api_key: livekitApiKey.trim(),
-        livekit_api_secret: livekitApiSecret.trim(),
-        livekit: {
-          url: livekitUrl.trim(),
-          apiKey: livekitApiKey.trim(),
-          apiSecret: livekitApiSecret.trim(),
-          roomName: 'exia-agent-room',
-        },
-      });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(
-          'exia_livekit_config',
-          JSON.stringify({
-            url: livekitUrl.trim(),
-            apiKey: livekitApiKey.trim(),
-            apiSecret: livekitApiSecret.trim(),
-          })
-        );
-      }
-      toast.success('LiveKit credentials saved to MongoDB and .env!');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to save LiveKit configuration.';
-      toast.error(msg);
-    } finally {
-      setIsSavingLivekit(false);
-    }
-  };
-
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage(null);
@@ -568,7 +506,7 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
 
       {/* LiveKit SFU Realtime Gateway Card */}
       <section className="border-border bg-card rounded-2xl border p-6 shadow-sm">
-        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <div className="border-border bg-cyan-500/10 flex size-9 items-center justify-center rounded-xl border border-cyan-500/20">
               <Radio className="text-cyan-400 size-4.5" />
@@ -580,88 +518,25 @@ export function SettingsView({ visualizerType, onChangeVisualizerType }: Setting
                   WebRTC Audio Server
                 </span>
               </div>
-              <p className="text-muted-foreground text-xs">
-                Credentials initialized from the Setup Wizard. You can update keys here to persist directly into MongoDB and .env.
+              <p className="text-muted-foreground text-xs mt-0.5">
+                WebRTC session transport for bidirectional voice streaming. Managed securely via server environment variables (.env).
               </p>
             </div>
           </div>
 
           <div>
-            {livekitUrl && livekitApiKey ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
-                <span className="size-1.5 rounded-full bg-emerald-400" />
-                Active & Connected
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400">
-                <span className="size-1.5 rounded-full bg-amber-400" />
-                Standby (Unconfigured)
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-400" />
+              Configured via .env
+            </span>
           </div>
         </div>
 
-        <form onSubmit={handleSaveLivekit} className="max-w-xl space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-foreground text-xs font-medium">LiveKit WebSocket URL</label>
-            <input
-              type="text"
-              placeholder="wss://your-project.livekit.cloud"
-              value={livekitUrl}
-              onChange={(e) => setLivekitUrl(e.target.value)}
-              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-sm font-mono transition-all"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-foreground text-xs font-medium">LiveKit API Key</label>
-            <input
-              type="text"
-              placeholder="API..."
-              value={livekitApiKey}
-              onChange={(e) => setLivekitApiKey(e.target.value)}
-              className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 text-sm font-mono transition-all"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-foreground text-xs font-medium">LiveKit API Secret</label>
-            <div className="relative">
-              <input
-                type={showLivekitSecret ? 'text' : 'password'}
-                placeholder="Secret..."
-                value={livekitApiSecret}
-                onChange={(e) => setLivekitApiSecret(e.target.value)}
-                className="bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/50 input-focus w-full rounded-xl border px-3 py-2 pr-10 text-sm font-mono transition-all"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowLivekitSecret(!showLivekitSecret)}
-                className="text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer transition-colors"
-                title={showLivekitSecret ? 'Hide secret' : 'Show secret'}
-              >
-                {showLivekitSecret ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSavingLivekit}
-            className="bg-primary text-primary-foreground hover:bg-primary-hover flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold shadow-md transition-all disabled:opacity-50"
-            style={{ boxShadow: `0 4px 16px ${activeAccent.glow}` }}
-          >
-            {isSavingLivekit ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Save className="size-3.5" />
-            )}
-            <span>{isSavingLivekit ? 'Saving...' : 'Save LiveKit Credentials'}</span>
-          </button>
-        </form>
+        <div className="mt-4 rounded-xl border border-border/80 bg-muted/20 p-4 text-xs text-muted-foreground space-y-1">
+          <p>
+            LiveKit credentials (<code className="text-foreground font-mono">LIVEKIT_API_HOST</code>, <code className="text-foreground font-mono">LIVEKIT_API_KEY</code>, <code className="text-foreground font-mono">LIVEKIT_API_SECRET</code>) are strictly loaded from server environment variables for security and zero credential exposure.
+          </p>
+        </div>
       </section>
 
       {/* Password & Security Card */}

@@ -37,11 +37,14 @@ async def get_analytics(token_data: dict = Depends(access_token_bearer)):
     """Aggregated voice session metrics and telemetry for analytics view."""
     try:
         user_id = _get_user_id(token_data)
-        return await session_services.get_analytics(user_id)
+        logger.info("[GET /api/analytics] Computing session analytics for user_id=%s", user_id)
+        analytics = await session_services.get_analytics(user_id)
+        logger.info("[GET /api/analytics] Successfully computed analytics for user_id=%s", user_id)
+        return analytics
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to get analytics: %s", e)
+        logger.exception("[GET /api/analytics] Failed to get analytics: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get analytics",
@@ -57,11 +60,15 @@ async def list_sessions(
     """Paginated voice session history of the authenticated user."""
     try:
         user_id = _get_user_id(token_data)
-        return await session_services.list_sessions(user_id, page=page, limit=limit)
+        logger.info("[GET /api/sessions] Listing voice sessions for user_id=%s (page=%d, limit=%d)", user_id, page, limit)
+        sessions = await session_services.list_sessions(user_id, page=page, limit=limit)
+        session_list = getattr(sessions, "sessions", []) or []
+        logger.info("[GET /api/sessions] Retrieved %d session(s) for user_id=%s", len(session_list), user_id)
+        return sessions
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to list sessions: %s", e)
+        logger.exception("[GET /api/sessions] Failed to list sessions: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list sessions",
@@ -73,11 +80,14 @@ async def get_session(session_id: str, token_data: dict = Depends(access_token_b
     """Single session detail."""
     try:
         user_id = _get_user_id(token_data)
-        return await session_services.get_session(user_id, session_id)
+        logger.info("[GET /api/sessions/%s] Fetching session detail for user_id=%s", session_id, user_id)
+        session = await session_services.get_session(user_id, session_id)
+        logger.info("[GET /api/sessions/%s] Retrieved session detail for user_id=%s", session_id, user_id)
+        return session
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to get session: %s", e)
+        logger.exception("[GET /api/sessions/%s] Failed to get session: %s", session_id, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get session",
@@ -89,11 +99,14 @@ async def end_session(session_id: str, token_data: dict = Depends(access_token_b
     """Mark a voice session as ended (called on LiveKit disconnect)."""
     try:
         user_id = _get_user_id(token_data)
-        return await session_services.end_session(user_id, session_id)
+        logger.info("[POST /api/sessions/%s/end] Ending voice session for user_id=%s", session_id, user_id)
+        result = await session_services.end_session(user_id, session_id)
+        logger.info("[POST /api/sessions/%s/end] Session successfully marked as ended for user_id=%s", session_id, user_id)
+        return result
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to end session: %s", e)
+        logger.exception("[POST /api/sessions/%s/end] Failed to end session: %s", session_id, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to end session",

@@ -9,13 +9,20 @@ import {
   User,
 } from './types';
 
-const DEFAULT_API_BASE_URL = 'https://exia-backend.vercel.app/api';
-
 export const getApiBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL;
-};
+  const url = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!url) {
+    throw new Error('NEXT_PUBLIC_API_URL must be set to the backend API base URL.');
+  }
 
-const API_BASE_URL = getApiBaseUrl();
+  // Normalize the configured base URL to include the API prefix.
+  const normalizedUrl =
+    url.endsWith('/api') || url.includes('/api/')
+      ? url
+      : `${url.replace(/\/+$/, '')}/api`;
+
+  return normalizedUrl.replace(/\/+$/, '');
+};
 
 const STORAGE_KEYS = {
   TOKEN: 'ha_auth_token',
@@ -235,6 +242,8 @@ export const api = {
     async logout(): Promise<void> {
       try {
         await apiRequest('/auth/logout', { method: 'POST' });
+      } catch (err) {
+        console.warn('Backend logout notice (session terminated locally):', err);
       } finally {
         setStoredToken(null);
         setStoredUser(null);

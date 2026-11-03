@@ -16,10 +16,26 @@ class TokenBearer(HTTPBearer):
     def verify_token_data(self, token_data: dict) -> None:
         return None
 
-    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials:
+    async def __call__(self, request: Request) -> dict | None:
         creds = await super().__call__(request)
+        if not creds:
+            if not self.auto_error:
+                return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         token = creds.credentials
+        if not token:
+            if not self.auto_error:
+                return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         # Allow development dummy tokens without decoding errors
         if token and token.startswith("dev_dummy_token_"):
@@ -36,6 +52,8 @@ class TokenBearer(HTTPBearer):
         try:
             token_data = self.auth_services.decode_token(token)
         except Exception:
+            if not self.auto_error:
+                return None
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token expired or invalid",
@@ -44,6 +62,8 @@ class TokenBearer(HTTPBearer):
 
         # Checking Token Data is valid or not
         if not token_data:
+            if not self.auto_error:
+                return None
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
@@ -54,6 +74,8 @@ class TokenBearer(HTTPBearer):
 
         # Reject logged-out (revoked) tokens
         if blacklist_services.is_revoked(token_data.get("jti")):
+            if not self.auto_error:
+                return None
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token has been revoked. Please sign in again.",

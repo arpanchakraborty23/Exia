@@ -40,6 +40,7 @@ class NewPasswordResponse(BaseModel):
 # livekit Session token
 class AgentTokenRequest(BaseModel):
     room_name: Optional[str] = None
+    session_id: Optional[str] = None
     livekit_url: Optional[str] = None
     livekit_api_key: Optional[str] = None
     livekit_api_secret: Optional[str] = None
@@ -49,7 +50,7 @@ class AgentTokenResponse(BaseModel):
     room_name : Optional[str] = None
     user_id : str = None    
     server_url: str = None
-    session_id: str = None
+    session_id: Optional[str] = None
     token : str = None
 
 
@@ -170,70 +171,239 @@ class PromptDeleteResponse(BaseModel):
     message: Optional[str] = None
 
 
+# ─────────────────────────────────────────────────────────────
+# Structured Feature Sections for Model Configuration
+# ─────────────────────────────────────────────────────────────
+
+class ModelParametersSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    temperature: Optional[float] = 0.7
+    max_output_tokens: Optional[int] = 1024
+    top_p: Optional[float] = None
+    vad_threshold: Optional[float] = None
+    allow_interruptions: Optional[bool] = True
+
+
+class GeminiLiveConfigSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    model: Optional[str] = "gemini-2.0-flash-realtime"
+    voice: Optional[str] = "Puck"
+    thinking_budget: Optional[int] = None
+    search_grounding: Optional[bool] = None
+    web_search: Optional[bool] = None
+
+
+class ModularComponentSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    voice: Optional[str] = None
+    language: Optional[str] = None
+    server_url: Optional[str] = None
+    api_key: Optional[str] = None
+
+
+class ModularConfigSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    stt: Optional[ModularComponentSchema] = None
+    llm: Optional[ModularComponentSchema] = None
+    tts: Optional[ModularComponentSchema] = None
+
+
+class DefaultModelSectionSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    mode: Optional[str] = "gemini_live"
+    parameters: Optional[ModelParametersSchema] = Field(default_factory=ModelParametersSchema)
+    gemini: Optional[GeminiLiveConfigSchema] = None
+    modular: Optional[ModularConfigSchema] = None
+
+
+class FallbackComponentSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    enabled: Optional[bool] = False
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    voice: Optional[str] = None
+    temperature: Optional[float] = None
+    api_key: Optional[str] = None
+    server_url: Optional[str] = None
+
+
+class FallbackSectionSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    enabled: Optional[bool] = False
+    realtime_enabled: Optional[bool] = False
+    stt_enabled: Optional[bool] = False
+    tts_enabled: Optional[bool] = False
+    realtime: Optional[FallbackComponentSchema] = None
+    llm: Optional[FallbackComponentSchema] = None
+    stt: Optional[FallbackComponentSchema] = None
+    tts: Optional[FallbackComponentSchema] = None
+
+
+class VoiceRecognitionSectionSchema(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    enabled: Optional[bool] = False
+    diarization: Optional[bool] = False
+    speaker_identification: Optional[bool] = False
+    speaker_threshold: Optional[float] = None
+    voice_profile_name: Optional[str] = None
+    model: Optional[str] = None
+    language: Optional[str] = None
+    turn_detection: Optional[bool] = None
+    max_delay: Optional[float] = None
+    enable_partials: Optional[bool] = None
+    custom_dictionary: Optional[str] = None
+    voice_users: Optional[List[Dict[str, Any]]] = None
+
+
 # model engine config (Intelligence & Model Engine) — matches frontend ModelConfig.
 # Accepts both `mode` (lib/api.ts) and `pipeline_mode` (model-selection-view),
 # plus the `llt_provider` typo the view sends.
 class ModelConfigSchema(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
-    mode: Optional[Literal["gemini_live", "modular"]] = Field(
+    mode: Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices("mode", "pipeline_mode"),
         serialization_alias="mode",
     )
-    gemini_model: Optional[str] = None
-    gemini_voice: Optional[str] = None
+    # Feature-based sections
+    default_model: Optional[DefaultModelSectionSchema] = None
+    realtime: Optional[Dict[str, Any]] = None
+    modular: Optional[ModularConfigSchema] = None
+    fallback: Optional[FallbackSectionSchema] = None
+    voice_recognition: Optional[VoiceRecognitionSectionSchema] = None
+    api_keys: Optional[Dict[str, str]] = None
+
+    # STT configuration
     stt_provider: Optional[str] = None
     stt_model: Optional[str] = None
+    stt_model_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("stt_model_api_key", "stt_api_key", "deepgram_api_key", "speechmatics_api_key"),
+    )
+    stt_language: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("stt_language", "speechmatics_language", "language"),
+    )
+    stt_server_url: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("stt_server_url", "server_url"),
+    )
+
+    # LLM configuration
     llm_provider: Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices("llm_provider", "llt_provider"),
         serialization_alias="llm_provider",
     )
     llm_model: Optional[str] = None
+    llm_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("llm_api_key", "anthropic_api_key", "openai_api_key", "gemini_api_key", "groq_api_key"),
+    )
+    llm_temperature: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("llm_temperature", "temperature"),
+    )
+    llm_max_output_tokens: Optional[int] = Field(
+        default=None,
+        validation_alias=AliasChoices("llm_max_output_tokens", "max_output_tokens"),
+    )
+    llm_top_p: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("llm_top_p", "top_p"),
+    )
+    llm_server_url: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("llm_server_url", "server_url"),
+    )
+    ollama_base_url: Optional[str] = None
+
+    # TTS configuration
     tts_provider: Optional[str] = None
     tts_model: Optional[str] = None
-    temperature: Optional[float] = None
-    max_output_tokens: Optional[int] = None
-    # Base prompt & skills support from UI studio
-    base_system_prompt: Optional[str] = None
-    system_prompt_override: Optional[str] = None
-    skills: Optional[List[Dict[str, Any]]] = None
-    # Speechmatics STT & voice recognition
+    tts_voice: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("tts_voice", "voice_id", "voice"),
+    )
+    tts_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("tts_api_key", "cartesia_api_key", "elevenlabs_api_key"),
+    )
+    tts_server_url: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("tts_server_url", "server_url"),
+    )
+
+    # Speechmatics STT voice recognition
+    speechmatics_voice_recognition_enabled: Optional[bool] = None
     speechmatics_voice_id: Optional[str] = None
     speechmatics_language: Optional[str] = None
     speechmatics_model: Optional[str] = None
-    # Gemini advanced & Web search
-    thinking_budget: Optional[int] = None
-    search_grounding: Optional[bool] = None
-    web_search: Optional[bool] = None
-    realtime_search_models: Optional[List[str]] = None
-    # LiveKit custom credentials
-    livekit: Optional[Dict[str, Any]] = None
-    livekit_url: Optional[str] = None
-    livekit_api_key: Optional[str] = None
-    livekit_api_secret: Optional[str] = None
+    speechmatics_diarization: Optional[bool] = None
+    speechmatics_speaker_identification: Optional[bool] = None
+    speechmatics_speaker_threshold: Optional[float] = None
+    speechmatics_voice_profile_name: Optional[str] = None
+    speechmatics_turn_detection: Optional[bool] = None
+    speechmatics_max_delay: Optional[float] = None
+    speechmatics_enable_partials: Optional[bool] = None
+    speechmatics_custom_dictionary: Optional[str] = None
+    voice_users: Optional[List[Dict[str, Any]]] = None
+
+    # Turn detection and VAD Section
     vad_threshold: Optional[float] = None
     allow_interruptions: Optional[bool] = None
+    silence_duration_ms: Optional[int] = None
+    prefix_padding_ms: Optional[int] = None
+    vad: Optional[Dict[str, Any]] = None
 
-    # Model Provider API Keys & Endpoints (persisted in DB and synced to .env)
-    gemini_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
-    anthropic_api_key: Optional[str] = None
-    deepgram_api_key: Optional[str] = None
-    cartesia_api_key: Optional[str] = None
-    elevenlabs_api_key: Optional[str] = None
-    speechmatics_api_key: Optional[str] = None
-    groq_api_key: Optional[str] = None
-    deepseek_api_key: Optional[str] = None
-    ollama_base_url: Optional[str] = None
+    # Realtime Model Options
+    realtime_model_provider: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_model_provider", "realttime_model_provider", "realtime_provider"),
+    )
+    realtime_model: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_model", "gemini_model"),
+    )
+    realtime_voice: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_voice", "gemini_voice"),
+    )
+    realtime_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_api_key", "gemini_api_key", "openai_api_key"),
+    )
+    realtime_model_temperature: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_model_temperature", "realtime_temperature", "temperature"),
+    )
+    realtime_model_max_output_tokens: Optional[int] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_model_max_output_tokens", "realtime_max_tokens", "max_output_tokens"),
+    )
+    realtime_model_top_p: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("realtime_model_top_p", "realtime_top_p", "top_p"),
+    )
 
-    # Fallback Model Options (LiveKit Inference or multi-provider routing)
+    # Fallback Realtime Model Options
+    fallback_realtime_enabled: Optional[bool] = False
+    fallback_realtime_provider: Optional[str] = None
+    fallback_realtime_model: Optional[str] = None
+    fallback_realtime_voice: Optional[str] = None
+    fallback_realtime_api_key: Optional[str] = None
+
+    # Fallback Modular Model Options (LiveKit Inference or multi-provider routing)
     fallback_enabled: Optional[bool] = False
+    fallback_llm_enabled: Optional[bool] = False
     fallback_provider: Optional[str] = None
     fallback_model: Optional[str] = None
     fallback_temperature: Optional[float] = None
     fallback_api_key: Optional[str] = None
+    fallback_server_url: Optional[str] = None
 
     # Fallback Speech-to-Text (STT) Options
     fallback_stt_enabled: Optional[bool] = False
@@ -247,6 +417,20 @@ class ModelConfigSchema(BaseModel):
     fallback_tts_model: Optional[str] = None
     fallback_tts_voice: Optional[str] = None
     fallback_tts_api_key: Optional[str] = None
+
+    # Extra parameters and prompts (managed by Prompts page)
+    temperature: Optional[float] = None
+    max_output_tokens: Optional[int] = None
+    top_p: Optional[float] = None
+    base_system_prompt: Optional[str] = None
+    system_prompt_override: Optional[str] = None
+    skills: Optional[List[Dict[str, Any]]] = None
+    thinking_budget: Optional[int] = None
+    search_grounding: Optional[bool] = None
+    web_search: Optional[bool] = None
+    realtime_search_models: Optional[List[str]] = None
+    server_url: Optional[str] = None
+    custom_model_name: Optional[str] = None
 
 
 # settings-view password change (frontend posts current + new password)

@@ -21,3 +21,4 @@ opencode.json
 node_modules/
 .vercel
 .env*
+exp

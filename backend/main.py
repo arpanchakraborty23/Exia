@@ -120,19 +120,45 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
+async def request_logging_and_cors_middleware(request: Request, call_next):
+    start_time = time.time()
+    method = request.method
+    path = request.url.path
+    query = request.url.query
+    query_str = f"?{query}" if query else ""
+    client_host = request.client.host if request.client else "unknown"
+
+    # Log incoming request for API endpoints and root
+    is_api = path.startswith("/api") or path in ("/", "/docs", "/openapi.json")
+    if is_api and method != "OPTIONS":
+        logger.info("--> [%s] %s%s (Client: %s)", method, path, query_str, client_host)
+
     origin = request.headers.get("origin")
-    if request.method == "OPTIONS":
+    if method == "OPTIONS":
         response = Response(status_code=status.HTTP_204_NO_CONTENT)
     else:
         try:
             response = await call_next(request)
         except Exception as e:
-            logger.exception("Error processing request: %s", e)
+            duration_ms = (time.time() - start_time) * 1000
+            logger.exception("<-- [%s] %s%s FAILED with unhandled exception in %.2fms: %s", method, path, query_str, duration_ms, e)
             response = JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={"detail": str(e)},
             )
+
+    duration_ms = (time.time() - start_time) * 1000
+    if is_api and method != "OPTIONS":
+        log_level = logging.ERROR if response.status_code >= 500 else (logging.WARNING if response.status_code >= 400 else logging.INFO)
+        logger.log(
+            log_level,
+            "<-- [%s] %s%s status=%d (%.2fms)",
+            method,
+            path,
+            query_str,
+            response.status_code,
+            duration_ms,
+        )
 
     if origin:
         response.headers["Access-Control-Allow-Origin"] = origin

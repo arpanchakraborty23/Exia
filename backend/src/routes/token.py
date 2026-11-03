@@ -1,5 +1,7 @@
+import json
 import logging
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Depends, status
 from livekit import api
@@ -31,6 +33,13 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         user_info = (payload or {}).get("user") or {}
         participant_identity = user_info.get("user_id") or "usr_admin"
         participant_name = user_info.get("name") or "Operator"
+        logger.info(
+            "[POST /api/agent/token] LiveKit token requested for participant_identity=%s, name=%s (room=%s, session_id=%s)",
+            participant_identity,
+            participant_name,
+            request.room_name,
+            request.session_id,
+        )
 
         # Read fresh settings per-request (module-level values go stale after .env changes)
         current = get_settings()
@@ -47,40 +56,60 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
         except Exception:
             pass
 
-        stored_lk = ((user_cfg or {}).get("config") or {}).get("livekit") or {}
-
-        livekit_api_key = (
-            request.livekit_api_key
-            or stored_lk.get("apiKey")
-            or user_cfg.get("livekit_api_key")
-            or current.livekit_api_key
-        )
-        livekit_secret_key = (
-            request.livekit_api_secret
-            or stored_lk.get("apiSecret")
-            or user_cfg.get("livekit_api_secret")
-            or current.livekit_api_secret
-        )
-        livekit_url = (
-            request.livekit_url
-            or stored_lk.get("url")
-            or user_cfg.get("livekit_url")
-            or current.livekit_api_host
-        )
+        # LiveKit server credentials strictly loaded from environment (.env)
+        livekit_api_key = current.livekit_api_key
+        livekit_secret_key = current.livekit_api_secret
+        livekit_url = current.livekit_api_host
 
         if not all([livekit_api_key, livekit_secret_key, livekit_url]):
+            logger.error("[POST /api/agent/token] Missing LiveKit credentials in environment (LIVEKIT_URL/API_KEY/API_SECRET)")
             raise HTTPException(
                 status_code=status.HTTP_511_NETWORK_AUTHENTICATION_REQUIRED,
                 detail="Server configuration error: LiveKit credentials missing",
             )
 
-        room_name = (request.room_name or "unlisted")
-        session_id = f"room-{str(uuid.uuid4())[:6]}"
+        # Check if session exists or not
+        target_session = request.session_id or (
+            request.room_name if request.room_name and request.room_name != "unlisted" else None
+        )
+
+        existing_session = None
+        if target_session:
+            try:
+                existing_session = db_service.find_one(
+                    {
+                        "user_id": participant_identity,
+                        "$or": [
+                            {"session_id": target_session},
+                            {"room_name": target_session},
+                        ],
+                    },
+                    use_cache=False,
+                )
+            except Exception as db_err:
+                logger.warning("[POST /api/agent/token] Error checking existing session: %s", db_err)
+
+        # If exists send id, if not None
+        if existing_session:
+            session_id = existing_session.get("session_id")
+            room_name = existing_session.get("room_name") or request.room_name or session_id
+            logger.info("[POST /api/agent/token] Resuming existing voice session: session_id=%s, room_name=%s", session_id, room_name)
+        else:
+            session_id = None
+            room_name = request.room_name or "unlisted"
+            logger.info("[POST /api/agent/token] Initializing new voice session room_name=%s", room_name)
+
+        # Include lightweight metadata for the agent worker
+        token_metadata = json.dumps({
+            "session_id": session_id,
+            "resumed": bool(existing_session),
+        })
 
         livekit_token = (
             api.AccessToken(livekit_api_key, livekit_secret_key)
-            .with_identity(participant_identity)
-            .with_name(participant_name)
+            .with_identity(participant_identity) # user_id
+            .with_name(participant_name) # user_name
+            .with_metadata(token_metadata) # session_id
             .with_grants(
                 api.VideoGrants(
                     room_join=True,
@@ -98,29 +127,24 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
             )
         )
         participant_token = livekit_token.to_jwt()
-        logger.info("Agent session token created!")
+        logger.info("[POST /api/agent/token] LiveKit access token successfully minted for %s in room %s", participant_identity, room_name)
 
-
-
-        # Optional DB recording (best-effort: never fail token creation on DB error)
-        try:
-            # Session Data
-            session_data = AgentSessionModel(
-                session_id=session_id,
-                room_name=room_name,
-                user_id=participant_identity,
-                name=participant_name,
-                token=participant_token,
-                conversation=None,
-                session_summary=None,
-            )
-
-            # Insert Session data (connect/disconnect handled inside)
-            insert_result = db_service.insert_one(session_data.model_dump())
-            logger.info("Agent session recorded: session_id=%s inserted_id=%s",session_id,getattr(insert_result, "inserted_id", None),)
-
-        except Exception as db_err:
-            logger.exception("Failed to record session in MongoDB: %s", db_err)
+        # If existing session, update its active token & status in MongoDB
+        if existing_session and session_id:
+            try:
+                db_service.update_one(
+                    {"session_id": session_id, "user_id": participant_identity},
+                    {
+                        "$set": {
+                            "token": participant_token,
+                            "status": "active",
+                            "updated_at": datetime.now(timezone.utc),
+                        }
+                    },
+                )
+                logger.info("[POST /api/agent/token] Resumed session %s marked active in MongoDB", session_id)
+            except Exception as db_err:
+                logger.exception("[POST /api/agent/token] Failed to update existing session in MongoDB: %s", db_err)
 
         return AgentTokenResponse(
             room_name=room_name,
@@ -133,5 +157,5 @@ async def token(request: AgentTokenRequest, token_details = Depends(access_token
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Agent Session Error: %s", e)
+        logger.exception("[POST /api/agent/token] Failed to create agent token: %s", e)
         raise HTTPException(status_code=500, detail="Failed to create agent token")

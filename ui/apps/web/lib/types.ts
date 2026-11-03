@@ -151,21 +151,82 @@ export interface VoiceUserProfile {
 }
 
 export interface ModelConfig {
-  mode: 'gemini_live' | 'modular';
+  mode: 'gemini_live' | 'modular' | 'realtime';
   // Alias used by model-selection-view (mirrored by backend GET/PUT /models/config)
   pipeline_mode?: 'gemini_live' | 'modular';
-  gemini_model: string;
-  gemini_voice: string;
-  stt_provider: string;
-  stt_model: string;
-  llm_provider: string;
+  gemini_model?: string;
+  gemini_voice?: string;
+  stt_provider?: string;
+  stt_model?: string;
+  llm_provider?: string;
   // Alternate key sent by model-selection-view (normalized server-side)
   llt_provider?: string;
-  llm_model: string;
-  tts_provider: string;
-  tts_model: string;
-  temperature: number;
+  llm_model?: string;
+  tts_provider?: string;
+  tts_model?: string;
+  tts_voice?: string;
+  temperature?: number;
   max_output_tokens?: number;
+
+  // Flat schema fields matching backend ModelConfigSchema
+  stt_model_api_key?: string;
+  stt_language?: string;
+  stt_server_url?: string;
+  llm_api_key?: string;
+  llm_temperature?: number;
+  llm_max_output_tokens?: number;
+  llm_top_p?: number;
+  llm_server_url?: string;
+  tts_api_key?: string;
+  tts_server_url?: string;
+  voice_id?: string;
+  realtime_model_provider?: string;
+  realtime_model?: string;
+  realtime_voice?: string;
+  realtime_api_key?: string;
+  realtime_model_temperature?: number;
+  realtime_model_max_output_tokens?: number;
+  realtime_model_top_p?: number;
+
+  // Mode-based Structured Dictionaries (Mode as key)
+  realtime?: {
+    provider?: string;
+    model?: string;
+    voice?: string;
+    api_key?: string;
+    temperature?: number;
+    max_output_tokens?: number;
+    top_p?: number;
+    system_prompt_override?: string;
+  };
+  modular?: {
+    stt?: {
+      provider?: string;
+      model?: string;
+      api_key?: string;
+      server_url?: string;
+      language?: string;
+      voice_recognition?: any;
+    };
+    llm?: {
+      provider?: string;
+      model?: string;
+      api_key?: string;
+      server_url?: string;
+      ollama_base_url?: string;
+      temperature?: number;
+      max_output_tokens?: number;
+      top_p?: number;
+      system_prompt_override?: string;
+    };
+    tts?: {
+      provider?: string;
+      model?: string;
+      voice?: string;
+      api_key?: string;
+      server_url?: string;
+    };
+  };
 
   // API Keys & Endpoints
   gemini_api_key?: string;
@@ -178,9 +239,18 @@ export interface ModelConfig {
   groq_api_key?: string;
   deepseek_api_key?: string;
   ollama_base_url?: string;
+  server_url?: string;
+
+  // Fallback Realtime Model Options
+  fallback_realtime_enabled?: boolean;
+  fallback_realtime_provider?: string;
+  fallback_realtime_model?: string;
+  fallback_realtime_voice?: string;
+  fallback_realtime_api_key?: string;
 
   // Fallback Model Options (LiveKit Inference or multi-provider routing)
   fallback_enabled?: boolean;
+  fallback_llm_enabled?: boolean;
   fallback_provider?: 'livekit' | 'anthropic' | 'openai' | 'google' | 'ollama' | string;
   fallback_model?: string;
   fallback_temperature?: number;
@@ -198,18 +268,25 @@ export interface ModelConfig {
   fallback_tts_voice?: string;
   fallback_tts_api_key?: string;
 
-  // LiveKit Voice Agent Orchestrator Credentials (as referenced in cortana_companion)
-  livekit_url?: string;
-  livekit_api_key?: string;
-  livekit_api_secret?: string;
-  livekit?: {
-    url?: string;
-    apiKey?: string;
-    apiSecret?: string;
-    roomName?: string;
+  // Turn Detection & Voice Activity Detection (VAD)
+  vad_threshold?: number;
+  allow_interruptions?: boolean;
+  silence_duration_ms?: number;
+  prefix_padding_ms?: number;
+  vad?: {
+    vad_threshold?: number;
+    allow_interruptions?: boolean;
+    silence_duration_ms?: number;
+    prefix_padding_ms?: number;
   };
 
+  // Structured Section Objects
+  default_model?: any;
+  fallback?: any;
+  voice_recognition?: any;
+
   // Speechmatics Voice Recognition & STT Parameters
+  speechmatics_voice_recognition_enabled?: boolean;
   speechmatics_model?: 'linden-1' | 'enhanced' | 'standard' | string;
   speechmatics_language?: string;
   speechmatics_turn_detection?: 'vad' | 'external';

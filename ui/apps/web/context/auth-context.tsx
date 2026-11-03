@@ -125,6 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       await api.auth.logout();
+    } catch (err) {
+      console.warn('Logout notice (clearing local credentials):', err);
     } finally {
       setToken(null);
       setUser(null);

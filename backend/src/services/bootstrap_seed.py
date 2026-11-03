@@ -89,12 +89,6 @@ def seed_database_if_empty():
                     "temperature": 0.7,
                     "top_p": 0.95,
                     "max_output_tokens": 1024,
-                    "livekit": {
-                        "url": settings.livekit_api_host or "wss://exia-agent.livekit.cloud",
-                        "apiKey": settings.livekit_api_key or "devkey",
-                        "apiSecret": settings.livekit_api_secret or "secret",
-                        "roomName": "exia-agent-room",
-                    },
                 },
                 "created_at": now_iso,
                 "updated_at": now_iso,

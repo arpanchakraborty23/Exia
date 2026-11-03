@@ -46,10 +46,12 @@ cd backend
 uv run uvicorn main:app --reload --host 0.0.0.0 --port 12568
 ```
 
-- The UI clients default to the deployed backend at
+- The mobile client defaults to the deployed backend at
   **`https://exia-backend.vercel.app/api`**. To use a local backend, set the
-  appropriate client environment variable (see §6) to
+  mobile client environment variable (see §6) to
   `http://127.0.0.1:12568/api`.
+- The web client requires `NEXT_PUBLIC_API_URL` in `ui/apps/web/.env.local`;
+  there is no hardcoded backend URL fallback.
 - Sanity check: `curl http://127.0.0.1:12568/api/health` → `{"status": "ok", ...}`.
 - Docker alternative: `docker build -t exia-backend . && docker run --rm -p 12568:8000 --env-file .env exia-backend`
   (maps the container's 8000 to the clients' expected 12568).
@@ -224,7 +226,7 @@ resize, mouse/keyboard/focus, clean-machine install).
 | Variable | Where | Purpose |
 |---|---|---|
 | `EXPO_PUBLIC_API_URL` | mobile app, bundle time | Override the API base URL. Defaults to `https://exia-backend.vercel.app/api`. For local development, use `http://127.0.0.1:12568/api`; Android emulators reach the host backend via `http://10.0.2.2:12568/api`. |
-| `NEXT_PUBLIC_API_URL` | web app, build time | Override the API base URL. Defaults to `https://exia-backend.vercel.app/api`; use `http://127.0.0.1:12568/api` for local development. |
+| `NEXT_PUBLIC_API_URL` | web app, build time | Required API base URL. Set it in `apps/web/.env.local` (see `apps/web/.env.example`); for local development, use `http://127.0.0.1:12568/api`. |
 | `MONGODB_URI`, `MONGODB_DATABASE`, … | `backend/.env` | Backend database connection (see `.env.example`). |
 | `LIVEKIT_API_HOST`, keys | `backend/.env` | LiveKit SFU credentials for voice sessions. |
 
